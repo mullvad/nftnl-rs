@@ -8,6 +8,10 @@ repository = "https://github.com/mullvad/nftnl-rs"
 keywords = ["nftables", "nft", "firewall", "iptables", "netfilter"]
 categories = ["network-programming", "os::unix-apis", "api-bindings"]
 
+[features]
+nftnl-1-0-7 = ["nftnl-sys/nftnl-1-0-7"]
+nftnl-1-0-8 = ["nftnl-sys/nftnl-1-0-8"]
+nftnl-1-0-9 = ["nftnl-sys/nftnl-1-0-9"]
 
 [dependencies]
 nftnl-sys = { path = "../nftnl-sys", version = "0.1" }
