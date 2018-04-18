@@ -14,4 +14,6 @@ nftnl-1-0-8 = ["nftnl-sys/nftnl-1-0-8"]
 nftnl-1-0-9 = ["nftnl-sys/nftnl-1-0-9"]
 
 [dependencies]
+error-chain = "0.11"
+libc = "0.2.40"
 nftnl-sys = { path = "../nftnl-sys", version = "0.1" }
