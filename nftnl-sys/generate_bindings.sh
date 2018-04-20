@@ -46,5 +46,6 @@ sed -i '/#\[derive(Debug, Copy, Clone)\]/d' $BINDING_PATH
 #   Replace string: 
 
 # Add bindgen version to comment at start of file
+sed -i "1s/bindgen/$(bindgen --version)/" $BINDING_PATH
 
 rustfmt $BINDING_PATH
