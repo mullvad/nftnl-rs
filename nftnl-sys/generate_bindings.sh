@@ -37,13 +37,30 @@ sed -i 's/_bindgen_ty_[0-9]\+/u32/g' $BINDING_PATH
 sed -i 's/pub type u32 = u32;//g' $BINDING_PATH
 sed -i '/#\[derive(Debug, Copy, Clone)\]/d' $BINDING_PATH
 
-# Manually change struct bodies to (c_void);
+# Change struct bodies to (c_void);
 #   Search regex: {\n +_unused: \[u8; 0],\n}
 #   Replace string: (c_void);\n
+sed -i -e '/^pub struct .* {$/ {
+    N;N
+    s/ {\n *_unused: \[u8; 0\],\n}/(c_void);\n/
+}' "$BINDING_PATH"
+
 
 # Remove all }\nextern "C" { to condense code a bit
 #   Search regex: }\nextern "C" {
 #   Replace string: 
+sed -i -e '/^extern "C" {$/ {
+    :loop
+    n
+    /^}$/! b loop
+    /^}$/ {
+        N
+        t reset_condition_flags
+        :reset_condition_flags
+        s/}\nextern "C" {//
+        t loop
+    }
+}' "$BINDING_PATH"
 
 # Add bindgen version to comment at start of file
 sed -i "1s/bindgen/$(bindgen --version)/" $BINDING_PATH
