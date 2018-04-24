@@ -7,3 +7,15 @@ description = "Low level FFI bindings to libnftnl. Provides low-level userspace 
 repository = "https://github.com/mullvad/nftnl-rs"
 keywords = ["nftables", "nft", "firewall", "iptables", "netfilter"]
 categories = ["network-programming", "os::unix-apis", "external-ffi-bindings", "no-std"]
+
+
+[features]
+nftnl-1-0-7 = []
+nftnl-1-0-8 = ["nftnl-1-0-7"]
+nftnl-1-0-9 = ["nftnl-1-0-8"]
+
+[dependencies]
+libc = "0.2.40"
+
+[build-dependencies]
+pkg-config = "0.3"
