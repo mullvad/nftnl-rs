@@ -8,7 +8,7 @@
 
 //! Low level FFI bindings to [`libnftnl`]. a userspace library providing a low-level netlink
 //! programming interface (API) to the in-kernel nf_tables subsystem.
-//! 
+//!
 //! See [`nftnl`] for a higher level safe abstraction.
 //!
 //! [`libnftnl`]: https://netfilter.org/projects/libnftnl/
