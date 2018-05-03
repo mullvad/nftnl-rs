@@ -1,0 +1,325 @@
+use libc;
+use nftnl_sys as sys;
+
+use super::Expression;
+use {ErrorKind, Result};
+
+trait HeaderField {
+    fn offset(&self) -> u32;
+    fn len(&self) -> u32;
+}
+
+/// Payload expressions refer to data from the packet's payload.
+#[derive(Copy, Clone, Eq, PartialEq)]
+pub enum Payload {
+    // LinkLayer(LLHeaderField),
+    Network(NetworkHeaderField),
+    Transport(TransportHeaderField),
+}
+
+
+impl Payload {
+    fn base(&self) -> u32 {
+        match *self {
+            // Payload::LinkLayer(_) => libc::NFT_PAYLOAD_LL_HEADER as u32,
+            Payload::Network(_) => libc::NFT_PAYLOAD_NETWORK_HEADER as u32,
+            Payload::Transport(_) => libc::NFT_PAYLOAD_TRANSPORT_HEADER as u32,
+        }
+    }
+}
+
+impl HeaderField for Payload {
+    fn offset(&self) -> u32 {
+        use self::Payload::*;
+        match *self {
+            // LinkLayer(ref f) => f.offset(),
+            Network(ref f) => f.offset(),
+            Transport(ref f) => f.offset(),
+        }
+    }
+
+    fn len(&self) -> u32 {
+        use self::Payload::*;
+        match *self {
+            // LinkLayer(ref f) => f.len(),
+            Network(ref f) => f.len(),
+            Transport(ref f) => f.len(),
+        }
+    }
+}
+
+impl Expression for Payload {
+    fn to_expr(&self) -> Result<*mut sys::nftnl_expr> {
+        unsafe {
+            let expr = sys::nftnl_expr_alloc(b"payload\0" as *const _ as *const i8);
+            if expr.is_null() {
+                bail!(ErrorKind::AllocationError);
+            }
+
+            sys::nftnl_expr_set_u32(expr, sys::NFTNL_EXPR_PAYLOAD_BASE as u16, self.base());
+            sys::nftnl_expr_set_u32(expr, sys::NFTNL_EXPR_PAYLOAD_OFFSET as u16, self.offset());
+            sys::nftnl_expr_set_u32(expr, sys::NFTNL_EXPR_PAYLOAD_LEN as u16, self.len());
+            sys::nftnl_expr_set_u32(
+                expr,
+                sys::NFTNL_EXPR_PAYLOAD_DREG as u16,
+                libc::NFT_REG_1 as u32,
+            );
+
+            Ok(expr)
+        }
+    }
+}
+
+// #[derive(Copy, Clone, Eq, PartialEq)]
+// pub enum LLHeaderField {
+//     Daddr,
+//     Saddr,
+//     EtherType,
+// }
+
+// impl HeaderField for LLHeaderField {
+//     fn offset(&self) -> u32 {
+//         use self::LLHeaderField::*;
+//         match *self {
+//             Daddr => 0,
+//             Saddr => 6,
+//             EtherType => 12,
+//         }
+//     }
+
+//     fn len(&self) -> u32 {
+//         use self::LLHeaderField::*;
+//         match *self {
+//             Daddr => 6,
+//             Saddr => 6,
+//             EtherType => 2,
+//         }
+//     }
+// }
+
+#[derive(Copy, Clone, Eq, PartialEq)]
+pub enum NetworkHeaderField {
+    Ip(IpHeaderField),
+    Ip6(Ip6HeaderField),
+}
+
+impl HeaderField for NetworkHeaderField {
+    fn offset(&self) -> u32 {
+        use self::NetworkHeaderField::*;
+        match *self {
+            Ip(ref f) => f.offset(),
+            Ip6(ref f) => f.offset(),
+        }
+    }
+
+    fn len(&self) -> u32 {
+        use self::NetworkHeaderField::*;
+        match *self {
+            Ip(ref f) => f.len(),
+            Ip6(ref f) => f.len(),
+        }
+    }
+}
+
+#[derive(Copy, Clone, Eq, PartialEq)]
+pub enum IpHeaderField {
+    Ttl,
+    Protocol,
+    Saddr,
+    Daddr,
+}
+
+impl HeaderField for IpHeaderField {
+    fn offset(&self) -> u32 {
+        use self::IpHeaderField::*;
+        match *self {
+            Ttl => 8,
+            Protocol => 9,
+            Saddr => 12,
+            Daddr => 16,
+        }
+    }
+
+    fn len(&self) -> u32 {
+        use self::IpHeaderField::*;
+        match *self {
+            Ttl => 1,
+            Protocol => 1,
+            Saddr => 4,
+            Daddr => 4,
+        }
+    }
+}
+
+#[derive(Copy, Clone, Eq, PartialEq)]
+pub enum Ip6HeaderField {
+    NextHeader,
+    HopLimit,
+    Saddr,
+    Daddr,
+}
+
+impl HeaderField for Ip6HeaderField {
+    fn offset(&self) -> u32 {
+        use self::Ip6HeaderField::*;
+        match *self {
+            NextHeader => 6,
+            HopLimit => 7,
+            Saddr => 8,
+            Daddr => 24,
+        }
+    }
+
+    fn len(&self) -> u32 {
+        use self::Ip6HeaderField::*;
+        match *self {
+            NextHeader => 1,
+            HopLimit => 1,
+            Saddr => 16,
+            Daddr => 16,
+        }
+    }
+}
+
+#[derive(Copy, Clone, Eq, PartialEq)]
+pub enum TransportHeaderField {
+    Tcp(TcpHeaderField),
+    Udp(UdpHeaderField),
+}
+
+impl HeaderField for TransportHeaderField {
+    fn offset(&self) -> u32 {
+        use self::TransportHeaderField::*;
+        match *self {
+            Tcp(ref f) => f.offset(),
+            Udp(ref f) => f.offset(),
+        }
+    }
+
+    fn len(&self) -> u32 {
+        use self::TransportHeaderField::*;
+        match *self {
+            Tcp(ref f) => f.len(),
+            Udp(ref f) => f.len(),
+        }
+    }
+}
+
+#[derive(Copy, Clone, Eq, PartialEq)]
+pub enum TcpHeaderField {
+    Sport,
+    Dport,
+}
+
+impl HeaderField for TcpHeaderField {
+    fn offset(&self) -> u32 {
+        use self::TcpHeaderField::*;
+        match *self {
+            Sport => 0,
+            Dport => 2,
+        }
+    }
+
+    fn len(&self) -> u32 {
+        use self::TcpHeaderField::*;
+        match *self {
+            Sport => 2,
+            Dport => 2,
+        }
+    }
+}
+
+#[derive(Copy, Clone, Eq, PartialEq)]
+pub enum UdpHeaderField {
+    Sport,
+    Dport,
+    Len,
+}
+
+impl HeaderField for UdpHeaderField {
+    fn offset(&self) -> u32 {
+        use self::UdpHeaderField::*;
+        match *self {
+            Sport => 0,
+            Dport => 2,
+            Len => 4,
+        }
+    }
+
+    fn len(&self) -> u32 {
+        use self::UdpHeaderField::*;
+        match *self {
+            Sport => 2,
+            Dport => 2,
+            Len => 2,
+        }
+    }
+}
+
+#[macro_export]
+macro_rules! nft_expr_payload {
+    (ip_field ttl) => {
+        $crate::expr::IpHeaderField::Ttl
+    };
+    (ip_field protocol) => {
+        $crate::expr::IpHeaderField::Protocol
+    };
+    (ip_field saddr) => {
+        $crate::expr::IpHeaderField::Saddr
+    };
+    (ip_field daddr) => {
+        $crate::expr::IpHeaderField::Daddr
+    };
+
+    (ip6_field nextheader) => {
+        $crate::expr::Ip6HeaderField::NextHeader
+    };
+    (ip6_field hoplimit) => {
+        $crate::expr::Ip6HeaderField::HopLimit
+    };
+    (ip6_field saddr) => {
+        $crate::expr::Ip6HeaderField::Saddr
+    };
+    (ip6_field daddr) => {
+        $crate::expr::Ip6HeaderField::Daddr
+    };
+
+    (ip $field:ident) => {
+        $crate::expr::Payload::Network($crate::expr::NetworkHeaderField::Ip(
+            nft_expr_payload!(ip_field $field),
+        ))
+    };
+    (ip6 $field:ident) => {
+        $crate::expr::Payload::Network($crate::expr::NetworkHeaderField::Ip6(
+            nft_expr_payload!(ip6_field $field),
+        ))
+    };
+
+    (tcp_field sport) => {
+        $crate::expr::TcpHeaderField::Sport
+    };
+    (tcp_field dport) => {
+        $crate::expr::TcpHeaderField::Dport
+    };
+
+    (udp_field sport) => {
+        $crate::expr::UdpHeaderField::Sport
+    };
+    (udp_field dport) => {
+        $crate::expr::UdpHeaderField::Dport
+    };
+    (udp_field len) => {
+        $crate::expr::UdpHeaderField::Len
+    };
+
+    (tcp $field:ident) => {
+        $crate::expr::Payload::Transport($crate::expr::TransportHeaderField::Tcp(
+            nft_expr_payload!(tcp_field $field),
+        ))
+    };
+    (udp $field:ident) => {
+        $crate::expr::Payload::Transport($crate::expr::TransportHeaderField::Udp(
+            nft_expr_payload!(udp_field $field),
+        ))
+    };
+}
