@@ -99,39 +99,39 @@ impl Expression for Payload {
 
 #[derive(Copy, Clone, Eq, PartialEq)]
 pub enum NetworkHeaderField {
-    Ip(IpHeaderField),
-    Ip6(Ip6HeaderField),
+    Ipv4(Ipv4HeaderField),
+    Ipv6(Ipv6HeaderField),
 }
 
 impl HeaderField for NetworkHeaderField {
     fn offset(&self) -> u32 {
         use self::NetworkHeaderField::*;
         match *self {
-            Ip(ref f) => f.offset(),
-            Ip6(ref f) => f.offset(),
+            Ipv4(ref f) => f.offset(),
+            Ipv6(ref f) => f.offset(),
         }
     }
 
     fn len(&self) -> u32 {
         use self::NetworkHeaderField::*;
         match *self {
-            Ip(ref f) => f.len(),
-            Ip6(ref f) => f.len(),
+            Ipv4(ref f) => f.len(),
+            Ipv6(ref f) => f.len(),
         }
     }
 }
 
 #[derive(Copy, Clone, Eq, PartialEq)]
-pub enum IpHeaderField {
+pub enum Ipv4HeaderField {
     Ttl,
     Protocol,
     Saddr,
     Daddr,
 }
 
-impl HeaderField for IpHeaderField {
+impl HeaderField for Ipv4HeaderField {
     fn offset(&self) -> u32 {
-        use self::IpHeaderField::*;
+        use self::Ipv4HeaderField::*;
         match *self {
             Ttl => 8,
             Protocol => 9,
@@ -141,7 +141,7 @@ impl HeaderField for IpHeaderField {
     }
 
     fn len(&self) -> u32 {
-        use self::IpHeaderField::*;
+        use self::Ipv4HeaderField::*;
         match *self {
             Ttl => 1,
             Protocol => 1,
@@ -152,16 +152,16 @@ impl HeaderField for IpHeaderField {
 }
 
 #[derive(Copy, Clone, Eq, PartialEq)]
-pub enum Ip6HeaderField {
+pub enum Ipv6HeaderField {
     NextHeader,
     HopLimit,
     Saddr,
     Daddr,
 }
 
-impl HeaderField for Ip6HeaderField {
+impl HeaderField for Ipv6HeaderField {
     fn offset(&self) -> u32 {
-        use self::Ip6HeaderField::*;
+        use self::Ipv6HeaderField::*;
         match *self {
             NextHeader => 6,
             HopLimit => 7,
@@ -171,7 +171,7 @@ impl HeaderField for Ip6HeaderField {
     }
 
     fn len(&self) -> u32 {
-        use self::Ip6HeaderField::*;
+        use self::Ipv6HeaderField::*;
         match *self {
             NextHeader => 1,
             HopLimit => 1,
@@ -258,40 +258,40 @@ impl HeaderField for UdpHeaderField {
 
 #[macro_export]
 macro_rules! nft_expr_payload {
-    (ip_field ttl) => {
-        $crate::expr::IpHeaderField::Ttl
+    (ipv4_field ttl) => {
+        $crate::expr::Ipv4HeaderField::Ttl
     };
-    (ip_field protocol) => {
-        $crate::expr::IpHeaderField::Protocol
+    (ipv4_field protocol) => {
+        $crate::expr::Ipv4HeaderField::Protocol
     };
-    (ip_field saddr) => {
-        $crate::expr::IpHeaderField::Saddr
+    (ipv4_field saddr) => {
+        $crate::expr::Ipv4HeaderField::Saddr
     };
-    (ip_field daddr) => {
-        $crate::expr::IpHeaderField::Daddr
-    };
-
-    (ip6_field nextheader) => {
-        $crate::expr::Ip6HeaderField::NextHeader
-    };
-    (ip6_field hoplimit) => {
-        $crate::expr::Ip6HeaderField::HopLimit
-    };
-    (ip6_field saddr) => {
-        $crate::expr::Ip6HeaderField::Saddr
-    };
-    (ip6_field daddr) => {
-        $crate::expr::Ip6HeaderField::Daddr
+    (ipv4_field daddr) => {
+        $crate::expr::Ipv4HeaderField::Daddr
     };
 
-    (ip $field:ident) => {
-        $crate::expr::Payload::Network($crate::expr::NetworkHeaderField::Ip(
-            nft_expr_payload!(ip_field $field),
+    (ipv6_field nextheader) => {
+        $crate::expr::Ipv6HeaderField::NextHeader
+    };
+    (ipv6_field hoplimit) => {
+        $crate::expr::Ipv6HeaderField::HopLimit
+    };
+    (ipv6_field saddr) => {
+        $crate::expr::Ipv6HeaderField::Saddr
+    };
+    (ipv6_field daddr) => {
+        $crate::expr::Ipv6HeaderField::Daddr
+    };
+
+    (ipv4 $field:ident) => {
+        $crate::expr::Payload::Network($crate::expr::NetworkHeaderField::Ipv4(
+            nft_expr_payload!(ipv4_field $field),
         ))
     };
-    (ip6 $field:ident) => {
-        $crate::expr::Payload::Network($crate::expr::NetworkHeaderField::Ip6(
-            nft_expr_payload!(ip6_field $field),
+    (ipv6 $field:ident) => {
+        $crate::expr::Payload::Network($crate::expr::NetworkHeaderField::Ipv6(
+            nft_expr_payload!(ipv6_field $field),
         ))
     };
 
