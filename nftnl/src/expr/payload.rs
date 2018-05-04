@@ -1,5 +1,5 @@
 use libc;
-use nftnl_sys as sys;
+use nftnl_sys::{self as sys, c_char};
 
 use super::Expression;
 use {ErrorKind, Result};
@@ -51,7 +51,7 @@ impl HeaderField for Payload {
 impl Expression for Payload {
     fn to_expr(&self) -> Result<*mut sys::nftnl_expr> {
         unsafe {
-            let expr = sys::nftnl_expr_alloc(b"payload\0" as *const _ as *const i8);
+            let expr = sys::nftnl_expr_alloc(b"payload\0" as *const _ as *const c_char);
             if expr.is_null() {
                 bail!(ErrorKind::AllocationError);
             }

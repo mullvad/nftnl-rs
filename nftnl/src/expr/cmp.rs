@@ -1,10 +1,10 @@
 use libc;
-use nftnl_sys::{self as sys, c_void};
+use nftnl_sys::{self as sys, c_char, c_void};
 
 use std::borrow::Cow;
 use std::ffi::CString;
-use std::slice;
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
+use std::slice;
 
 use super::Expression;
 use {ErrorKind, Result};
@@ -58,7 +58,7 @@ impl<T: ToSlice> Cmp<T> {
 impl<T: ToSlice> Expression for Cmp<T> {
     fn to_expr(&self) -> Result<*mut sys::nftnl_expr> {
         unsafe {
-            let expr = sys::nftnl_expr_alloc(b"cmp\0" as *const _ as *const i8);
+            let expr = sys::nftnl_expr_alloc(b"cmp\0" as *const _ as *const c_char);
             if expr.is_null() {
                 bail!(ErrorKind::AllocationError);
             }
