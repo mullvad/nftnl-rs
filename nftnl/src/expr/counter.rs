@@ -17,10 +17,3 @@ impl Expression for Counter {
         }
     }
 }
-
-#[macro_export]
-macro_rules! nft_expr_counter {
-    () => {
-        $crate::expr::Counter
-    };
-}

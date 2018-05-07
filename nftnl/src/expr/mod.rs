@@ -24,7 +24,7 @@ macro_rules! nft_expr {
         nft_expr_cmp!($op $data)
     };
     (counter) => {
-        nft_expr_counter!()
+        $crate::expr::Counter
     };
     (meta $expr:ident) => {
         nft_expr_meta!($expr)
