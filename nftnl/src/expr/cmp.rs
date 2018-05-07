@@ -86,26 +86,26 @@ impl<T: ToSlice> Expression for Cmp<T> {
 
 #[macro_export]
 macro_rules! nft_expr_cmp {
-    (==) => {
+    (@cmp_op ==) => {
         $crate::expr::CmpOp::Eq
     };
-    (!=) => {
+    (@cmp_op !=) => {
         $crate::expr::CmpOp::Neq
     };
-    (<) => {
+    (@cmp_op <) => {
         $crate::expr::CmpOp::Lt
     };
-    (<=) => {
+    (@cmp_op <=) => {
         $crate::expr::CmpOp::Lte
     };
-    (>) => {
+    (@cmp_op >) => {
         $crate::expr::CmpOp::Gt
     };
-    (>=) => {
+    (@cmp_op >=) => {
         $crate::expr::CmpOp::Gte
     };
     ($op:tt $data:expr) => {
-        $crate::expr::Cmp::new(nft_expr_cmp!($op), $data)
+        $crate::expr::Cmp::new(nft_expr_cmp!(@cmp_op $op), $data)
     };
 }
 

@@ -258,68 +258,68 @@ impl HeaderField for UdpHeaderField {
 
 #[macro_export]
 macro_rules! nft_expr_payload {
-    (ipv4_field ttl) => {
+    (@ipv4_field ttl) => {
         $crate::expr::Ipv4HeaderField::Ttl
     };
-    (ipv4_field protocol) => {
+    (@ipv4_field protocol) => {
         $crate::expr::Ipv4HeaderField::Protocol
     };
-    (ipv4_field saddr) => {
+    (@ipv4_field saddr) => {
         $crate::expr::Ipv4HeaderField::Saddr
     };
-    (ipv4_field daddr) => {
+    (@ipv4_field daddr) => {
         $crate::expr::Ipv4HeaderField::Daddr
     };
 
-    (ipv6_field nextheader) => {
+    (@ipv6_field nextheader) => {
         $crate::expr::Ipv6HeaderField::NextHeader
     };
-    (ipv6_field hoplimit) => {
+    (@ipv6_field hoplimit) => {
         $crate::expr::Ipv6HeaderField::HopLimit
     };
-    (ipv6_field saddr) => {
+    (@ipv6_field saddr) => {
         $crate::expr::Ipv6HeaderField::Saddr
     };
-    (ipv6_field daddr) => {
+    (@ipv6_field daddr) => {
         $crate::expr::Ipv6HeaderField::Daddr
+    };
+
+    (@tcp_field sport) => {
+        $crate::expr::TcpHeaderField::Sport
+    };
+    (@tcp_field dport) => {
+        $crate::expr::TcpHeaderField::Dport
+    };
+
+    (@udp_field sport) => {
+        $crate::expr::UdpHeaderField::Sport
+    };
+    (@udp_field dport) => {
+        $crate::expr::UdpHeaderField::Dport
+    };
+    (@udp_field len) => {
+        $crate::expr::UdpHeaderField::Len
     };
 
     (ipv4 $field:ident) => {
         $crate::expr::Payload::Network($crate::expr::NetworkHeaderField::Ipv4(
-            nft_expr_payload!(ipv4_field $field),
+            nft_expr_payload!(@ipv4_field $field),
         ))
     };
     (ipv6 $field:ident) => {
         $crate::expr::Payload::Network($crate::expr::NetworkHeaderField::Ipv6(
-            nft_expr_payload!(ipv6_field $field),
+            nft_expr_payload!(@ipv6_field $field),
         ))
-    };
-
-    (tcp_field sport) => {
-        $crate::expr::TcpHeaderField::Sport
-    };
-    (tcp_field dport) => {
-        $crate::expr::TcpHeaderField::Dport
-    };
-
-    (udp_field sport) => {
-        $crate::expr::UdpHeaderField::Sport
-    };
-    (udp_field dport) => {
-        $crate::expr::UdpHeaderField::Dport
-    };
-    (udp_field len) => {
-        $crate::expr::UdpHeaderField::Len
     };
 
     (tcp $field:ident) => {
         $crate::expr::Payload::Transport($crate::expr::TransportHeaderField::Tcp(
-            nft_expr_payload!(tcp_field $field),
+            nft_expr_payload!(@tcp_field $field),
         ))
     };
     (udp $field:ident) => {
         $crate::expr::Payload::Transport($crate::expr::TransportHeaderField::Udp(
-            nft_expr_payload!(udp_field $field),
+            nft_expr_payload!(@udp_field $field),
         ))
     };
 }
