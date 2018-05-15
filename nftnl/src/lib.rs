@@ -3,6 +3,8 @@ pub extern crate nftnl_sys;
 #[macro_use]
 extern crate error_chain;
 extern crate libc;
+#[macro_use]
+extern crate log;
 
 use nftnl_sys::c_void;
 
@@ -12,6 +14,7 @@ error_chain! {
     }
 }
 
+pub mod expr;
 
 mod table;
 pub use table::Table;
@@ -19,6 +22,8 @@ pub use table::Table;
 mod chain;
 pub use chain::{Chain, Hook, Priority};
 
+mod rule;
+pub use rule::Rule;
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub enum MsgType {
