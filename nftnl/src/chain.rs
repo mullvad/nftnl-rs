@@ -39,9 +39,7 @@ impl<'a> Chain<'a> {
     pub fn new<T: AsRef<CStr>>(name: &T, table: &'a Table) -> Result<Chain<'a>> {
         unsafe {
             let chain = sys::nftnl_chain_alloc();
-            if chain.is_null() {
-                bail!(ErrorKind::AllocationError);
-            }
+            ensure!(!chain.is_null(), ErrorKind::AllocationError);
 
             sys::nftnl_chain_set_str(
                 chain,

@@ -28,9 +28,7 @@ impl Batch {
 
     pub fn with_page_size(batch_page_size: u32) -> Result<Self> {
         let batch = unsafe { sys::nftnl_batch_alloc(batch_page_size, ::nft_nlmsg_maxsize()) };
-        if batch.is_null() {
-            bail!(ErrorKind::AllocationError);
-        }
+        ensure!(!batch.is_null(), ErrorKind::AllocationError);
         let mut this = Batch { batch, seq: 1 };
         this.write_begin_msg()?;
         Ok(this)

@@ -52,9 +52,7 @@ impl Expression for Payload {
     fn to_expr(&self) -> Result<*mut sys::nftnl_expr> {
         unsafe {
             let expr = sys::nftnl_expr_alloc(b"payload\0" as *const _ as *const c_char);
-            if expr.is_null() {
-                bail!(ErrorKind::AllocationError);
-            }
+            ensure!(!expr.is_null(), ErrorKind::AllocationError);
 
             sys::nftnl_expr_set_u32(expr, sys::NFTNL_EXPR_PAYLOAD_BASE as u16, self.base());
             sys::nftnl_expr_set_u32(expr, sys::NFTNL_EXPR_PAYLOAD_OFFSET as u16, self.offset());
