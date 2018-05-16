@@ -10,9 +10,7 @@ impl Expression for Counter {
     fn to_expr(&self) -> Result<*mut sys::nftnl_expr> {
         unsafe {
             let expr = sys::nftnl_expr_alloc(b"counter\0" as *const _ as *const c_char);
-            if expr.is_null() {
-                bail!(ErrorKind::AllocationError);
-            }
+            ensure!(!expr.is_null(), ErrorKind::AllocationError);
             Ok(expr)
         }
     }

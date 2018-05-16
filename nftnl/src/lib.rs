@@ -11,8 +11,13 @@ use nftnl_sys::c_void;
 error_chain! {
     errors {
         AllocationError { description("Unable to allocate memory") }
+        BatchIsFull { description("Not enough room in the batch") }
+        NetlinkError { description("Error while communicating with netlink") }
     }
 }
+
+mod batch;
+pub use batch::{batch_is_supported, default_batch_page_size, Batch, FinalizedBatch};
 
 pub mod expr;
 

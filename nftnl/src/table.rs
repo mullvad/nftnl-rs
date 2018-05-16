@@ -20,9 +20,7 @@ impl Table {
     pub fn new<T: AsRef<CStr>>(name: &T, family: ProtoFamily) -> Result<Table> {
         unsafe {
             let table = sys::nftnl_table_alloc();
-            if table.is_null() {
-                bail!(ErrorKind::AllocationError);
-            }
+            ensure!(!table.is_null(), ErrorKind::AllocationError);
 
             sys::nftnl_table_set_str(table, sys::NFTNL_TABLE_NAME as u16, name.as_ref().as_ptr());
             sys::nftnl_table_set_u32(table, sys::NFTNL_TABLE_FAMILY as u16, family as u32);

@@ -14,9 +14,7 @@ impl<'a> Rule<'a> {
     pub fn new(chain: &'a Chain) -> Result<Rule<'a>> {
         unsafe {
             let rule = sys::nftnl_rule_alloc();
-            if rule.is_null() {
-                bail!(ErrorKind::AllocationError);
-            }
+            ensure!(!rule.is_null(), ErrorKind::AllocationError);
 
             sys::nftnl_rule_set_str(
                 rule,
