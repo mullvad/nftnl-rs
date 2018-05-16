@@ -18,6 +18,9 @@ pub use self::counter::*;
 mod immediate;
 pub use self::immediate::*;
 
+mod lookup;
+pub use self::lookup::*;
+
 mod meta;
 pub use self::meta::*;
 
@@ -40,6 +43,9 @@ macro_rules! nft_expr {
     };
     (verdict $verdict:ident $chain:expr) => {
         nft_expr_verdict!($verdict $chain)
+    };
+    (lookup $set:expr) => {
+        nft_expr_lookup!($set)
     };
     (meta $expr:ident) => {
         nft_expr_meta!($expr)
