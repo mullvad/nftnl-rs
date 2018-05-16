@@ -12,6 +12,9 @@ pub use self::cmp::*;
 mod counter;
 pub use self::counter::*;
 
+mod lookup;
+pub use self::lookup::*;
+
 mod meta;
 pub use self::meta::*;
 
@@ -25,6 +28,9 @@ macro_rules! nft_expr {
     };
     (counter) => {
         $crate::expr::Counter
+    };
+    (lookup $set:expr) => {
+        nft_expr_lookup!($set)
     };
     (meta $expr:ident) => {
         nft_expr_meta!($expr)
