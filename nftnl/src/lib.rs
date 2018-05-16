@@ -30,6 +30,8 @@ pub use chain::{Chain, Hook, Priority};
 mod rule;
 pub use rule::Rule;
 
+pub mod set;
+
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub enum MsgType {
     Add,
