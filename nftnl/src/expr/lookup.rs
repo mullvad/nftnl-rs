@@ -39,9 +39,11 @@ impl Expression for Lookup {
             );
             sys::nftnl_expr_set_u32(expr, sys::NFTNL_EXPR_LOOKUP_SET_ID as u16, self.set_id);
 
+            // This code is left here since it's quite likely we need it again when we get further
             // if self.reverse {
-            // sys::nftnl_expr_set_u32(expr, sys::NFTNL_EXPR_LOOKUP_FLAGS as u16,
-            // libc::NFT_LOOKUP_F_INV as u32); }
+            //     sys::nftnl_expr_set_u32(expr, sys::NFTNL_EXPR_LOOKUP_FLAGS as u16,
+            //         libc::NFT_LOOKUP_F_INV as u32);
+            // }
 
             Ok(expr)
         }

@@ -20,7 +20,7 @@ macro_rules! nft_set {
     ($name:expr, $id:expr, $table:expr, $family:expr; { $($value:expr,)* }) => {{
         let mut set = nft_set!{$name, $id, $table, $family}.expect("Set allocation failed");
         $(
-            set.add($value).expect("Unable to add to set in macro");
+            set.add($value).expect(stringify!("Unable to add $value to set $name"));
         )*
         set
     }};
@@ -55,13 +55,12 @@ impl<'a, K> Set<'a, K> {
             sys::nftnl_set_set_u32(set, sys::NFTNL_SET_KEY_TYPE as u16, K::TYPE);
             sys::nftnl_set_set_u32(set, sys::NFTNL_SET_KEY_LEN as u16, K::LEN);
 
-            let this = Set {
+            Ok(Set {
                 set,
                 table,
                 family,
                 _marker: ::std::marker::PhantomData,
-            };
-            Ok(this)
+            })
         }
     }
 
@@ -75,7 +74,7 @@ impl<'a, K> Set<'a, K> {
 
             let data = key.data();
             let data_len = data.len() as u32;
-            debug!("Adding key {:?} with len {}", data, data_len);
+            trace!("Adding key {:?} with len {}", data, data_len);
             sys::nftnl_set_elem_set(
                 elem,
                 sys::NFTNL_SET_ELEM_KEY as u16,
