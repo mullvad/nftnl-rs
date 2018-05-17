@@ -14,10 +14,10 @@ macro_rules! nft_set {
     ($name:expr, $id:expr, $table:expr, $family:expr) => {
         $crate::set::Set::new($name, $id, $table, $family)
     };
-    ($name:expr, $id:expr, $table:expr, $family:expr; { }) => {
+    ($name:expr, $id:expr, $table:expr, $family:expr; [ ]) => {
         nft_set!{$name, $id, $table, $family}
     };
-    ($name:expr, $id:expr, $table:expr, $family:expr; { $($value:expr,)* }) => {{
+    ($name:expr, $id:expr, $table:expr, $family:expr; [ $($value:expr,)* ]) => {{
         let mut set = nft_set!{$name, $id, $table, $family}.expect("Set allocation failed");
         $(
             set.add($value).expect(stringify!("Unable to add $value to set $name"));
