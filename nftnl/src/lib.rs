@@ -1,6 +1,8 @@
 pub extern crate nftnl_sys;
 
 #[macro_use]
+extern crate bitflags;
+#[macro_use]
 extern crate error_chain;
 extern crate libc;
 #[macro_use]

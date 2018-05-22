@@ -14,6 +14,7 @@ nftnl-1-0-8 = ["nftnl-sys/nftnl-1-0-8"]
 nftnl-1-0-9 = ["nftnl-sys/nftnl-1-0-9"]
 
 [dependencies]
+bitflags = "1.0"
 error-chain = "0.11"
 libc = "0.2.40"
 log = "0.4"
