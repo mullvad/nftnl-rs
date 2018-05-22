@@ -15,6 +15,9 @@ pub use self::cmp::*;
 mod counter;
 pub use self::counter::*;
 
+pub mod ct;
+pub use self::ct::Conntrack;
+
 mod immediate;
 pub use self::immediate::*;
 
@@ -37,6 +40,9 @@ macro_rules! nft_expr {
     };
     (counter) => {
         $crate::expr::Counter
+    };
+    (ct $key:ident) => {
+        nft_expr_ct!($key)
     };
     (verdict $verdict:ident) => {
         nft_expr_verdict!($verdict)
