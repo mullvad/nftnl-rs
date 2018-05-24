@@ -200,6 +200,7 @@ impl<'a> ToSlice for &'a str {
 ///
 /// [`Meta::IifName`]: enum.Meta.html#variant.IifName
 /// [`Meta::OifName`]: enum.Meta.html#variant.OifName
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub enum InterfaceName {
     /// Interface name must be exactly the value of the `CString`.
     Exact(CString),
@@ -210,7 +211,17 @@ pub enum InterfaceName {
     StartingWith(CString),
 }
 
-impl<'a> ToSlice for InterfaceName {
+impl ToSlice for InterfaceName {
+    fn to_slice(&self) -> Cow<[u8]> {
+        let bytes = match *self {
+            InterfaceName::Exact(ref name) => name.as_bytes_with_nul(),
+            InterfaceName::StartingWith(ref name) => name.as_bytes(),
+        };
+        Cow::from(bytes)
+    }
+}
+
+impl<'a> ToSlice for &'a InterfaceName {
     fn to_slice(&self) -> Cow<[u8]> {
         let bytes = match *self {
             InterfaceName::Exact(ref name) => name.as_bytes_with_nul(),

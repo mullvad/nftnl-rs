@@ -1,5 +1,5 @@
 use libc;
-use nftnl_sys::{self as sys, c_void, c_char};
+use nftnl_sys::{self as sys, c_char, c_void};
 
 use super::Expression;
 use expr::cmp::ToSlice;
