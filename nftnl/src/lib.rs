@@ -27,7 +27,7 @@ mod table;
 pub use table::Table;
 
 mod chain;
-pub use chain::{Chain, Hook, Priority};
+pub use chain::{Chain, Hook, Policy, Priority};
 
 mod rule;
 pub use rule::Rule;

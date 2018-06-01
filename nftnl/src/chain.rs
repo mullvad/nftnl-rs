@@ -10,7 +10,7 @@ use {ErrorKind, MsgType, Result};
 pub type Priority = u32;
 
 /// The netfilter event hooks a chain can register for.
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 #[repr(u16)]
 pub enum Hook {
     PreRouting = libc::NF_INET_PRE_ROUTING as u16,
@@ -18,6 +18,15 @@ pub enum Hook {
     Forward = libc::NF_INET_FORWARD as u16,
     Out = libc::NF_INET_LOCAL_OUT as u16,
     PostRouting = libc::NF_INET_POST_ROUTING as u16,
+}
+
+/// A chain policy. Decides what to do with a packet that was processed by the chain but did not
+/// match any rules.
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+#[repr(u32)]
+pub enum Policy {
+    Accept = libc::NF_ACCEPT as u32,
+    Drop = libc::NF_DROP as u32,
 }
 
 /// Abstraction of a `nftnl_chain`. Chains reside inside [`Table`]s and they hold `Rule`s.
@@ -62,6 +71,12 @@ impl<'a> Chain<'a> {
         unsafe {
             sys::nftnl_chain_set_u32(self.chain, sys::NFTNL_CHAIN_HOOKNUM as u16, hook as u32);
             sys::nftnl_chain_set_u32(self.chain, sys::NFTNL_CHAIN_PRIO as u16, priority);
+        }
+    }
+
+    pub fn set_policy(&mut self, policy: Policy) {
+        unsafe {
+            sys::nftnl_chain_set_u32(self.chain, sys::NFTNL_CHAIN_POLICY as u16, policy as u32);
         }
     }
 
