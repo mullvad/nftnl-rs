@@ -1,6 +1,9 @@
 extern crate pkg_config;
 
-#[cfg(feature = "nftnl-1-0-9")]
+#[cfg(feature = "nftnl-1-1-0")]
+const MIN_VERSION: &str = "1.1.0";
+
+#[cfg(all(feature = "nftnl-1-0-9", not(feature = "nftnl-1-1-0")))]
 const MIN_VERSION: &str = "1.0.9";
 
 #[cfg(all(feature = "nftnl-1-0-8", not(feature = "nftnl-1-0-9")))]
