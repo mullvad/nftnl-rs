@@ -18,8 +18,13 @@ const MIN_VERSION: &str = "1.0.7";
 #[cfg(not(feature = "nftnl-1-0-7"))]
 const MIN_VERSION: &str = "1.0.6";
 
+fn get_env(var: &'static str) -> Option<PathBuf> {
+    println!("cargo:rerun-if-env-changed={}", var);
+    env::var_os(var).map(PathBuf::from)
+}
+
 fn main() {
-    if let Ok(lib_dir) = env::var("LIBNFTNL_LIB_DIR").map(PathBuf::from) {
+    if let Some(lib_dir) = get_env("LIBNFTNL_LIB_DIR") {
         if !lib_dir.is_dir() {
             panic!(
                 "libnftnl library directory does not exist: {}",
@@ -37,7 +42,7 @@ fn main() {
             .unwrap();
     }
 
-    if let Ok(lib_dir) = env::var("LIBMNL_LIB_DIR").map(PathBuf::from) {
+    if let Some(lib_dir) = get_env("LIBMNL_LIB_DIR") {
         if !lib_dir.is_dir() {
             panic!(
                 "libmnl library directory does not exist: {}",
