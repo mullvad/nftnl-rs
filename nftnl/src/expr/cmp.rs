@@ -27,9 +27,9 @@ pub enum CmpOp {
 }
 
 impl CmpOp {
-    pub fn to_raw(&self) -> u32 {
+    pub fn to_raw(self) -> u32 {
         use self::CmpOp::*;
-        match *self {
+        match self {
             Eq => libc::NFT_CMP_EQ as u32,
             Neq => libc::NFT_CMP_NEQ as u32,
             Lt => libc::NFT_CMP_LT as u32,

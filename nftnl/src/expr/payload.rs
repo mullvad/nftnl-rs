@@ -19,8 +19,8 @@ pub enum Payload {
 
 
 impl Payload {
-    fn base(&self) -> u32 {
-        match *self {
+    fn base(self) -> u32 {
+        match self {
             // Payload::LinkLayer(_) => libc::NFT_PAYLOAD_LL_HEADER as u32,
             Payload::Network(_) => libc::NFT_PAYLOAD_NETWORK_HEADER as u32,
             Payload::Transport(_) => libc::NFT_PAYLOAD_TRANSPORT_HEADER as u32,

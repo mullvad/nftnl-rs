@@ -48,7 +48,7 @@ impl<'a> Rule<'a> {
         }
     }
 
-    pub fn add_expr<E: Expression>(&mut self, expr: E) -> Result<()> {
+    pub fn add_expr(&mut self, expr: &impl Expression) -> Result<()> {
         unsafe { sys::nftnl_rule_add_expr(self.rule, expr.to_expr()?) }
         Ok(())
     }
