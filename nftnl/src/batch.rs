@@ -94,7 +94,7 @@ pub struct FinalizedBatch {
 }
 
 impl FinalizedBatch {
-    pub fn iter<'a>(&'a self) -> Iter<'a> {
+    pub fn iter(&self) -> Iter {
         let num_pages = unsafe { sys::nftnl_batch_iovec_len(self.batch.as_raw_batch()) as usize };
         let mut iovecs = vec![
             libc::iovec {
