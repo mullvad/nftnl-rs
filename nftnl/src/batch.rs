@@ -1,5 +1,5 @@
 use libc;
-use nftnl_sys::{self as sys, c_void};
+use nftnl_sys::{self as sys, libc::c_void};
 
 use std::ptr;
 use {ErrorKind, MsgType, NlMsg, Result};
@@ -103,7 +103,7 @@ impl FinalizedBatch {
             };
             num_pages
         ];
-        let iovecs_ptr = iovecs.as_mut_ptr() as *mut sys::iovec;
+        let iovecs_ptr = iovecs.as_mut_ptr() as *mut sys::libc::iovec;
         unsafe {
             sys::nftnl_batch_iovec(self.batch.as_raw_batch(), iovecs_ptr, num_pages as u32);
         }

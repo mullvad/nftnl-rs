@@ -1,5 +1,5 @@
 use libc;
-use nftnl_sys::{self as sys, c_char};
+use nftnl_sys::{self as sys, libc::c_char};
 
 use std::ffi::CString;
 

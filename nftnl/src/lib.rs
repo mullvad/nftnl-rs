@@ -8,7 +8,7 @@ extern crate libc;
 #[macro_use]
 extern crate log;
 
-use nftnl_sys::c_void;
+use nftnl_sys::libc::c_void;
 
 pub use error_chain::ChainedError;
 error_chain! {

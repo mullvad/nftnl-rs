@@ -1,5 +1,5 @@
 use super::Expression;
-use nftnl_sys::{self as sys, c_char};
+use nftnl_sys::{self as sys, libc::c_char};
 use {ErrorKind, Result};
 
 /// A counter expression adds a counter to the rule that is incremented to count number of packets

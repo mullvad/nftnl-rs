@@ -23,7 +23,7 @@ bindgen \
     --blacklist-type '^_IO_.+$' \
     --blacklist-type '^__.+$' \
     --blacklist-type 'nlmsghdr' \
-    --raw-line 'pub use libc::{c_char, c_int, c_void, iovec, nlmsghdr, FILE};' \
+    --raw-line 'use libc::{c_char, c_int, c_void, iovec, nlmsghdr, FILE};' \
     --raw-line 'use core::option::Option;' \
     --ctypes-prefix 'libc' \
     -o $BINDING_PATH \

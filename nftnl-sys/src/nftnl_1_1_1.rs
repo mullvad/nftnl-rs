@@ -252,6 +252,13 @@ extern "C" {
         type_: u32,
         flags: u32,
     ) -> c_int;
+
+    pub fn nftnl_expr_fprintf(
+        fp: *mut FILE,
+        expr: *const nftnl_expr,
+        type_: u32,
+        flags: u32,
+    ) -> c_int;
 }
 pub const NFTNL_EXPR_PAYLOAD_DREG: u32 = 1;
 pub const NFTNL_EXPR_PAYLOAD_BASE: u32 = 2;
@@ -266,6 +273,8 @@ pub const NFTNL_EXPR_NG_DREG: u32 = 1;
 pub const NFTNL_EXPR_NG_MODULUS: u32 = 2;
 pub const NFTNL_EXPR_NG_TYPE: u32 = 3;
 pub const NFTNL_EXPR_NG_OFFSET: u32 = 4;
+pub const NFTNL_EXPR_NG_SET_NAME: u32 = 5;
+pub const NFTNL_EXPR_NG_SET_ID: u32 = 6;
 
 pub const NFTNL_EXPR_META_KEY: u32 = 1;
 pub const NFTNL_EXPR_META_DREG: u32 = 2;
@@ -273,6 +282,9 @@ pub const NFTNL_EXPR_META_SREG: u32 = 3;
 
 pub const NFTNL_EXPR_RT_KEY: u32 = 1;
 pub const NFTNL_EXPR_RT_DREG: u32 = 2;
+
+pub const NFTNL_EXPR_SOCKET_KEY: u32 = 1;
+pub const NFTNL_EXPR_SOCKET_DREG: u32 = 2;
 
 pub const NFTNL_EXPR_CMP_SREG: u32 = 1;
 pub const NFTNL_EXPR_CMP_OP: u32 = 2;
@@ -290,6 +302,9 @@ pub const NFTNL_EXPR_IMM_CHAIN: u32 = 4;
 
 pub const NFTNL_EXPR_CTR_PACKETS: u32 = 1;
 pub const NFTNL_EXPR_CTR_BYTES: u32 = 2;
+
+pub const NFTNL_EXPR_CONNLIMIT_COUNT: u32 = 1;
+pub const NFTNL_EXPR_CONNLIMIT_FLAGS: u32 = 2;
 
 pub const NFTNL_EXPR_BITWISE_SREG: u32 = 1;
 pub const NFTNL_EXPR_BITWISE_DREG: u32 = 2;
@@ -382,7 +397,11 @@ pub const NFTNL_EXPR_REDIR_FLAGS: u32 = 3;
 pub const NFTNL_EXPR_DUP_SREG_ADDR: u32 = 1;
 pub const NFTNL_EXPR_DUP_SREG_DEV: u32 = 2;
 
+pub const NFTNL_EXPR_FLOW_TABLE_NAME: u32 = 1;
+
 pub const NFTNL_EXPR_FWD_SREG_DEV: u32 = 1;
+pub const NFTNL_EXPR_FWD_SREG_ADDR: u32 = 2;
+pub const NFTNL_EXPR_FWD_NFPROTO: u32 = 3;
 
 pub const NFTNL_EXPR_HASH_SREG: u32 = 1;
 pub const NFTNL_EXPR_HASH_DREG: u32 = 2;
@@ -391,6 +410,8 @@ pub const NFTNL_EXPR_HASH_MODULUS: u32 = 4;
 pub const NFTNL_EXPR_HASH_SEED: u32 = 5;
 pub const NFTNL_EXPR_HASH_OFFSET: u32 = 6;
 pub const NFTNL_EXPR_HASH_TYPE: u32 = 7;
+pub const NFTNL_EXPR_HASH_SET_NAME: u32 = 8;
+pub const NFTNL_EXPR_HASH_SET_ID: u32 = 9;
 
 pub const NFTNL_EXPR_FIB_DREG: u32 = 1;
 pub const NFTNL_EXPR_FIB_RESULT: u32 = 2;
@@ -457,6 +478,7 @@ pub const NFTNL_OBJ_NAME: u32 = 1;
 pub const NFTNL_OBJ_TYPE: u32 = 2;
 pub const NFTNL_OBJ_FAMILY: u32 = 3;
 pub const NFTNL_OBJ_USE: u32 = 4;
+pub const NFTNL_OBJ_HANDLE: u32 = 5;
 pub const NFTNL_OBJ_BASE: u32 = 16;
 pub const __NFTNL_OBJ_MAX: u32 = 17;
 
@@ -695,6 +717,8 @@ extern "C" {
 
     pub fn nftnl_rule_list_add_tail(r: *mut nftnl_rule, list: *mut nftnl_rule_list);
 
+    pub fn nftnl_rule_list_insert_at(r: *mut nftnl_rule, pos: *mut nftnl_rule);
+
     pub fn nftnl_rule_list_del(r: *mut nftnl_rule);
 
     pub fn nftnl_rule_list_foreach(
@@ -825,7 +849,8 @@ pub const NFTNL_SET_TIMEOUT: nftnl_set_attr = 11;
 pub const NFTNL_SET_GC_INTERVAL: nftnl_set_attr = 12;
 pub const NFTNL_SET_USERDATA: nftnl_set_attr = 13;
 pub const NFTNL_SET_OBJ_TYPE: nftnl_set_attr = 14;
-pub const __NFTNL_SET_MAX: nftnl_set_attr = 15;
+pub const NFTNL_SET_HANDLE: nftnl_set_attr = 15;
+pub const __NFTNL_SET_MAX: nftnl_set_attr = 16;
 pub type nftnl_set_attr = u32;
 #[repr(C)]
 pub struct nftnl_set(c_void);
@@ -1050,7 +1075,8 @@ pub const NFTNL_TABLE_NAME: nftnl_table_attr = 0;
 pub const NFTNL_TABLE_FAMILY: nftnl_table_attr = 1;
 pub const NFTNL_TABLE_FLAGS: nftnl_table_attr = 2;
 pub const NFTNL_TABLE_USE: nftnl_table_attr = 3;
-pub const __NFTNL_TABLE_MAX: nftnl_table_attr = 4;
+pub const NFTNL_TABLE_HANDLE: nftnl_table_attr = 4;
+pub const __NFTNL_TABLE_MAX: nftnl_table_attr = 5;
 pub type nftnl_table_attr = u32;
 extern "C" {
     pub fn nftnl_table_is_set(t: *const nftnl_table, attr: u16) -> bool;
@@ -1078,11 +1104,15 @@ extern "C" {
 
     pub fn nftnl_table_set_u32(t: *mut nftnl_table, attr: u16, data: u32);
 
+    pub fn nftnl_table_set_u64(t: *mut nftnl_table, attr: u16, data: u64);
+
     pub fn nftnl_table_set_str(t: *mut nftnl_table, attr: u16, str: *const c_char) -> c_int;
 
     pub fn nftnl_table_get_u8(t: *const nftnl_table, attr: u16) -> u8;
 
     pub fn nftnl_table_get_u32(t: *const nftnl_table, attr: u16) -> u32;
+
+    pub fn nftnl_table_get_u64(t: *const nftnl_table, attr: u16) -> u64;
 
     pub fn nftnl_table_get_str(t: *const nftnl_table, attr: u16) -> *const c_char;
 
