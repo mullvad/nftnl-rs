@@ -1,5 +1,5 @@
 use libc;
-use nftnl_sys::{self as sys, c_void};
+use nftnl_sys::{self as sys, libc::c_void};
 
 use std::cell::Cell;
 use std::ffi::CStr;
