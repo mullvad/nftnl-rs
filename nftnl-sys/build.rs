@@ -3,7 +3,10 @@ extern crate pkg_config;
 use std::env;
 use std::path::PathBuf;
 
-#[cfg(feature = "nftnl-1-1-0")]
+#[cfg(feature = "nftnl-1-1-1")]
+const MIN_VERSION: &str = "1.1.1";
+
+#[cfg(all(feature = "nftnl-1-1-0", not(feature = "nftnl-1-1-1")))]
 const MIN_VERSION: &str = "1.1.0";
 
 #[cfg(all(feature = "nftnl-1-0-9", not(feature = "nftnl-1-1-0")))]

@@ -20,9 +20,14 @@
 
 pub extern crate libc;
 
-#[cfg(feature = "nftnl-1-1-0")]
+#[cfg(feature = "nftnl-1-1-1")]
+mod nftnl_1_1_1;
+#[cfg(feature = "nftnl-1-1-1")]
+pub use nftnl_1_1_1::*;
+
+#[cfg(all(feature = "nftnl-1-1-0", not(feature = "nftnl-1-1-1")))]
 mod nftnl_1_1_0;
-#[cfg(feature = "nftnl-1-1-0")]
+#[cfg(all(feature = "nftnl-1-1-0", not(feature = "nftnl-1-1-1")))]
 pub use nftnl_1_1_0::*;
 
 #[cfg(all(feature = "nftnl-1-0-9", not(feature = "nftnl-1-1-0")))]
