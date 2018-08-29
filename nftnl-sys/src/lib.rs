@@ -18,7 +18,7 @@
 #![cfg(target_os = "linux")]
 #![allow(non_camel_case_types)]
 
-extern crate libc;
+pub extern crate libc;
 
 #[cfg(feature = "nftnl-1-1-0")]
 mod nftnl_1_1_0;
