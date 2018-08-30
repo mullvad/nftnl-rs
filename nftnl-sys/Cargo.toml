@@ -5,6 +5,7 @@ authors = ["Mullvad VPN <admin@mullvad.net>", "Linus Färnstrand <linus@mullvad.
 license = "MIT/Apache-2.0"
 description = "Low level FFI bindings to libnftnl. Provides low-level userspace access to the in-kernel nf_tables subsystem"
 repository = "https://github.com/mullvad/nftnl-rs"
+readme = "README.md"
 keywords = ["nftables", "nft", "firewall", "iptables", "netfilter"]
 categories = ["network-programming", "os::unix-apis", "external-ffi-bindings", "no-std"]
 
