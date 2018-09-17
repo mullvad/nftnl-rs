@@ -15,6 +15,8 @@ pub struct Bitwise<M: ToSlice, X: ToSlice> {
 }
 
 impl<M: ToSlice, X: ToSlice> Bitwise<M, X> {
+    /// Returns a new `Bitwise` instance that first masks the value it's applied to with `mask`
+    /// and then performs xor with the value in `xor`.
     pub fn new(mask: M, xor: X) -> Self {
         Self { mask, xor }
     }
