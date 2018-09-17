@@ -30,6 +30,7 @@ pub enum CmpOp {
 }
 
 impl CmpOp {
+    /// Returns the corresponding `NFT_*` constant for this comparison operation.
     pub fn to_raw(self) -> u32 {
         use self::CmpOp::*;
         match self {

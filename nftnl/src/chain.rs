@@ -13,10 +13,15 @@ pub type Priority = u32;
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 #[repr(u16)]
 pub enum Hook {
+    /// Hook into the pre-routing stage of netfilter. Corresponds to `NF_INET_PRE_ROUTING`.
     PreRouting = libc::NF_INET_PRE_ROUTING as u16,
+    /// Hook into the input stage of netfilter. Corresponds to `NF_INET_LOCAL_IN`.
     In = libc::NF_INET_LOCAL_IN as u16,
+    /// Hook into the forward stage of netfilter. Corresponds to `NF_INET_FORWARD`.
     Forward = libc::NF_INET_FORWARD as u16,
+    /// Hook into the output stage of netfilter. Corresponds to `NF_INET_LOCAL_OUT`.
     Out = libc::NF_INET_LOCAL_OUT as u16,
+    /// Hook into the post-routing stage of netfilter. Corresponds to `NF_INET_POST_ROUTING`.
     PostRouting = libc::NF_INET_POST_ROUTING as u16,
 }
 
@@ -25,16 +30,19 @@ pub enum Hook {
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 #[repr(u32)]
 pub enum Policy {
+    /// Accept the packet.
     Accept = libc::NF_ACCEPT as u32,
+    /// Drop the packet.
     Drop = libc::NF_DROP as u32,
 }
 
-/// Abstraction of a `nftnl_chain`. Chains reside inside [`Table`]s and they hold `Rule`s.
+/// Abstraction of a `nftnl_chain`. Chains reside inside [`Table`]s and they hold [`Rule`]s.
 ///
 /// There are two types of chains, "base chain" and "regular chain". See [`set_hook`] for more
 /// details.
 ///
 /// [`Table`]: struct.Table.html
+/// [`Rule`]: struct.Rule.html
 /// [`set_hook`]: #method.set_hook
 pub struct Chain<'a> {
     chain: *mut sys::nftnl_chain,
@@ -74,12 +82,15 @@ impl<'a> Chain<'a> {
         }
     }
 
+    /// Sets the default policy for this chain. That means what action netfilter will apply to
+    /// packets processed by this chain, but that did not match any rules in it.
     pub fn set_policy(&mut self, policy: Policy) {
         unsafe {
             sys::nftnl_chain_set_u32(self.chain, sys::NFTNL_CHAIN_POLICY as u16, policy as u32);
         }
     }
 
+    /// Returns the name of this chain.
     pub fn get_name(&self) -> &CStr {
         unsafe {
             let ptr = sys::nftnl_chain_get_str(self.chain, sys::NFTNL_CHAIN_NAME as u16);
@@ -87,6 +98,9 @@ impl<'a> Chain<'a> {
         }
     }
 
+    /// Returns a reference to the [`Table`] this chain belongs to
+    ///
+    /// [`Table`]: struct.Table.html
     pub fn get_table(&self) -> &Table {
         self.table
     }

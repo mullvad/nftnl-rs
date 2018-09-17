@@ -23,6 +23,7 @@ pub enum Meta {
 }
 
 impl Meta {
+    /// Returns the corresponding `NFT_*` constant for this meta expression.
     pub fn to_raw_key(&self) -> u32 {
         use self::Meta::*;
         match *self {
