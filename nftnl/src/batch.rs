@@ -13,19 +13,22 @@ pub fn batch_is_supported() -> Result<bool> {
     }
 }
 
+/// A batch of netfilter messages to be performed in one atomic operation. Corresponds to
+/// `nftnl_batch` in libnftnl.
 pub struct Batch {
     batch: *mut sys::nftnl_batch,
     seq: u32,
 }
 
 impl Batch {
-    /// Creates a new nftnl batch with the [default page size]
+    /// Creates a new nftnl batch with the [default page size].
     ///
     /// [default page size]: fn.default_batch_page_size.html
     pub fn new() -> Result<Self> {
         Self::with_page_size(default_batch_page_size())
     }
 
+    /// Creates a new nftnl batch with the given batch size.
     pub fn with_page_size(batch_page_size: u32) -> Result<Self> {
         let batch = unsafe { sys::nftnl_batch_alloc(batch_page_size, ::nft_nlmsg_maxsize()) };
         ensure!(!batch.is_null(), ErrorKind::AllocationError);
@@ -34,12 +37,16 @@ impl Batch {
         Ok(this)
     }
 
+    /// Adds the given message to this batch.
     pub fn add<T: NlMsg>(&mut self, msg: &T, msg_type: MsgType) -> Result<()> {
         trace!("Writing NlMsg with seq {} to batch", self.seq);
         unsafe { msg.write(self.current(), self.seq, msg_type) };
         self.next()
     }
 
+    /// Adds all the messages in the given iterator to this batch. If any message fails to be added
+    /// the error for that failure is returned and all messages up until that message stays added
+    /// to the batch.
     pub fn add_iter<T, I>(&mut self, msg_iter: I, msg_type: MsgType) -> Result<()>
     where
         T: NlMsg,
@@ -51,6 +58,10 @@ impl Batch {
         Ok(())
     }
 
+    /// Adds the final end message to the batch and returns a [`FinalizedBatch`] that can be used
+    /// to send the messages to netfilter.
+    ///
+    /// [`FinalizedBatch`]: struct.FinalizedBatch.html
     pub fn finalize(mut self) -> Result<FinalizedBatch> {
         self.write_end_msg()?;
         Ok(FinalizedBatch { batch: self })
@@ -78,6 +89,7 @@ impl Batch {
         self.next()
     }
 
+    /// Returns the underlying `nftnl_batch` instance.
     pub fn as_raw_batch(&self) -> *mut sys::nftnl_batch {
         self.batch
     }
@@ -89,11 +101,19 @@ impl Drop for Batch {
     }
 }
 
+/// A wrapper over [`Batch`], guaranteed to start with a proper batch begin and end with a proper
+/// batch end message. Created from [`Batch::finalize`].
+///
+/// Can be turned into an iterator of the byte buffers to send to netlink to execute this batch.
+///
+/// [`Batch`]: struct.Batch.html
+/// [`Batch::finalize`]: struct.Batch.html#method.finalize
 pub struct FinalizedBatch {
     batch: Batch,
 }
 
 impl FinalizedBatch {
+    /// Returns the iterator over byte buffers to send to netlink.
     pub fn iter(&self) -> Iter {
         let num_pages = unsafe { sys::nftnl_batch_iovec_len(self.batch.as_raw_batch()) as usize };
         let mut iovecs = vec![
