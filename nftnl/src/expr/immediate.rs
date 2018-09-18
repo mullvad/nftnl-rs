@@ -17,8 +17,12 @@ pub enum Verdict {
     Queue,
     Continue,
     Break,
-    Jump { chain: CString },
-    Goto { chain: CString },
+    Jump {
+        chain: CString,
+    },
+    Goto {
+        chain: CString,
+    },
     Return,
 }
 
