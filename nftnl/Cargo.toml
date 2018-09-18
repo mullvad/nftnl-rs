@@ -22,3 +22,7 @@ error-chain = "0.12"
 libc = "0.2.40"
 log = "0.4"
 nftnl-sys = { path = "../nftnl-sys", version = "0.1" }
+
+[dev-dependencies]
+ipnetwork = "0.13"
+mnl = "0.1"
