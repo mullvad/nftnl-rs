@@ -1,8 +1,8 @@
 //! Adds a table, two chains and some rules to netfilter.
 //!
-//! This example uses `Verdict::Accept` everywhere. So even after running this the firewall won't
+//! This example uses `verdict accept` everywhere. So even after running this the firewall won't
 //! block anything. This is so anyone trying to run this does not end up in a strange state
-//! where they don't understand why their network is broken. Try changing to `Verdict::Drop` if
+//! where they don't understand why their network is broken. Try changing to `verdict drop` if
 //! you want to see the block working.
 //!
 //! Run the following to print out current active tables, chains and rules in netfilter. Must be
@@ -48,7 +48,7 @@ use std::net::Ipv4Addr;
 
 use ipnetwork::{IpNetwork, Ipv4Network};
 
-use nftnl::{expr::Verdict, Batch, Chain, ChainedError, FinalizedBatch, ProtoFamily, Rule, Table};
+use nftnl::{Batch, Chain, ChainedError, FinalizedBatch, ProtoFamily, Rule, Table};
 
 const TABLE_NAME: &str = "example-table";
 const OUT_CHAIN_NAME: &str = "chain-for-outgoing-packets";
@@ -107,7 +107,7 @@ fn main() -> Result<(), Error> {
 
     // Add a verdict expression to the rule. Any packet getting this far in the expression
     // processing without failing any expression will be given the verdict added here.
-    allow_loopback_in_rule.add_expr(&Verdict::Accept)?;
+    allow_loopback_in_rule.add_expr(&nft_expr!(verdict accept))?;
 
     // Add the rule to the batch.
     batch.add(&allow_loopback_in_rule, nftnl::MsgType::Add)?;
@@ -144,7 +144,7 @@ fn main() -> Result<(), Error> {
     block_out_to_private_net_rule.add_expr(&nft_expr!(counter))?;
 
     // Accept all the packets matching the rule so far.
-    block_out_to_private_net_rule.add_expr(&Verdict::Accept)?;
+    block_out_to_private_net_rule.add_expr(&nft_expr!(verdict accept))?;
 
     // Add the rule to the batch. Without this nothing would be sent over netlink and netfilter,
     // and all the work on `block_out_to_private_net_rule` so far would go to waste.
