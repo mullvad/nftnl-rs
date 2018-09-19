@@ -5,12 +5,16 @@ use chain::Chain;
 use expr::Expression;
 use {ErrorKind, MsgType, Result};
 
+/// A nftables firewall rule.
 pub struct Rule<'a> {
     rule: *mut sys::nftnl_rule,
     chain: &'a Chain<'a>,
 }
 
 impl<'a> Rule<'a> {
+    /// Creates a new rule object in the given [`Chain`].
+    ///
+    /// [`Chain`]: struct.Chain.html
     pub fn new(chain: &'a Chain) -> Result<Rule<'a>> {
         unsafe {
             let rule = sys::nftnl_rule_alloc();
@@ -36,6 +40,8 @@ impl<'a> Rule<'a> {
         }
     }
 
+    /// Sets the position of this rule within the chain it lives in. By default a new rule is added
+    /// to the end of the chain.
     pub fn set_position(&mut self, position: u64) {
         unsafe {
             sys::nftnl_rule_set_u64(self.rule, sys::NFTNL_RULE_POSITION as u16, position);
@@ -48,11 +54,17 @@ impl<'a> Rule<'a> {
         }
     }
 
+    /// Adds an expression to this rule. Expressions are evaluated from first to last added.
+    /// As soon as an expression does not match the packet it's being evaluated for, evaluation
+    /// stops and the packet is evaluated against the next rule in the chain.
     pub fn add_expr(&mut self, expr: &impl Expression) -> Result<()> {
         unsafe { sys::nftnl_rule_add_expr(self.rule, expr.to_expr()?) }
         Ok(())
     }
 
+    /// Returns a reference to the [`Chain`] this rule lives in.
+    ///
+    /// [`Chain`]: struct.Chain.html
     pub fn get_chain(&self) -> &Chain {
         self.chain
     }

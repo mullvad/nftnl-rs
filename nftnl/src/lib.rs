@@ -12,6 +12,13 @@
 //! Can be used to create and remove tables, chains, sets and rules from the nftables firewall,
 //! the successor to iptables.
 //!
+//! This library currently has quite rough edges and does not make adding and removing netfilter
+//! entries super easy and elegant. That is partly because the library needs more work, but also
+//! partly because nftables is super low level and extremely customizable, making it hard, and
+//! probably wrong, to try and create a too simple/limited wrapper. See examples for inspiration.
+//! One can also look at how the original project this crate was developed to support uses it:
+//! [Mullvad VPN app](https://github.com/mullvad/mullvadvpn-app)
+//!
 //! # Selecting version of `libnftnl`
 //!
 //! See the documentation for the corresponding sys crate for details: [`nftnl-sys`]
@@ -35,8 +42,11 @@ use nftnl_sys::libc::c_void;
 pub use error_chain::ChainedError;
 error_chain! {
     errors {
+        /// Unable to allocate memory
         AllocationError { description("Unable to allocate memory") }
+        /// Not enough room in the batch
         BatchIsFull { description("Not enough room in the batch") }
+        /// Error while communicating with netlink
         NetlinkError { description("Error while communicating with netlink") }
     }
 }
@@ -57,16 +67,29 @@ pub use rule::Rule;
 
 pub mod set;
 
+/// The type of the message as it's sent to netfilter. A message consists of an object, such as a
+/// [`Table`], [`Chain`] or [`Rule`] for example, and a [`MsgType`] to describe what to do with
+/// that object. If a [`Table`] object is sent with `MsgType::Add` then that table will be added
+/// to netfilter, if sent with `MsgType::Del` it will be removed.
+///
+/// [`Table`]: struct.Table.html
+/// [`Chain`]: struct.Chain.html
+/// [`Rule`]: struct.Rule.html
+/// [`MsgType`]: enum.MsgType.html
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub enum MsgType {
+    /// Add the object to netfilter.
     Add,
+    /// Remove the object from netfilter.
     Del,
 }
 
+/// Denotes a protocol. Used to specify which protocol a table or set belongs to.
 #[derive(Debug, Copy, Clone)]
 #[repr(u16)]
 pub enum ProtoFamily {
     Unspec = libc::NFPROTO_UNSPEC as u16,
+    /// Inet - Means both IPv4 and IPv6
     Inet = libc::NFPROTO_INET as u16,
     Ipv4 = libc::NFPROTO_IPV4 as u16,
     Arp = libc::NFPROTO_ARP as u16,

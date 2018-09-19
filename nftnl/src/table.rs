@@ -28,6 +28,7 @@ impl Table {
         }
     }
 
+    /// Returns the name of this table.
     pub fn get_name(&self) -> &CStr {
         unsafe {
             let ptr = sys::nftnl_table_get_str(self.table, sys::NFTNL_TABLE_NAME as u16);
@@ -35,6 +36,7 @@ impl Table {
         }
     }
 
+    /// Returns the protocol family for this table.
     pub fn get_family(&self) -> ProtoFamily {
         self.family
     }

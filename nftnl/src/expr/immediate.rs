@@ -10,13 +10,19 @@ use std::ffi::{CStr, CString};
 /// but here it's simplified to only represent a verdict.
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub enum Verdict {
+    /// Silently drop the packet.
     Drop,
+    /// Accept the packet and let it pass.
     Accept,
     Queue,
     Continue,
     Break,
-    Jump { chain: CString },
-    Goto { chain: CString },
+    Jump {
+        chain: CString,
+    },
+    Goto {
+        chain: CString,
+    },
     Return,
 }
 
