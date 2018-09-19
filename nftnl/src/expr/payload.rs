@@ -12,7 +12,7 @@ trait HeaderField {
 /// Payload expressions refer to data from the packet's payload.
 #[derive(Copy, Clone, Eq, PartialEq)]
 pub enum Payload {
-    // LinkLayer(LLHeaderField),
+    LinkLayer(LLHeaderField),
     Network(NetworkHeaderField),
     Transport(TransportHeaderField),
 }
@@ -21,7 +21,7 @@ pub enum Payload {
 impl Payload {
     fn base(self) -> u32 {
         match self {
-            // Payload::LinkLayer(_) => libc::NFT_PAYLOAD_LL_HEADER as u32,
+            Payload::LinkLayer(_) => libc::NFT_PAYLOAD_LL_HEADER as u32,
             Payload::Network(_) => libc::NFT_PAYLOAD_NETWORK_HEADER as u32,
             Payload::Transport(_) => libc::NFT_PAYLOAD_TRANSPORT_HEADER as u32,
         }
@@ -32,7 +32,7 @@ impl HeaderField for Payload {
     fn offset(&self) -> u32 {
         use self::Payload::*;
         match *self {
-            // LinkLayer(ref f) => f.offset(),
+            LinkLayer(ref f) => f.offset(),
             Network(ref f) => f.offset(),
             Transport(ref f) => f.offset(),
         }
@@ -41,7 +41,7 @@ impl HeaderField for Payload {
     fn len(&self) -> u32 {
         use self::Payload::*;
         match *self {
-            // LinkLayer(ref f) => f.len(),
+            LinkLayer(ref f) => f.len(),
             Network(ref f) => f.len(),
             Transport(ref f) => f.len(),
         }
@@ -68,32 +68,32 @@ impl Expression for Payload {
     }
 }
 
-// #[derive(Copy, Clone, Eq, PartialEq)]
-// pub enum LLHeaderField {
-//     Daddr,
-//     Saddr,
-//     EtherType,
-// }
+#[derive(Copy, Clone, Eq, PartialEq)]
+pub enum LLHeaderField {
+    Daddr,
+    Saddr,
+    EtherType,
+}
 
-// impl HeaderField for LLHeaderField {
-//     fn offset(&self) -> u32 {
-//         use self::LLHeaderField::*;
-//         match *self {
-//             Daddr => 0,
-//             Saddr => 6,
-//             EtherType => 12,
-//         }
-//     }
+impl HeaderField for LLHeaderField {
+    fn offset(&self) -> u32 {
+        use self::LLHeaderField::*;
+        match *self {
+            Daddr => 0,
+            Saddr => 6,
+            EtherType => 12,
+        }
+    }
 
-//     fn len(&self) -> u32 {
-//         use self::LLHeaderField::*;
-//         match *self {
-//             Daddr => 6,
-//             Saddr => 6,
-//             EtherType => 2,
-//         }
-//     }
-// }
+    fn len(&self) -> u32 {
+        use self::LLHeaderField::*;
+        match *self {
+            Daddr => 6,
+            Saddr => 6,
+            EtherType => 2,
+        }
+    }
+}
 
 #[derive(Copy, Clone, Eq, PartialEq)]
 pub enum NetworkHeaderField {
@@ -297,6 +297,16 @@ macro_rules! nft_expr_payload {
     };
     (@udp_field len) => {
         $crate::expr::UdpHeaderField::Len
+    };
+
+    (ethernet daddr) => {
+        $crate::expr::Payload::LinkLayer($crate::expr::LLHeaderField::Daddr)
+    };
+    (ethernet saddr) => {
+        $crate::expr::Payload::LinkLayer($crate::expr::LLHeaderField::Saddr)
+    };
+    (ethernet ethertype) => {
+        $crate::expr::Payload::LinkLayer($crate::expr::LLHeaderField::EtherType)
     };
 
     (ipv4 $field:ident) => {
