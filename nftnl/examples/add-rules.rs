@@ -17,14 +17,14 @@
 //!                 type filter hook output priority 0; policy accept;
 //!                 ip daddr 10.1.0.0/24 counter packets 0 bytes 0 accept
 //!         }
-//! 
+//!
 //!         chain chain-for-incoming-packets {
 //!                 type filter hook input priority 0; policy accept;
 //!                 iif "lo" accept
 //!         }
 //! }
 //! ```
-//! 
+//!
 //! Try pinging any IP in the network range denoted by the outgoing rule and see the counter
 //! increment:
 //! ```bash
