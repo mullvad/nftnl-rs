@@ -6,20 +6,26 @@ use {ErrorKind, Result};
 
 /// A meta expression refers to meta data associated with a packet.
 pub enum Meta {
-    /// Ethertype protocol value.
+    /// Packet ethertype protocol (skb->protocol), invalid in OUTPUT.
     Protocol,
-    /// Input interface index.
+    /// Packet input interface index (dev->ifindex).
     Iif,
-    /// Output interface index.
+    /// Packet output interface index (dev->ifindex).
     Oif,
-    /// Input interface name.
+    /// Packet input interface name (dev->name)
     IifName,
-    /// Output interface name.
+    /// Packet output interface name (dev->name).
     OifName,
-    /// Transport layer protocol.
+    /// Packet input interface type (dev->type).
+    IifType,
+    /// Packet output interface type (dev->type).
+    OifType,
+    /// Netfilter protocol (Transport layer protocol).
     NfProto,
-    /// Layer4 protocol.
+    /// Layer 4 protocol number.
     L4Proto,
+    /// A 32bit pseudo-random number
+    PRandom,
 }
 
 impl Meta {
@@ -32,8 +38,11 @@ impl Meta {
             Oif => libc::NFT_META_OIF as u32,
             IifName => libc::NFT_META_IIFNAME as u32,
             OifName => libc::NFT_META_OIFNAME as u32,
+            IifType => libc::NFT_META_IIFTYPE as u32,
+            OifType => libc::NFT_META_OIFTYPE as u32,
             NfProto => libc::NFT_META_NFPROTO as u32,
             L4Proto => libc::NFT_META_L4PROTO as u32,
+            PRandom => libc::NFT_META_PRANDOM as u32,
         }
     }
 }
@@ -72,10 +81,19 @@ macro_rules! nft_expr_meta {
     (oifname) => {
         $crate::expr::Meta::OifName
     };
+    (iiftype) => {
+        $crate::expr::Meta::IifType
+    };
+    (oiftype) => {
+        $crate::expr::Meta::OifType
+    };
     (nfproto) => {
         $crate::expr::Meta::NfProto
     };
     (l4proto) => {
         $crate::expr::Meta::L4Proto
+    };
+    (random) => {
+        $crate::expr::Meta::PRandom
     };
 }
