@@ -1,7 +1,12 @@
-use libc;
-use nftnl_sys::{self as sys, libc::c_void};
+use nftnl_sys::{
+    self as sys,
+    libc::{self, c_void},
+};
 
-use std::ffi::CStr;
+use std::{
+    collections::HashSet,
+    ffi::{CStr, CString},
+};
 
 use {ErrorKind, MsgType, ProtoFamily, Result};
 
@@ -63,4 +68,36 @@ impl Drop for Table {
     fn drop(&mut self) {
         unsafe { sys::nftnl_table_free(self.table) };
     }
+}
+
+/// Appends a netlink message to the end of the buffer that requests a list of all of the tables
+/// that are currently set
+pub unsafe fn get_tables_nlmsg(buf: *mut c_void, seq: u32) {
+    let _ = sys::nftnl_nlmsg_build_hdr(
+        buf as *mut i8,
+        libc::NFT_MSG_GETTABLE as u16,
+        ProtoFamily::Inet as u16,
+        (libc::NLM_F_ROOT | libc::NLM_F_MATCH) as u16,
+        seq,
+    );
+}
+
+/// A callback to parse the response for messages created with `get_tables_nlmsg`. This callback
+/// extracts a set of applied table names.
+pub fn get_tables_cb(header: &libc::nlmsghdr, tables: &mut HashSet<CString>) -> libc::c_int {
+    unsafe {
+        let nf_table = sys::nftnl_table_alloc();
+        let err = sys::nftnl_table_nlmsg_parse(header, nf_table);
+        if err < 0 {
+            error!("Failed to parse nelink table message - {}", err);
+            return err;
+        }
+        let table_name = CStr::from_ptr(sys::nftnl_table_get_str(
+            nf_table,
+            sys::NFTNL_TABLE_NAME as u16,
+        ))
+        .to_owned();
+        tables.insert(table_name);
+    };
+    return 1;
 }

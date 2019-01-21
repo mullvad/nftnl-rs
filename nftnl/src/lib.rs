@@ -64,7 +64,7 @@ pub use batch::{batch_is_supported, default_batch_page_size, Batch, FinalizedBat
 pub mod expr;
 
 mod table;
-pub use table::Table;
+pub use table::{get_tables_cb, get_tables_nlmsg, Table};
 
 mod chain;
 pub use chain::{Chain, Hook, Policy, Priority};
