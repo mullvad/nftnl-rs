@@ -63,7 +63,7 @@ pub use batch::{batch_is_supported, default_batch_page_size, Batch, FinalizedBat
 
 pub mod expr;
 
-mod table;
+pub mod table;
 pub use table::Table;
 
 mod chain;
