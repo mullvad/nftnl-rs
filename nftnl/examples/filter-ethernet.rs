@@ -84,7 +84,7 @@ fn main() -> Result<(), Error> {
     // Load a pseudo-random 32 bit unsigned integer into the netfilter register.
     random_rule.add_expr(&nft_expr!(meta random))?;
     // Check if the random integer is larger than `u32::MAX/2`, thus having 50% chance of success.
-    random_rule.add_expr(&nft_expr!(cmp > (::std::u32::MAX/2).to_be()))?;
+    random_rule.add_expr(&nft_expr!(cmp > (::std::u32::MAX / 2).to_be()))?;
 
     // Add a second counter. This will only be incremented for the packets passing the random check.
     random_rule.add_expr(&nft_expr!(counter))?;
