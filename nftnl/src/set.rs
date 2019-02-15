@@ -1,12 +1,12 @@
 use libc;
 use nftnl_sys::{self as sys, libc::c_void};
 
+use crate::table::Table;
+use crate::{ErrorKind, MsgType, ProtoFamily, Result};
 use std::cell::Cell;
 use std::ffi::CStr;
 use std::net::{Ipv4Addr, Ipv6Addr};
 use std::rc::Rc;
-use table::Table;
-use {ErrorKind, MsgType, ProtoFamily, Result};
 
 
 #[macro_export]
@@ -110,7 +110,7 @@ impl<'a, K> Set<'a, K> {
     }
 }
 
-unsafe impl<'a, K> ::NlMsg for Set<'a, K> {
+unsafe impl<'a, K> crate::NlMsg for Set<'a, K> {
     unsafe fn write(&self, buf: *mut c_void, seq: u32, msg_type: MsgType) {
         let type_ = match msg_type {
             MsgType::Add => libc::NFT_MSG_NEWSET,
@@ -133,7 +133,7 @@ impl<'a, K> Drop for Set<'a, K> {
     }
 }
 
-pub struct SetElemsIter<'a, K: 'a> {
+pub struct SetElemsIter<'a, K> {
     set: &'a Set<'a, K>,
     iter: *mut sys::nftnl_set_elems_iter,
     ret: Rc<Cell<i32>>,
@@ -176,13 +176,13 @@ impl<'a, K> Drop for SetElemsIter<'a, K> {
     }
 }
 
-pub struct SetElemsMsg<'a, K: 'a> {
+pub struct SetElemsMsg<'a, K> {
     set: &'a Set<'a, K>,
     iter: *mut sys::nftnl_set_elems_iter,
     ret: Rc<Cell<i32>>,
 }
 
-unsafe impl<'a, K> ::NlMsg for SetElemsMsg<'a, K> {
+unsafe impl<'a, K> crate::NlMsg for SetElemsMsg<'a, K> {
     unsafe fn write(&self, buf: *mut c_void, seq: u32, msg_type: MsgType) {
         trace!("Writing SetElemsMsg to NlMsg");
         let (type_, flags) = match msg_type {

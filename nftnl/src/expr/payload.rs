@@ -2,7 +2,7 @@ use libc;
 use nftnl_sys::{self as sys, libc::c_char};
 
 use super::Expression;
-use {ErrorKind, Result};
+use crate::{ErrorKind, Result};
 
 trait HeaderField {
     fn offset(&self) -> u32;
@@ -254,7 +254,7 @@ impl HeaderField for UdpHeaderField {
     }
 }
 
-#[macro_export]
+#[macro_export(local_inner_macros)]
 macro_rules! nft_expr_payload {
     (@ipv4_field ttl) => {
         $crate::expr::Ipv4HeaderField::Ttl

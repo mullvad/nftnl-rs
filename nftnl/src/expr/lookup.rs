@@ -4,8 +4,8 @@ use nftnl_sys::{self as sys, libc::c_char};
 use std::ffi::CString;
 
 use super::Expression;
-use set::Set;
-use {ErrorKind, Result};
+use crate::set::Set;
+use crate::{ErrorKind, Result};
 
 pub struct Lookup {
     set_name: CString,
@@ -13,7 +13,7 @@ pub struct Lookup {
 }
 
 impl Lookup {
-    pub fn new<K>(set: &Set<K>) -> Self {
+    pub fn new<K>(set: &Set<'_, K>) -> Self {
         Lookup {
             set_name: set.get_name().to_owned(),
             set_id: set.get_id(),

@@ -2,7 +2,7 @@ use libc;
 use nftnl_sys::{self as sys, libc::c_char};
 
 use super::Expression;
-use {ErrorKind, Result};
+use crate::{ErrorKind, Result};
 
 use std::ffi::{CStr, CString};
 

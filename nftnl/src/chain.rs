@@ -3,8 +3,8 @@ use nftnl_sys::{self as sys, libc::c_void};
 
 use std::ffi::CStr;
 
-use Table;
-use {ErrorKind, MsgType, Result};
+use crate::Table;
+use crate::{ErrorKind, MsgType, Result};
 
 
 pub type Priority = u32;
@@ -106,7 +106,7 @@ impl<'a> Chain<'a> {
     }
 }
 
-unsafe impl<'a> ::NlMsg for Chain<'a> {
+unsafe impl<'a> crate::NlMsg for Chain<'a> {
     unsafe fn write(&self, buf: *mut c_void, seq: u32, msg_type: MsgType) {
         let raw_msg_type = match msg_type {
             MsgType::Add => libc::NFT_MSG_NEWCHAIN,

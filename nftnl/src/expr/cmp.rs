@@ -10,7 +10,7 @@ use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 use std::slice;
 
 use super::Expression;
-use {ErrorKind, Result};
+use crate::{ErrorKind, Result};
 
 /// Comparison operator.
 #[derive(Copy, Clone, Eq, PartialEq)]
@@ -86,7 +86,7 @@ impl<T: ToSlice> Expression for Cmp<T> {
     }
 }
 
-#[macro_export]
+#[macro_export(local_inner_macros)]
 macro_rules! nft_expr_cmp {
     (@cmp_op ==) => {
         $crate::expr::CmpOp::Eq
@@ -115,23 +115,23 @@ macro_rules! nft_expr_cmp {
 /// A type that can be converted into a byte buffer.
 pub trait ToSlice {
     /// Returns the data this type represents.
-    fn to_slice(&self) -> Cow<[u8]>;
+    fn to_slice(&self) -> Cow<'_, [u8]>;
 }
 
 impl<'a> ToSlice for [u8; 0] {
-    fn to_slice(&self) -> Cow<[u8]> {
+    fn to_slice(&self) -> Cow<'_, [u8]> {
         Cow::Borrowed(&[])
     }
 }
 
 impl<'a> ToSlice for &'a [u8] {
-    fn to_slice(&self) -> Cow<[u8]> {
+    fn to_slice(&self) -> Cow<'_, [u8]> {
         Cow::Borrowed(self)
     }
 }
 
 impl<'a> ToSlice for &'a [u16] {
-    fn to_slice(&self) -> Cow<[u8]> {
+    fn to_slice(&self) -> Cow<'_, [u8]> {
         let ptr = self.as_ptr() as *const u8;
         let len = self.len() * 2;
         Cow::Borrowed(unsafe { slice::from_raw_parts(ptr, len) })
@@ -139,7 +139,7 @@ impl<'a> ToSlice for &'a [u16] {
 }
 
 impl ToSlice for IpAddr {
-    fn to_slice(&self) -> Cow<[u8]> {
+    fn to_slice(&self) -> Cow<'_, [u8]> {
         match *self {
             IpAddr::V4(ref addr) => addr.to_slice(),
             IpAddr::V6(ref addr) => addr.to_slice(),
@@ -148,25 +148,25 @@ impl ToSlice for IpAddr {
 }
 
 impl ToSlice for Ipv4Addr {
-    fn to_slice(&self) -> Cow<[u8]> {
+    fn to_slice(&self) -> Cow<'_, [u8]> {
         Cow::Owned(self.octets().to_vec())
     }
 }
 
 impl ToSlice for Ipv6Addr {
-    fn to_slice(&self) -> Cow<[u8]> {
+    fn to_slice(&self) -> Cow<'_, [u8]> {
         Cow::Owned(self.octets().to_vec())
     }
 }
 
 impl ToSlice for u8 {
-    fn to_slice(&self) -> Cow<[u8]> {
+    fn to_slice(&self) -> Cow<'_, [u8]> {
         Cow::Owned(vec![*self])
     }
 }
 
 impl ToSlice for u16 {
-    fn to_slice(&self) -> Cow<[u8]> {
+    fn to_slice(&self) -> Cow<'_, [u8]> {
         let b0 = (*self & 0x00ff) as u8;
         let b1 = (*self >> 8) as u8;
         Cow::Owned(vec![b0, b1])
@@ -174,7 +174,7 @@ impl ToSlice for u16 {
 }
 
 impl ToSlice for u32 {
-    fn to_slice(&self) -> Cow<[u8]> {
+    fn to_slice(&self) -> Cow<'_, [u8]> {
         let b0 = *self as u8;
         let b1 = (*self >> 8) as u8;
         let b2 = (*self >> 16) as u8;
@@ -184,7 +184,7 @@ impl ToSlice for u32 {
 }
 
 impl ToSlice for i32 {
-    fn to_slice(&self) -> Cow<[u8]> {
+    fn to_slice(&self) -> Cow<'_, [u8]> {
         let b0 = *self as u8;
         let b1 = (*self >> 8) as u8;
         let b2 = (*self >> 16) as u8;
@@ -194,7 +194,7 @@ impl ToSlice for i32 {
 }
 
 impl<'a> ToSlice for &'a str {
-    fn to_slice(&self) -> Cow<[u8]> {
+    fn to_slice(&self) -> Cow<'_, [u8]> {
         Cow::from(self.as_bytes())
     }
 }
@@ -216,7 +216,7 @@ pub enum InterfaceName {
 }
 
 impl ToSlice for InterfaceName {
-    fn to_slice(&self) -> Cow<[u8]> {
+    fn to_slice(&self) -> Cow<'_, [u8]> {
         let bytes = match *self {
             InterfaceName::Exact(ref name) => name.as_bytes_with_nul(),
             InterfaceName::StartingWith(ref name) => name.as_bytes(),
@@ -226,7 +226,7 @@ impl ToSlice for InterfaceName {
 }
 
 impl<'a> ToSlice for &'a InterfaceName {
-    fn to_slice(&self) -> Cow<[u8]> {
+    fn to_slice(&self) -> Cow<'_, [u8]> {
         let bytes = match *self {
             InterfaceName::Exact(ref name) => name.as_bytes_with_nul(),
             InterfaceName::StartingWith(ref name) => name.as_bytes(),

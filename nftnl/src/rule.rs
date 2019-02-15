@@ -1,9 +1,9 @@
 use libc;
 use nftnl_sys::{self as sys, libc::c_void};
 
-use chain::Chain;
-use expr::Expression;
-use {ErrorKind, MsgType, Result};
+use crate::chain::Chain;
+use crate::expr::Expression;
+use crate::{ErrorKind, MsgType, Result};
 
 /// A nftables firewall rule.
 pub struct Rule<'a> {
@@ -15,7 +15,7 @@ impl<'a> Rule<'a> {
     /// Creates a new rule object in the given [`Chain`].
     ///
     /// [`Chain`]: struct.Chain.html
-    pub fn new(chain: &'a Chain) -> Result<Rule<'a>> {
+    pub fn new(chain: &'a Chain<'_>) -> Result<Rule<'a>> {
         unsafe {
             let rule = sys::nftnl_rule_alloc();
             ensure!(!rule.is_null(), ErrorKind::AllocationError);
@@ -65,12 +65,12 @@ impl<'a> Rule<'a> {
     /// Returns a reference to the [`Chain`] this rule lives in.
     ///
     /// [`Chain`]: struct.Chain.html
-    pub fn get_chain(&self) -> &Chain {
+    pub fn get_chain(&self) -> &Chain<'_> {
         self.chain
     }
 }
 
-unsafe impl<'a> ::NlMsg for Rule<'a> {
+unsafe impl<'a> crate::NlMsg for Rule<'a> {
     unsafe fn write(&self, buf: *mut c_void, seq: u32, msg_type: MsgType) {
         let type_ = match msg_type {
             MsgType::Add => libc::NFT_MSG_NEWRULE,

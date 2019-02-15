@@ -2,9 +2,9 @@ use libc;
 use nftnl_sys::{self as sys, libc::c_char};
 
 use super::Expression;
-use {ErrorKind, Result};
+use crate::{ErrorKind, Result};
 
-bitflags! {
+bitflags::bitflags! {
     pub struct States: u32 {
         const INVALID = 1;
         const ESTABLISHED = 2;
