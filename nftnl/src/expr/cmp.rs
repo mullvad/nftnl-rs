@@ -10,7 +10,7 @@ use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 use std::slice;
 
 use super::Expression;
-use {ErrorKind, Result};
+use crate::{ErrorKind, Result};
 
 /// Comparison operator.
 #[derive(Copy, Clone, Eq, PartialEq)]

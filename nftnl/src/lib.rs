@@ -34,7 +34,7 @@
 //! [`nftables`]: https://netfilter.org/projects/nftables/
 //! [`nftnl-sys`]: https://crates.io/crates/nftnl-sys
 
-pub extern crate nftnl_sys;
+pub use nftnl_sys;
 
 #[macro_use]
 extern crate bitflags;

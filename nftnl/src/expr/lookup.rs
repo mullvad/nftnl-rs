@@ -4,8 +4,8 @@ use nftnl_sys::{self as sys, libc::c_char};
 use std::ffi::CString;
 
 use super::Expression;
-use set::Set;
-use {ErrorKind, Result};
+use crate::set::Set;
+use crate::{ErrorKind, Result};
 
 pub struct Lookup {
     set_name: CString,

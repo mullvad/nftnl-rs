@@ -8,7 +8,7 @@ use std::{
     ffi::{CStr, CString},
 };
 
-use {ErrorKind, MsgType, ProtoFamily, Result};
+use crate::{ErrorKind, MsgType, ProtoFamily, Result};
 
 
 /// Abstraction of `nftnl_table`. The top level container in netfilter. A table has a protocol
@@ -47,7 +47,7 @@ impl Table {
     }
 }
 
-unsafe impl ::NlMsg for Table {
+unsafe impl crate::NlMsg for Table {
     unsafe fn write(&self, buf: *mut c_void, seq: u32, msg_type: MsgType) {
         let raw_msg_type = match msg_type {
             MsgType::Add => libc::NFT_MSG_NEWTABLE,
@@ -73,7 +73,7 @@ impl Drop for Table {
 /// Returns a buffer containing a netlink message which requests a list of all the netfilter
 /// tables that are currently set.
 pub fn get_tables_nlmsg(seq: u32) -> Vec<u8> {
-    let mut buffer = vec![0; ::nft_nlmsg_maxsize() as usize];
+    let mut buffer = vec![0; crate::nft_nlmsg_maxsize() as usize];
     let _ = unsafe {
         sys::nftnl_nlmsg_build_hdr(
             buffer.as_mut_ptr() as *mut i8,

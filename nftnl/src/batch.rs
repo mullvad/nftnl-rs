@@ -2,7 +2,7 @@ use libc;
 use nftnl_sys::{self as sys, libc::c_void};
 
 use std::ptr;
-use {ErrorKind, MsgType, NlMsg, Result};
+use crate::{ErrorKind, MsgType, NlMsg, Result};
 
 /// Check if the kernel supports batched netlink messages to netfilter.
 pub fn batch_is_supported() -> Result<bool> {
@@ -30,7 +30,7 @@ impl Batch {
 
     /// Creates a new nftnl batch with the given batch size.
     pub fn with_page_size(batch_page_size: u32) -> Result<Self> {
-        let batch = unsafe { sys::nftnl_batch_alloc(batch_page_size, ::nft_nlmsg_maxsize()) };
+        let batch = unsafe { sys::nftnl_batch_alloc(batch_page_size, crate::nft_nlmsg_maxsize()) };
         ensure!(!batch.is_null(), ErrorKind::AllocationError);
         let mut this = Batch { batch, seq: 1 };
         this.write_begin_msg()?;

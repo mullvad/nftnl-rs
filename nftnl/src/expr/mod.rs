@@ -5,7 +5,7 @@
 
 use nftnl_sys as sys;
 
-use Result;
+use crate::Result;
 
 /// Trait for every safe wrapper of an nftables expression.
 pub trait Expression {

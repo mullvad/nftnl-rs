@@ -5,8 +5,8 @@ use nftnl_sys::{
 };
 
 use super::Expression;
-use expr::cmp::ToSlice;
-use {ErrorKind, Result};
+use crate::expr::cmp::ToSlice;
+use crate::{ErrorKind, Result};
 
 /// Expression for performing bitwise masking and XOR on the data in a register.
 pub struct Bitwise<M: ToSlice, X: ToSlice> {
