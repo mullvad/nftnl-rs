@@ -1,8 +1,8 @@
 use libc;
 use nftnl_sys::{self as sys, libc::c_void};
 
-use std::ptr;
 use crate::{ErrorKind, MsgType, NlMsg, Result};
+use std::ptr;
 
 /// Check if the kernel supports batched netlink messages to netfilter.
 pub fn batch_is_supported() -> Result<bool> {
@@ -114,7 +114,7 @@ pub struct FinalizedBatch {
 
 impl FinalizedBatch {
     /// Returns the iterator over byte buffers to send to netlink.
-    pub fn iter(&self) -> Iter {
+    pub fn iter(&self) -> Iter<'_> {
         let num_pages = unsafe { sys::nftnl_batch_iovec_len(self.batch.as_raw_batch()) as usize };
         let mut iovecs = vec![
             libc::iovec {

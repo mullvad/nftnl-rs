@@ -1,12 +1,12 @@
 use libc;
 use nftnl_sys::{self as sys, libc::c_void};
 
+use crate::table::Table;
+use crate::{ErrorKind, MsgType, ProtoFamily, Result};
 use std::cell::Cell;
 use std::ffi::CStr;
 use std::net::{Ipv4Addr, Ipv6Addr};
 use std::rc::Rc;
-use crate::table::Table;
-use crate::{ErrorKind, MsgType, ProtoFamily, Result};
 
 
 #[macro_export]
@@ -133,7 +133,7 @@ impl<'a, K> Drop for Set<'a, K> {
     }
 }
 
-pub struct SetElemsIter<'a, K: 'a> {
+pub struct SetElemsIter<'a, K> {
     set: &'a Set<'a, K>,
     iter: *mut sys::nftnl_set_elems_iter,
     ret: Rc<Cell<i32>>,
@@ -176,7 +176,7 @@ impl<'a, K> Drop for SetElemsIter<'a, K> {
     }
 }
 
-pub struct SetElemsMsg<'a, K: 'a> {
+pub struct SetElemsMsg<'a, K> {
     set: &'a Set<'a, K>,
     iter: *mut sys::nftnl_set_elems_iter,
     ret: Rc<Cell<i32>>,

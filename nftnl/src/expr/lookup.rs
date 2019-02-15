@@ -13,7 +13,7 @@ pub struct Lookup {
 }
 
 impl Lookup {
-    pub fn new<K>(set: &Set<K>) -> Self {
+    pub fn new<K>(set: &Set<'_, K>) -> Self {
         Lookup {
             set_name: set.get_name().to_owned(),
             set_id: set.get_id(),

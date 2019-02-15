@@ -15,7 +15,7 @@ impl<'a> Rule<'a> {
     /// Creates a new rule object in the given [`Chain`].
     ///
     /// [`Chain`]: struct.Chain.html
-    pub fn new(chain: &'a Chain) -> Result<Rule<'a>> {
+    pub fn new(chain: &'a Chain<'_>) -> Result<Rule<'a>> {
         unsafe {
             let rule = sys::nftnl_rule_alloc();
             ensure!(!rule.is_null(), ErrorKind::AllocationError);
@@ -65,7 +65,7 @@ impl<'a> Rule<'a> {
     /// Returns a reference to the [`Chain`] this rule lives in.
     ///
     /// [`Chain`]: struct.Chain.html
-    pub fn get_chain(&self) -> &Chain {
+    pub fn get_chain(&self) -> &Chain<'_> {
         self.chain
     }
 }

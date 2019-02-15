@@ -22,16 +22,8 @@
 //! # nft delete table inet example-filter-ethernet
 //! ```
 
-extern crate ipnetwork;
-extern crate libc;
-extern crate mnl;
-#[macro_use]
-extern crate nftnl;
-
-use std::ffi::CString;
-use std::io;
-
-use nftnl::{Batch, Chain, ChainedError, FinalizedBatch, ProtoFamily, Rule, Table};
+use nftnl::{nft_expr, Batch, Chain, ChainedError, FinalizedBatch, ProtoFamily, Rule, Table};
+use std::{ffi::CString, io};
 
 const TABLE_NAME: &str = "example-filter-ethernet";
 const OUT_CHAIN_NAME: &str = "chain-for-outgoing-packets";

@@ -254,7 +254,7 @@ impl HeaderField for UdpHeaderField {
     }
 }
 
-#[macro_export]
+#[macro_export(local_inner_macros)]
 macro_rules! nft_expr_payload {
     (@ipv4_field ttl) => {
         $crate::expr::Ipv4HeaderField::Ttl

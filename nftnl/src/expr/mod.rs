@@ -38,7 +38,7 @@ pub use self::meta::*;
 mod payload;
 pub use self::payload::*;
 
-#[macro_export]
+#[macro_export(local_inner_macros)]
 macro_rules! nft_expr {
     (bitwise mask $mask:expr,xor $xor:expr) => {
         nft_expr_bitwise!(mask $mask, xor $xor)
