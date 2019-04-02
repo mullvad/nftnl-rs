@@ -22,7 +22,7 @@
 //! # nft delete table inet example-filter-ethernet
 //! ```
 
-use nftnl::{nft_expr, Batch, Chain, ChainedError, FinalizedBatch, ProtoFamily, Rule, Table};
+use nftnl::{nft_expr, Batch, Chain, FinalizedBatch, ProtoFamily, Rule, Table};
 use std::{ffi::CString, io};
 
 const TABLE_NAME: &str = "example-filter-ethernet";
@@ -126,7 +126,7 @@ struct Error(String);
 
 impl From<nftnl::Error> for Error {
     fn from(error: nftnl::Error) -> Self {
-        Error(error.display_chain().to_string())
+        Error(error.to_string())
     }
 }
 

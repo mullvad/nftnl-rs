@@ -2,7 +2,6 @@ use libc;
 use nftnl_sys::{self as sys, libc::c_char};
 
 use super::Expression;
-use crate::{ErrorKind, Result};
 
 bitflags::bitflags! {
     pub struct States: u32 {
@@ -27,10 +26,9 @@ impl Conntrack {
 }
 
 impl Expression for Conntrack {
-    fn to_expr(&self) -> Result<*mut sys::nftnl_expr> {
+    fn to_expr(&self) -> crate::Result<*mut sys::nftnl_expr> {
         unsafe {
-            let expr = sys::nftnl_expr_alloc(b"ct\0" as *const _ as *const c_char);
-            ensure!(!expr.is_null(), ErrorKind::AllocationError);
+            let expr = try_alloc!(sys::nftnl_expr_alloc(b"ct\0" as *const _ as *const c_char));
 
             sys::nftnl_expr_set_u32(expr, sys::NFTNL_EXPR_CT_DREG as u16, libc::NFT_REG_1 as u32);
             sys::nftnl_expr_set_u32(expr, sys::NFTNL_EXPR_CT_KEY as u16, self.raw_key());

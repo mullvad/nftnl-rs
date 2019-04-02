@@ -37,22 +37,31 @@
 pub use nftnl_sys;
 
 #[macro_use]
-extern crate error_chain;
-#[macro_use]
 extern crate log;
 
 use nftnl_sys::libc::c_void;
 
-pub use error_chain::ChainedError;
-error_chain! {
-    errors {
-        /// Unable to allocate memory
-        AllocationError { description("Unable to allocate memory") }
-        /// Not enough room in the batch
-        BatchIsFull { description("Not enough room in the batch") }
-        /// Error while communicating with netlink
-        NetlinkError { description("Error while communicating with netlink") }
-    }
+pub type Result<T> = std::result::Result<T, Error>;
+
+#[derive(err_derive::Error, Debug)]
+pub enum Error {
+    /// Unable to allocate memory
+    #[error(display = "Unable to allocate memory")]
+    AllocationError,
+
+    /// Not enough room in the batch
+    #[error(display = "Not enough room in the batch")]
+    BatchIsFull,
+}
+
+macro_rules! try_alloc {
+    ($e:expr) => {{
+        let ptr = $e;
+        if ptr.is_null() {
+            return Err($crate::Error::AllocationError);
+        }
+        ptr
+    }};
 }
 
 mod batch;

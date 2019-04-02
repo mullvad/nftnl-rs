@@ -4,7 +4,7 @@ use nftnl_sys::{self as sys, libc::c_void};
 use std::ffi::CStr;
 
 use crate::Table;
-use crate::{ErrorKind, MsgType, Result};
+use crate::{MsgType, Result};
 
 
 pub type Priority = u32;
@@ -55,9 +55,7 @@ impl<'a> Chain<'a> {
     /// [`Table`]: struct.Table.html
     pub fn new<T: AsRef<CStr>>(name: &T, table: &'a Table) -> Result<Chain<'a>> {
         unsafe {
-            let chain = sys::nftnl_chain_alloc();
-            ensure!(!chain.is_null(), ErrorKind::AllocationError);
-
+            let chain = try_alloc!(sys::nftnl_chain_alloc());
             sys::nftnl_chain_set_str(
                 chain,
                 sys::NFTNL_CHAIN_TABLE as u16,

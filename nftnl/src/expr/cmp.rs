@@ -10,7 +10,6 @@ use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 use std::slice;
 
 use super::Expression;
-use crate::{ErrorKind, Result};
 
 /// Comparison operator.
 #[derive(Copy, Clone, Eq, PartialEq)]
@@ -60,10 +59,9 @@ impl<T: ToSlice> Cmp<T> {
 }
 
 impl<T: ToSlice> Expression for Cmp<T> {
-    fn to_expr(&self) -> Result<*mut sys::nftnl_expr> {
+    fn to_expr(&self) -> crate::Result<*mut sys::nftnl_expr> {
         unsafe {
-            let expr = sys::nftnl_expr_alloc(b"cmp\0" as *const _ as *const c_char);
-            ensure!(!expr.is_null(), ErrorKind::AllocationError);
+            let expr = try_alloc!(sys::nftnl_expr_alloc(b"cmp\0" as *const _ as *const c_char));
 
             let data = self.data.to_slice();
             trace!("Creating a cmp expr comparing with data {:?}", data);

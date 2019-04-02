@@ -19,7 +19,7 @@ nftnl-1-1-1 = ["nftnl-sys/nftnl-1-1-1"]
 
 [dependencies]
 bitflags = "1.0"
-error-chain = "0.12"
+err-derive = "0.1.5"
 libc = "0.2.40"
 log = "0.4"
 nftnl-sys = { path = "../nftnl-sys", version = "0.1" }

@@ -5,13 +5,11 @@
 
 use nftnl_sys as sys;
 
-use crate::Result;
-
 /// Trait for every safe wrapper of an nftables expression.
 pub trait Expression {
     /// Allocates and returns the low level `nftnl_expr` representation of this expression.
     /// The caller to this method is responsible for freeing the expression.
-    fn to_expr(&self) -> Result<*mut sys::nftnl_expr>;
+    fn to_expr(&self) -> crate::Result<*mut sys::nftnl_expr>;
 }
 
 mod bitwise;

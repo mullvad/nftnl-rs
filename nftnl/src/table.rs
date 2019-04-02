@@ -8,7 +8,7 @@ use std::{
     ffi::{CStr, CString},
 };
 
-use crate::{ErrorKind, MsgType, ProtoFamily, Result};
+use crate::{MsgType, ProtoFamily, Result};
 
 
 /// Abstraction of `nftnl_table`. The top level container in netfilter. A table has a protocol
@@ -24,8 +24,7 @@ impl Table {
     /// Creates a new table instance with the given name and protocol family.
     pub fn new<T: AsRef<CStr>>(name: &T, family: ProtoFamily) -> Result<Table> {
         unsafe {
-            let table = sys::nftnl_table_alloc();
-            ensure!(!table.is_null(), ErrorKind::AllocationError);
+            let table = try_alloc!(sys::nftnl_table_alloc());
 
             sys::nftnl_table_set_str(table, sys::NFTNL_TABLE_NAME as u16, name.as_ref().as_ptr());
             sys::nftnl_table_set_u32(table, sys::NFTNL_TABLE_FAMILY as u16, family as u32);

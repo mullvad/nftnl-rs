@@ -2,7 +2,6 @@ use libc;
 use nftnl_sys::{self as sys, libc::c_char};
 
 use super::Expression;
-use crate::{ErrorKind, Result};
 
 trait HeaderField {
     fn offset(&self) -> u32;
@@ -49,10 +48,11 @@ impl HeaderField for Payload {
 }
 
 impl Expression for Payload {
-    fn to_expr(&self) -> Result<*mut sys::nftnl_expr> {
+    fn to_expr(&self) -> crate::Result<*mut sys::nftnl_expr> {
         unsafe {
-            let expr = sys::nftnl_expr_alloc(b"payload\0" as *const _ as *const c_char);
-            ensure!(!expr.is_null(), ErrorKind::AllocationError);
+            let expr = try_alloc!(sys::nftnl_expr_alloc(
+                b"payload\0" as *const _ as *const c_char
+            ));
 
             sys::nftnl_expr_set_u32(expr, sys::NFTNL_EXPR_PAYLOAD_BASE as u16, self.base());
             sys::nftnl_expr_set_u32(expr, sys::NFTNL_EXPR_PAYLOAD_OFFSET as u16, self.offset());

@@ -5,7 +5,6 @@ use std::ffi::CString;
 
 use super::Expression;
 use crate::set::Set;
-use crate::{ErrorKind, Result};
 
 pub struct Lookup {
     set_name: CString,
@@ -22,10 +21,11 @@ impl Lookup {
 }
 
 impl Expression for Lookup {
-    fn to_expr(&self) -> Result<*mut sys::nftnl_expr> {
+    fn to_expr(&self) -> crate::Result<*mut sys::nftnl_expr> {
         unsafe {
-            let expr = sys::nftnl_expr_alloc(b"lookup\0" as *const _ as *const c_char);
-            ensure!(!expr.is_null(), ErrorKind::AllocationError);
+            let expr = try_alloc!(sys::nftnl_expr_alloc(
+                b"lookup\0" as *const _ as *const c_char
+            ));
 
             sys::nftnl_expr_set_u32(
                 expr,

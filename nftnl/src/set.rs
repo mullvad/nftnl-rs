@@ -2,7 +2,7 @@ use libc;
 use nftnl_sys::{self as sys, libc::c_void};
 
 use crate::table::Table;
-use crate::{ErrorKind, MsgType, ProtoFamily, Result};
+use crate::{MsgType, ProtoFamily, Result};
 use std::cell::Cell;
 use std::ffi::CStr;
 use std::net::{Ipv4Addr, Ipv6Addr};
@@ -39,8 +39,7 @@ impl<'a, K> Set<'a, K> {
         K: SetKey,
     {
         unsafe {
-            let set = sys::nftnl_set_alloc();
-            ensure!(!set.is_null(), ErrorKind::AllocationError);
+            let set = try_alloc!(sys::nftnl_set_alloc());
 
             sys::nftnl_set_set_u32(set, sys::NFTNL_SET_FAMILY as u16, family as u32);
             sys::nftnl_set_set_str(set, sys::NFTNL_SET_TABLE as u16, table.get_name().as_ptr());
@@ -69,8 +68,7 @@ impl<'a, K> Set<'a, K> {
         K: SetKey,
     {
         unsafe {
-            let elem = sys::nftnl_set_elem_alloc();
-            ensure!(!elem.is_null(), ErrorKind::AllocationError);
+            let elem = try_alloc!(sys::nftnl_set_elem_alloc());
 
             let data = key.data();
             let data_len = data.len() as u32;
@@ -141,8 +139,7 @@ pub struct SetElemsIter<'a, K> {
 
 impl<'a, K> SetElemsIter<'a, K> {
     fn new(set: &'a Set<'a, K>) -> Result<Self> {
-        let iter = unsafe { sys::nftnl_set_elems_iter_create(set.as_ptr()) };
-        ensure!(!iter.is_null(), ErrorKind::AllocationError);
+        let iter = try_alloc!(unsafe { sys::nftnl_set_elems_iter_create(set.as_ptr()) });
 
         Ok(SetElemsIter {
             set,

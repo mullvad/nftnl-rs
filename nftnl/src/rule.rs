@@ -3,7 +3,7 @@ use nftnl_sys::{self as sys, libc::c_void};
 
 use crate::chain::Chain;
 use crate::expr::Expression;
-use crate::{ErrorKind, MsgType, Result};
+use crate::{MsgType, Result};
 
 /// A nftables firewall rule.
 pub struct Rule<'a> {
@@ -17,9 +17,7 @@ impl<'a> Rule<'a> {
     /// [`Chain`]: struct.Chain.html
     pub fn new(chain: &'a Chain<'_>) -> Result<Rule<'a>> {
         unsafe {
-            let rule = sys::nftnl_rule_alloc();
-            ensure!(!rule.is_null(), ErrorKind::AllocationError);
-
+            let rule = try_alloc!(sys::nftnl_rule_alloc());
             sys::nftnl_rule_set_str(
                 rule,
                 sys::NFTNL_RULE_TABLE as u16,
