@@ -78,7 +78,7 @@ impl Batch {
 
     fn next(&mut self) -> Result<()> {
         if unsafe { sys::nftnl_batch_update(self.batch) } < 0 {
-            return Err(crate::Error::AllocationError);
+            return Err(crate::AllocationError(()));
         }
         self.seq += 1;
         Ok(())

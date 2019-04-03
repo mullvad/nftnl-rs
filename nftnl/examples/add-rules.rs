@@ -204,8 +204,8 @@ fn socket_recv<'a>(socket: &mnl::Socket, buf: &'a mut [u8]) -> Result<Option<&'a
 #[derive(Debug)]
 struct Error(String);
 
-impl From<nftnl::Error> for Error {
-    fn from(error: nftnl::Error) -> Self {
+impl From<nftnl::AllocationError> for Error {
+    fn from(error: nftnl::AllocationError) -> Self {
         Error(error.to_string())
     }
 }

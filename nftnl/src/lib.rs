@@ -42,24 +42,18 @@ pub use nftnl_sys;
 use nftnl_sys::libc::c_void;
 
 
-pub type Result<T> = std::result::Result<T, Error>;
+pub type Result<T> = std::result::Result<T, AllocationError>;
 
+/// Unable to allocate memory
 #[derive(err_derive::Error, Debug)]
-pub enum Error {
-    /// Unable to allocate memory
-    #[error(display = "Unable to allocate memory")]
-    AllocationError,
-
-    /// Not enough room in the batch
-    #[error(display = "Not enough room in the batch")]
-    BatchIsFull,
-}
+#[error(display = "Unable to allocate memory")]
+pub struct AllocationError(());
 
 macro_rules! try_alloc {
     ($e:expr) => {{
         let ptr = $e;
         if ptr.is_null() {
-            return Err($crate::Error::AllocationError);
+            return Err($crate::AllocationError(()));
         }
         ptr
     }};
