@@ -46,7 +46,7 @@ impl Meta {
 }
 
 impl Expression for Meta {
-    fn to_expr(&self) -> crate::Result<*mut sys::nftnl_expr> {
+    fn to_expr(&self) -> *mut sys::nftnl_expr {
         unsafe {
             let expr = try_alloc!(sys::nftnl_expr_alloc(
                 b"meta\0" as *const _ as *const c_char
@@ -58,7 +58,7 @@ impl Expression for Meta {
                 libc::NFT_REG_1 as u32,
             );
             sys::nftnl_expr_set_u32(expr, sys::NFTNL_EXPR_META_KEY as u16, self.to_raw_key());
-            Ok(expr)
+            expr
         }
     }
 }

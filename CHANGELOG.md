@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Changed
 - Upgrade crates to Rust 2018 edition.
-- Remove the `error-chain` dependency and introduce new error types.
+- Remove the `error-chain` dependency. Now panics on allocation error.
 
 
 ## [0.1.0] - 2018-09-10

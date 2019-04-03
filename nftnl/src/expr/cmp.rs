@@ -59,7 +59,7 @@ impl<T: ToSlice> Cmp<T> {
 }
 
 impl<T: ToSlice> Expression for Cmp<T> {
-    fn to_expr(&self) -> crate::Result<*mut sys::nftnl_expr> {
+    fn to_expr(&self) -> *mut sys::nftnl_expr {
         unsafe {
             let expr = try_alloc!(sys::nftnl_expr_alloc(b"cmp\0" as *const _ as *const c_char));
 
@@ -79,7 +79,7 @@ impl<T: ToSlice> Expression for Cmp<T> {
                 data.len() as u32,
             );
 
-            Ok(expr)
+            expr
         }
     }
 }

@@ -21,7 +21,7 @@ impl<M: ToSlice, X: ToSlice> Bitwise<M, X> {
 }
 
 impl<M: ToSlice, X: ToSlice> Expression for Bitwise<M, X> {
-    fn to_expr(&self) -> crate::Result<*mut sys::nftnl_expr> {
+    fn to_expr(&self) -> *mut sys::nftnl_expr {
         unsafe {
             let expr = try_alloc!(sys::nftnl_expr_alloc(
                 b"bitwise\0" as *const _ as *const c_char
@@ -57,7 +57,7 @@ impl<M: ToSlice, X: ToSlice> Expression for Bitwise<M, X> {
                 len,
             );
 
-            Ok(expr)
+            expr
         }
     }
 }

@@ -47,7 +47,7 @@ impl HeaderField for Payload {
 }
 
 impl Expression for Payload {
-    fn to_expr(&self) -> crate::Result<*mut sys::nftnl_expr> {
+    fn to_expr(&self) -> *mut sys::nftnl_expr {
         unsafe {
             let expr = try_alloc!(sys::nftnl_expr_alloc(
                 b"payload\0" as *const _ as *const c_char
@@ -62,7 +62,7 @@ impl Expression for Payload {
                 libc::NFT_REG_1 as u32,
             );
 
-            Ok(expr)
+            expr
         }
     }
 }

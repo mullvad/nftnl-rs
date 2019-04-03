@@ -1,4 +1,4 @@
-use crate::{table::Table, MsgType, ProtoFamily, Result};
+use crate::{table::Table, MsgType, ProtoFamily};
 use libc;
 use nftnl_sys::{self as sys, libc::c_void};
 use std::{
@@ -34,7 +34,7 @@ pub struct Set<'a, K> {
 }
 
 impl<'a, K> Set<'a, K> {
-    pub fn new(name: &CStr, id: u32, table: &'a Table, family: ProtoFamily) -> Result<Self>
+    pub fn new(name: &CStr, id: u32, table: &'a Table, family: ProtoFamily) -> Self
     where
         K: SetKey,
     {
@@ -54,16 +54,16 @@ impl<'a, K> Set<'a, K> {
             sys::nftnl_set_set_u32(set, sys::NFTNL_SET_KEY_TYPE as u16, K::TYPE);
             sys::nftnl_set_set_u32(set, sys::NFTNL_SET_KEY_LEN as u16, K::LEN);
 
-            Ok(Set {
+            Set {
                 set,
                 table,
                 family,
                 _marker: ::std::marker::PhantomData,
-            })
+            }
         }
     }
 
-    pub fn add(&mut self, key: &K) -> Result<()>
+    pub fn add(&mut self, key: &K)
     where
         K: SetKey,
     {
@@ -81,10 +81,9 @@ impl<'a, K> Set<'a, K> {
             );
             sys::nftnl_set_elem_add(self.set, elem);
         }
-        Ok(())
     }
 
-    pub fn elems_iter(&'a self) -> Result<SetElemsIter<'a, K>> {
+    pub fn elems_iter(&'a self) -> SetElemsIter<'a, K> {
         SetElemsIter::new(self)
     }
 
@@ -138,14 +137,13 @@ pub struct SetElemsIter<'a, K> {
 }
 
 impl<'a, K> SetElemsIter<'a, K> {
-    fn new(set: &'a Set<'a, K>) -> Result<Self> {
+    fn new(set: &'a Set<'a, K>) -> Self {
         let iter = try_alloc!(unsafe { sys::nftnl_set_elems_iter_create(set.as_ptr()) });
-
-        Ok(SetElemsIter {
+        SetElemsIter {
             set,
             iter,
             ret: Rc::new(Cell::new(1)),
-        })
+        }
     }
 }
 

@@ -1,4 +1,4 @@
-use crate::{MsgType, Result, Table};
+use crate::{MsgType, Table};
 use libc;
 use nftnl_sys::{self as sys, libc::c_void};
 use std::ffi::CStr;
@@ -50,7 +50,7 @@ impl<'a> Chain<'a> {
     /// Creates a new chain instance inside the given [`Table`] and with the given name.
     ///
     /// [`Table`]: struct.Table.html
-    pub fn new<T: AsRef<CStr>>(name: &T, table: &'a Table) -> Result<Chain<'a>> {
+    pub fn new<T: AsRef<CStr>>(name: &T, table: &'a Table) -> Chain<'a> {
         unsafe {
             let chain = try_alloc!(sys::nftnl_chain_alloc());
             sys::nftnl_chain_set_str(
@@ -59,7 +59,7 @@ impl<'a> Chain<'a> {
                 table.get_name().as_ptr(),
             );
             sys::nftnl_chain_set_str(chain, sys::NFTNL_CHAIN_NAME as u16, name.as_ref().as_ptr());
-            Ok(Chain { chain, table })
+            Chain { chain, table }
         }
     }
 

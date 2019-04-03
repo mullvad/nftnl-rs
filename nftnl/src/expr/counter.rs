@@ -6,9 +6,7 @@ use nftnl_sys::{self as sys, libc::c_char};
 pub struct Counter;
 
 impl Expression for Counter {
-    fn to_expr(&self) -> crate::Result<*mut sys::nftnl_expr> {
-        Ok(try_alloc!(unsafe {
-            sys::nftnl_expr_alloc(b"counter\0" as *const _ as *const c_char)
-        }))
+    fn to_expr(&self) -> *mut sys::nftnl_expr {
+        try_alloc!(unsafe { sys::nftnl_expr_alloc(b"counter\0" as *const _ as *const c_char) })
     }
 }
