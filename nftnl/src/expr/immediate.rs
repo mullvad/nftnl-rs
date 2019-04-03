@@ -1,9 +1,6 @@
+use super::Expression;
 use libc;
 use nftnl_sys::{self as sys, libc::c_char};
-
-use super::Expression;
-use crate::{ErrorKind, Result};
-
 use std::ffi::{CStr, CString};
 
 /// A verdict expression. In the background actually an "Immediate" expression in nftnl terms,
@@ -50,10 +47,11 @@ impl Verdict {
 }
 
 impl Expression for Verdict {
-    fn to_expr(&self) -> Result<*mut sys::nftnl_expr> {
+    fn to_expr(&self) -> *mut sys::nftnl_expr {
         unsafe {
-            let expr = sys::nftnl_expr_alloc(b"immediate\0" as *const _ as *const c_char);
-            ensure!(!expr.is_null(), ErrorKind::AllocationError);
+            let expr = try_alloc!(sys::nftnl_expr_alloc(
+                b"immediate\0" as *const _ as *const c_char
+            ));
 
             sys::nftnl_expr_set_u32(
                 expr,
@@ -70,7 +68,7 @@ impl Expression for Verdict {
                 self.verdict_const() as u32,
             );
 
-            Ok(expr)
+            expr
         }
     }
 }

@@ -1,9 +1,6 @@
+use crate::{chain::Chain, expr::Expression, MsgType};
 use libc;
 use nftnl_sys::{self as sys, libc::c_void};
-
-use crate::chain::Chain;
-use crate::expr::Expression;
-use crate::{ErrorKind, MsgType, Result};
 
 /// A nftables firewall rule.
 pub struct Rule<'a> {
@@ -15,11 +12,9 @@ impl<'a> Rule<'a> {
     /// Creates a new rule object in the given [`Chain`].
     ///
     /// [`Chain`]: struct.Chain.html
-    pub fn new(chain: &'a Chain<'_>) -> Result<Rule<'a>> {
+    pub fn new(chain: &'a Chain<'_>) -> Rule<'a> {
         unsafe {
-            let rule = sys::nftnl_rule_alloc();
-            ensure!(!rule.is_null(), ErrorKind::AllocationError);
-
+            let rule = try_alloc!(sys::nftnl_rule_alloc());
             sys::nftnl_rule_set_str(
                 rule,
                 sys::NFTNL_RULE_TABLE as u16,
@@ -36,7 +31,7 @@ impl<'a> Rule<'a> {
                 chain.get_table().get_family() as u32,
             );
 
-            Ok(Rule { rule, chain })
+            Rule { rule, chain }
         }
     }
 
@@ -57,9 +52,8 @@ impl<'a> Rule<'a> {
     /// Adds an expression to this rule. Expressions are evaluated from first to last added.
     /// As soon as an expression does not match the packet it's being evaluated for, evaluation
     /// stops and the packet is evaluated against the next rule in the chain.
-    pub fn add_expr(&mut self, expr: &impl Expression) -> Result<()> {
-        unsafe { sys::nftnl_rule_add_expr(self.rule, expr.to_expr()?) }
-        Ok(())
+    pub fn add_expr(&mut self, expr: &impl Expression) {
+        unsafe { sys::nftnl_rule_add_expr(self.rule, expr.to_expr()) }
     }
 
     /// Returns a reference to the [`Chain`] this rule lives in.

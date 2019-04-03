@@ -1,12 +1,10 @@
+use super::Expression;
+use crate::expr::cmp::ToSlice;
 use libc;
 use nftnl_sys::{
     self as sys,
     libc::{c_char, c_void},
 };
-
-use super::Expression;
-use crate::expr::cmp::ToSlice;
-use crate::{ErrorKind, Result};
 
 /// Expression for performing bitwise masking and XOR on the data in a register.
 pub struct Bitwise<M: ToSlice, X: ToSlice> {
@@ -23,10 +21,11 @@ impl<M: ToSlice, X: ToSlice> Bitwise<M, X> {
 }
 
 impl<M: ToSlice, X: ToSlice> Expression for Bitwise<M, X> {
-    fn to_expr(&self) -> Result<*mut sys::nftnl_expr> {
+    fn to_expr(&self) -> *mut sys::nftnl_expr {
         unsafe {
-            let expr = sys::nftnl_expr_alloc(b"bitwise\0" as *const _ as *const c_char);
-            ensure!(!expr.is_null(), ErrorKind::AllocationError);
+            let expr = try_alloc!(sys::nftnl_expr_alloc(
+                b"bitwise\0" as *const _ as *const c_char
+            ));
 
             let mask = self.mask.to_slice();
             let xor = self.xor.to_slice();
@@ -58,7 +57,7 @@ impl<M: ToSlice, X: ToSlice> Expression for Bitwise<M, X> {
                 len,
             );
 
-            Ok(expr)
+            expr
         }
     }
 }

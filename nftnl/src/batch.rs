@@ -1,15 +1,19 @@
+use crate::{MsgType, NlMsg};
 use libc;
 use nftnl_sys::{self as sys, libc::c_void};
-
-use crate::{ErrorKind, MsgType, NlMsg, Result};
 use std::ptr;
 
+/// Error while communicating with netlink
+#[derive(err_derive::Error, Debug)]
+#[error(display = "Error while communicating with netlink")]
+pub struct NetlinkError(());
+
 /// Check if the kernel supports batched netlink messages to netfilter.
-pub fn batch_is_supported() -> Result<bool> {
+pub fn batch_is_supported() -> std::result::Result<bool, NetlinkError> {
     match unsafe { sys::nftnl_batch_is_supported() } {
         1 => Ok(true),
         0 => Ok(false),
-        _ => bail!(ErrorKind::NetlinkError),
+        _ => Err(NetlinkError(())),
     }
 }
 
@@ -24,21 +28,22 @@ impl Batch {
     /// Creates a new nftnl batch with the [default page size].
     ///
     /// [default page size]: fn.default_batch_page_size.html
-    pub fn new() -> Result<Self> {
+    pub fn new() -> Self {
         Self::with_page_size(default_batch_page_size())
     }
 
     /// Creates a new nftnl batch with the given batch size.
-    pub fn with_page_size(batch_page_size: u32) -> Result<Self> {
-        let batch = unsafe { sys::nftnl_batch_alloc(batch_page_size, crate::nft_nlmsg_maxsize()) };
-        ensure!(!batch.is_null(), ErrorKind::AllocationError);
+    pub fn with_page_size(batch_page_size: u32) -> Self {
+        let batch = try_alloc!(unsafe {
+            sys::nftnl_batch_alloc(batch_page_size, crate::nft_nlmsg_maxsize())
+        });
         let mut this = Batch { batch, seq: 1 };
-        this.write_begin_msg()?;
-        Ok(this)
+        this.write_begin_msg();
+        this
     }
 
     /// Adds the given message to this batch.
-    pub fn add<T: NlMsg>(&mut self, msg: &T, msg_type: MsgType) -> Result<()> {
+    pub fn add<T: NlMsg>(&mut self, msg: &T, msg_type: MsgType) {
         trace!("Writing NlMsg with seq {} to batch", self.seq);
         unsafe { msg.write(self.current(), self.seq, msg_type) };
         self.next()
@@ -47,46 +52,45 @@ impl Batch {
     /// Adds all the messages in the given iterator to this batch. If any message fails to be added
     /// the error for that failure is returned and all messages up until that message stays added
     /// to the batch.
-    pub fn add_iter<T, I>(&mut self, msg_iter: I, msg_type: MsgType) -> Result<()>
+    pub fn add_iter<T, I>(&mut self, msg_iter: I, msg_type: MsgType)
     where
         T: NlMsg,
         I: Iterator<Item = T>,
     {
         for msg in msg_iter {
-            self.add(&msg, msg_type)?;
+            self.add(&msg, msg_type);
         }
-        Ok(())
     }
 
     /// Adds the final end message to the batch and returns a [`FinalizedBatch`] that can be used
     /// to send the messages to netfilter.
     ///
     /// [`FinalizedBatch`]: struct.FinalizedBatch.html
-    pub fn finalize(mut self) -> Result<FinalizedBatch> {
-        self.write_end_msg()?;
-        Ok(FinalizedBatch { batch: self })
+    pub fn finalize(mut self) -> FinalizedBatch {
+        self.write_end_msg();
+        FinalizedBatch { batch: self }
     }
 
     fn current(&self) -> *mut c_void {
         unsafe { sys::nftnl_batch_buffer(self.batch) }
     }
 
-    fn next(&mut self) -> Result<()> {
+    fn next(&mut self) {
         if unsafe { sys::nftnl_batch_update(self.batch) } < 0 {
-            bail!(ErrorKind::AllocationError);
+            // See try_alloc definition.
+            std::process::abort();
         }
         self.seq += 1;
-        Ok(())
     }
 
-    fn write_begin_msg(&mut self) -> Result<()> {
+    fn write_begin_msg(&mut self) {
         unsafe { sys::nftnl_batch_begin(self.current() as *mut i8, self.seq) };
-        self.next()
+        self.next();
     }
 
-    fn write_end_msg(&mut self) -> Result<()> {
+    fn write_end_msg(&mut self) {
         unsafe { sys::nftnl_batch_end(self.current() as *mut i8, self.seq) };
-        self.next()
+        self.next();
     }
 
     /// Returns the underlying `nftnl_batch` instance.

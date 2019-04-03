@@ -1,16 +1,15 @@
+use super::Expression;
 use libc;
 use nftnl_sys::{
     self as sys,
     libc::{c_char, c_void},
 };
-
-use std::borrow::Cow;
-use std::ffi::CString;
-use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
-use std::slice;
-
-use super::Expression;
-use crate::{ErrorKind, Result};
+use std::{
+    borrow::Cow,
+    ffi::CString,
+    net::{IpAddr, Ipv4Addr, Ipv6Addr},
+    slice,
+};
 
 /// Comparison operator.
 #[derive(Copy, Clone, Eq, PartialEq)]
@@ -60,10 +59,9 @@ impl<T: ToSlice> Cmp<T> {
 }
 
 impl<T: ToSlice> Expression for Cmp<T> {
-    fn to_expr(&self) -> Result<*mut sys::nftnl_expr> {
+    fn to_expr(&self) -> *mut sys::nftnl_expr {
         unsafe {
-            let expr = sys::nftnl_expr_alloc(b"cmp\0" as *const _ as *const c_char);
-            ensure!(!expr.is_null(), ErrorKind::AllocationError);
+            let expr = try_alloc!(sys::nftnl_expr_alloc(b"cmp\0" as *const _ as *const c_char));
 
             let data = self.data.to_slice();
             trace!("Creating a cmp expr comparing with data {:?}", data);
@@ -81,7 +79,7 @@ impl<T: ToSlice> Expression for Cmp<T> {
                 data.len() as u32,
             );
 
-            Ok(expr)
+            expr
         }
     }
 }

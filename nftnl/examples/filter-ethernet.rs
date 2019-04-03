@@ -22,8 +22,9 @@
 //! # nft delete table inet example-filter-ethernet
 //! ```
 
-use nftnl::{nft_expr, Batch, Chain, ChainedError, FinalizedBatch, ProtoFamily, Rule, Table};
+use nftnl::{nft_expr, Batch, Chain, FinalizedBatch, ProtoFamily, Rule, Table};
 use std::{ffi::CString, io};
+
 
 const TABLE_NAME: &str = "example-filter-ethernet";
 const OUT_CHAIN_NAME: &str = "chain-for-outgoing-packets";
@@ -33,33 +34,33 @@ const BLOCK_THIS_MAC: &[u8] = &[0, 0, 0, 0, 0, 0];
 fn main() -> Result<(), Error> {
     // For verbose explanations of what all these lines up until the rule creation does, see the
     // `add-rules` example.
-    let mut batch = Batch::new()?;
-    let table = Table::new(&CString::new(TABLE_NAME).unwrap(), ProtoFamily::Inet)?;
-    batch.add(&table, nftnl::MsgType::Add)?;
+    let mut batch = Batch::new();
+    let table = Table::new(&CString::new(TABLE_NAME).unwrap(), ProtoFamily::Inet);
+    batch.add(&table, nftnl::MsgType::Add);
 
-    let mut out_chain = Chain::new(&CString::new(OUT_CHAIN_NAME).unwrap(), &table)?;
+    let mut out_chain = Chain::new(&CString::new(OUT_CHAIN_NAME).unwrap(), &table);
     out_chain.set_hook(nftnl::Hook::Out, 3);
     out_chain.set_policy(nftnl::Policy::Accept);
-    batch.add(&out_chain, nftnl::MsgType::Add)?;
+    batch.add(&out_chain, nftnl::MsgType::Add);
 
 
     // === ADD RULE DROPPING ALL TRAFFIC TO THE MAC ADDRESS IN `BLOCK_THIS_MAC` ===
 
-    let mut block_ethernet_rule = Rule::new(&out_chain)?;
+    let mut block_ethernet_rule = Rule::new(&out_chain);
 
     // Check that the interface type is an ethernet interface. Must be done before we can check
     // payload values in the ethernet header.
-    block_ethernet_rule.add_expr(&nft_expr!(meta iiftype))?;
-    block_ethernet_rule.add_expr(&nft_expr!(cmp == libc::ARPHRD_ETHER))?;
+    block_ethernet_rule.add_expr(&nft_expr!(meta iiftype));
+    block_ethernet_rule.add_expr(&nft_expr!(cmp == libc::ARPHRD_ETHER));
 
     // Compare the ethernet destination address against the MAC address we want to drop
-    block_ethernet_rule.add_expr(&nft_expr!(payload ethernet daddr))?;
-    block_ethernet_rule.add_expr(&nft_expr!(cmp == BLOCK_THIS_MAC))?;
+    block_ethernet_rule.add_expr(&nft_expr!(payload ethernet daddr));
+    block_ethernet_rule.add_expr(&nft_expr!(cmp == BLOCK_THIS_MAC));
 
     // Drop the matching packets.
-    block_ethernet_rule.add_expr(&nft_expr!(verdict drop))?;
+    block_ethernet_rule.add_expr(&nft_expr!(verdict drop));
 
-    batch.add(&block_ethernet_rule, nftnl::MsgType::Add)?;
+    batch.add(&block_ethernet_rule, nftnl::MsgType::Add);
 
 
     // === FOR FUN, ADD A PACKET THAT MATCHES 50% OF ALL PACKETS ===
@@ -68,24 +69,24 @@ fn main() -> Result<(), Error> {
     // So after a number of packets has passed through this rule, the first counter should have a
     // value approximately double that of the second counter. This rule has no verdict, so it never
     // does anything with the matching packets.
-    let mut random_rule = Rule::new(&out_chain)?;
+    let mut random_rule = Rule::new(&out_chain);
     // This counter expression will be evaluated (and increment the counter) for all packets coming
     // through.
-    random_rule.add_expr(&nft_expr!(counter))?;
+    random_rule.add_expr(&nft_expr!(counter));
 
     // Load a pseudo-random 32 bit unsigned integer into the netfilter register.
-    random_rule.add_expr(&nft_expr!(meta random))?;
+    random_rule.add_expr(&nft_expr!(meta random));
     // Check if the random integer is larger than `u32::MAX/2`, thus having 50% chance of success.
-    random_rule.add_expr(&nft_expr!(cmp > (::std::u32::MAX / 2).to_be()))?;
+    random_rule.add_expr(&nft_expr!(cmp > (::std::u32::MAX / 2).to_be()));
 
     // Add a second counter. This will only be incremented for the packets passing the random check.
-    random_rule.add_expr(&nft_expr!(counter))?;
+    random_rule.add_expr(&nft_expr!(counter));
 
-    batch.add(&random_rule, nftnl::MsgType::Add)?;
+    batch.add(&random_rule, nftnl::MsgType::Add);
 
     // === FINALIZE THE TRANSACTION AND SEND THE DATA TO NETFILTER ===
 
-    let finalized_batch = batch.finalize()?;
+    let finalized_batch = batch.finalize();
     send_and_process(&finalized_batch)?;
     Ok(())
 }
@@ -123,12 +124,6 @@ fn socket_recv<'a>(socket: &mnl::Socket, buf: &'a mut [u8]) -> Result<Option<&'a
 
 #[derive(Debug)]
 struct Error(String);
-
-impl From<nftnl::Error> for Error {
-    fn from(error: nftnl::Error) -> Self {
-        Error(error.display_chain().to_string())
-    }
-}
 
 impl From<io::Error> for Error {
     fn from(error: io::Error) -> Self {

@@ -34,29 +34,27 @@
 //! [`nftables`]: https://netfilter.org/projects/nftables/
 //! [`nftnl-sys`]: https://crates.io/crates/nftnl-sys
 
-pub use nftnl_sys;
-
-#[macro_use]
-extern crate error_chain;
 #[macro_use]
 extern crate log;
 
+
+pub use nftnl_sys;
 use nftnl_sys::libc::c_void;
 
-pub use error_chain::ChainedError;
-error_chain! {
-    errors {
-        /// Unable to allocate memory
-        AllocationError { description("Unable to allocate memory") }
-        /// Not enough room in the batch
-        BatchIsFull { description("Not enough room in the batch") }
-        /// Error while communicating with netlink
-        NetlinkError { description("Error while communicating with netlink") }
-    }
+macro_rules! try_alloc {
+    ($e:expr) => {{
+        let ptr = $e;
+        if ptr.is_null() {
+            // OOM, and the tried allocation was likely very small,
+            // so we are in a very tight situation. We do what libstd does, aborts.
+            std::process::abort();
+        }
+        ptr
+    }};
 }
 
 mod batch;
-pub use batch::{batch_is_supported, default_batch_page_size, Batch, FinalizedBatch};
+pub use batch::{batch_is_supported, default_batch_page_size, Batch, FinalizedBatch, NetlinkError};
 
 pub mod expr;
 

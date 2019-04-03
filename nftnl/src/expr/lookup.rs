@@ -1,11 +1,8 @@
-use libc;
-use nftnl_sys::{self as sys, libc::c_char};
-
-use std::ffi::CString;
-
 use super::Expression;
 use crate::set::Set;
-use crate::{ErrorKind, Result};
+use libc;
+use nftnl_sys::{self as sys, libc::c_char};
+use std::ffi::CString;
 
 pub struct Lookup {
     set_name: CString,
@@ -22,10 +19,11 @@ impl Lookup {
 }
 
 impl Expression for Lookup {
-    fn to_expr(&self) -> Result<*mut sys::nftnl_expr> {
+    fn to_expr(&self) -> *mut sys::nftnl_expr {
         unsafe {
-            let expr = sys::nftnl_expr_alloc(b"lookup\0" as *const _ as *const c_char);
-            ensure!(!expr.is_null(), ErrorKind::AllocationError);
+            let expr = try_alloc!(sys::nftnl_expr_alloc(
+                b"lookup\0" as *const _ as *const c_char
+            ));
 
             sys::nftnl_expr_set_u32(
                 expr,
@@ -45,7 +43,7 @@ impl Expression for Lookup {
             //         libc::NFT_LOOKUP_F_INV as u32);
             // }
 
-            Ok(expr)
+            expr
         }
     }
 }
