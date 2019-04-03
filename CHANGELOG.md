@@ -19,7 +19,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Add `add-get-tables-request` that can create requests to enumerate tables.
 
 ### Changed
-- Upgraded crates to Rust 2018 edition.
+- Upgrade crates to Rust 2018 edition.
+- Remove the `error-chain` dependency and introduce new error types.
 
 
 ## [0.1.0] - 2018-09-10
