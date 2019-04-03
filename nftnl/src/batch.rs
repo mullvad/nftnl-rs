@@ -77,7 +77,8 @@ impl Batch {
 
     fn next(&mut self) {
         if unsafe { sys::nftnl_batch_update(self.batch) } < 0 {
-            panic!("Unable to allocate memory in libnftnl");
+            // See try_alloc definition.
+            std::process::abort();
         }
         self.seq += 1;
     }
