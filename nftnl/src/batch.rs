@@ -1,7 +1,6 @@
+use crate::{MsgType, NlMsg, Result};
 use libc;
 use nftnl_sys::{self as sys, libc::c_void};
-
-use crate::{MsgType, NlMsg, Result};
 use std::ptr;
 
 /// Error while communicating with netlink

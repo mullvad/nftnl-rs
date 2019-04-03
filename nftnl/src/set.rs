@@ -1,12 +1,12 @@
+use crate::{table::Table, MsgType, ProtoFamily, Result};
 use libc;
 use nftnl_sys::{self as sys, libc::c_void};
-
-use crate::table::Table;
-use crate::{MsgType, ProtoFamily, Result};
-use std::cell::Cell;
-use std::ffi::CStr;
-use std::net::{Ipv4Addr, Ipv6Addr};
-use std::rc::Rc;
+use std::{
+    cell::Cell,
+    ffi::CStr,
+    net::{Ipv4Addr, Ipv6Addr},
+    rc::Rc,
+};
 
 
 #[macro_export]

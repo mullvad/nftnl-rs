@@ -1,9 +1,6 @@
+use crate::{chain::Chain, expr::Expression, MsgType, Result};
 use libc;
 use nftnl_sys::{self as sys, libc::c_void};
-
-use crate::chain::Chain;
-use crate::expr::Expression;
-use crate::{MsgType, Result};
 
 /// A nftables firewall rule.
 pub struct Rule<'a> {

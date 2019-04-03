@@ -1,10 +1,7 @@
+use crate::{MsgType, Result, Table};
 use libc;
 use nftnl_sys::{self as sys, libc::c_void};
-
 use std::ffi::CStr;
-
-use crate::Table;
-use crate::{MsgType, Result};
 
 
 pub type Priority = u32;

@@ -1,7 +1,6 @@
 extern crate pkg_config;
 
-use std::env;
-use std::path::PathBuf;
+use std::{env, path::PathBuf};
 
 #[cfg(feature = "nftnl-1-1-1")]
 const MIN_VERSION: &str = "1.1.1";

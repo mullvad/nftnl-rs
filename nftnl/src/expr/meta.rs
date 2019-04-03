@@ -1,7 +1,6 @@
+use super::Expression;
 use libc;
 use nftnl_sys::{self as sys, libc::c_char};
-
-use super::Expression;
 
 /// A meta expression refers to meta data associated with a packet.
 pub enum Meta {

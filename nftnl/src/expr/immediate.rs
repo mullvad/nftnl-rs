@@ -1,8 +1,6 @@
+use super::Expression;
 use libc;
 use nftnl_sys::{self as sys, libc::c_char};
-
-use super::Expression;
-
 use std::ffi::{CStr, CString};
 
 /// A verdict expression. In the background actually an "Immediate" expression in nftnl terms,

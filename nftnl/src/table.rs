@@ -1,14 +1,12 @@
+use crate::{MsgType, ProtoFamily, Result};
 use nftnl_sys::{
     self as sys,
     libc::{self, c_void},
 };
-
 use std::{
     collections::HashSet,
     ffi::{CStr, CString},
 };
-
-use crate::{MsgType, ProtoFamily, Result};
 
 
 /// Abstraction of `nftnl_table`. The top level container in netfilter. A table has a protocol

@@ -25,6 +25,7 @@
 use nftnl::{nft_expr, Batch, Chain, FinalizedBatch, ProtoFamily, Rule, Table};
 use std::{ffi::CString, io};
 
+
 const TABLE_NAME: &str = "example-filter-ethernet";
 const OUT_CHAIN_NAME: &str = "chain-for-outgoing-packets";
 

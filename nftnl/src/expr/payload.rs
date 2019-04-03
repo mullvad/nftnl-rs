@@ -1,7 +1,6 @@
+use super::Expression;
 use libc;
 use nftnl_sys::{self as sys, libc::c_char};
-
-use super::Expression;
 
 trait HeaderField {
     fn offset(&self) -> u32;

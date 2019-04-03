@@ -1,10 +1,8 @@
-use libc;
-use nftnl_sys::{self as sys, libc::c_char};
-
-use std::ffi::CString;
-
 use super::Expression;
 use crate::set::Set;
+use libc;
+use nftnl_sys::{self as sys, libc::c_char};
+use std::ffi::CString;
 
 pub struct Lookup {
     set_name: CString,

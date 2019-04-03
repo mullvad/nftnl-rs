@@ -1,15 +1,15 @@
+use super::Expression;
 use libc;
 use nftnl_sys::{
     self as sys,
     libc::{c_char, c_void},
 };
-
-use std::borrow::Cow;
-use std::ffi::CString;
-use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
-use std::slice;
-
-use super::Expression;
+use std::{
+    borrow::Cow,
+    ffi::CString,
+    net::{IpAddr, Ipv4Addr, Ipv6Addr},
+    slice,
+};
 
 /// Comparison operator.
 #[derive(Copy, Clone, Eq, PartialEq)]

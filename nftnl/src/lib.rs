@@ -34,12 +34,13 @@
 //! [`nftables`]: https://netfilter.org/projects/nftables/
 //! [`nftnl-sys`]: https://crates.io/crates/nftnl-sys
 
-pub use nftnl_sys;
-
 #[macro_use]
 extern crate log;
 
+
+pub use nftnl_sys;
 use nftnl_sys::libc::c_void;
+
 
 pub type Result<T> = std::result::Result<T, Error>;
 
