@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 ### Added
 - Add `add-get-tables-request` that can create requests to enumerate tables.
+- Add bindings to `libnftnl-1.1.2`.
 
 ### Changed
 - Upgrade crates to Rust 2018 edition.

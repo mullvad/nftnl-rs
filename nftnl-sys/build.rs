@@ -2,23 +2,23 @@ extern crate pkg_config;
 
 use std::{env, path::PathBuf};
 
-#[cfg(feature = "nftnl-1-1-1")]
-const MIN_VERSION: &str = "1.1.1";
-
-#[cfg(all(feature = "nftnl-1-1-0", not(feature = "nftnl-1-1-1")))]
-const MIN_VERSION: &str = "1.1.0";
-
-#[cfg(all(feature = "nftnl-1-0-9", not(feature = "nftnl-1-1-0")))]
-const MIN_VERSION: &str = "1.0.9";
-
-#[cfg(all(feature = "nftnl-1-0-8", not(feature = "nftnl-1-0-9")))]
-const MIN_VERSION: &str = "1.0.8";
-
-#[cfg(all(feature = "nftnl-1-0-7", not(feature = "nftnl-1-0-8")))]
-const MIN_VERSION: &str = "1.0.7";
-
-#[cfg(not(feature = "nftnl-1-0-7"))]
-const MIN_VERSION: &str = "1.0.6";
+cfg_if::cfg_if! {
+    if #[cfg(feature = "nftnl-1-1-2")] {
+        const MIN_VERSION: &str = "1.1.2";
+    } else if #[cfg(feature = "nftnl-1-1-1")] {
+        const MIN_VERSION: &str = "1.1.1";
+    } else if #[cfg(feature = "nftnl-1-1-0")] {
+        const MIN_VERSION: &str = "1.1.0";
+    } else if #[cfg(feature = "nftnl-1-0-9")] {
+        const MIN_VERSION: &str = "1.0.9";
+    } else if #[cfg(feature = "nftnl-1-0-8")] {
+        const MIN_VERSION: &str = "1.0.8";
+    } else if #[cfg(feature = "nftnl-1-0-7")] {
+        const MIN_VERSION: &str = "1.0.7";
+    } else {
+        const MIN_VERSION: &str = "1.0.6";
+    }
+}
 
 fn get_env(var: &'static str) -> Option<PathBuf> {
     println!("cargo:rerun-if-env-changed={}", var);
