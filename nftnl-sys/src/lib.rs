@@ -44,32 +44,27 @@
 
 pub use libc;
 
-#[cfg(feature = "nftnl-1-1-1")]
-mod nftnl_1_1_1;
-#[cfg(feature = "nftnl-1-1-1")]
-pub use self::nftnl_1_1_1::*;
-
-#[cfg(all(feature = "nftnl-1-1-0", not(feature = "nftnl-1-1-1")))]
-mod nftnl_1_1_0;
-#[cfg(all(feature = "nftnl-1-1-0", not(feature = "nftnl-1-1-1")))]
-pub use self::nftnl_1_1_0::*;
-
-#[cfg(all(feature = "nftnl-1-0-9", not(feature = "nftnl-1-1-0")))]
-mod nftnl_1_0_9;
-#[cfg(all(feature = "nftnl-1-0-9", not(feature = "nftnl-1-1-0")))]
-pub use self::nftnl_1_0_9::*;
-
-#[cfg(all(feature = "nftnl-1-0-8", not(feature = "nftnl-1-0-9")))]
-mod nftnl_1_0_8;
-#[cfg(all(feature = "nftnl-1-0-8", not(feature = "nftnl-1-0-9")))]
-pub use self::nftnl_1_0_8::*;
-
-#[cfg(all(feature = "nftnl-1-0-7", not(feature = "nftnl-1-0-8")))]
-mod nftnl_1_0_7;
-#[cfg(all(feature = "nftnl-1-0-7", not(feature = "nftnl-1-0-8")))]
-pub use self::nftnl_1_0_7::*;
-
-#[cfg(not(feature = "nftnl-1-0-7"))]
-mod nftnl_1_0_6;
-#[cfg(not(feature = "nftnl-1-0-7"))]
-pub use self::nftnl_1_0_6::*;
+cfg_if::cfg_if! {
+    if #[cfg(feature = "nftnl-1-1-2")] {
+        mod nftnl_1_1_2;
+        pub use self::nftnl_1_1_2::*;
+    } else if #[cfg(feature = "nftnl-1-1-1")] {
+        mod nftnl_1_1_1;
+        pub use self::nftnl_1_1_1::*;
+    } else if #[cfg(feature = "nftnl-1-1-0")] {
+        mod nftnl_1_1_0;
+        pub use self::nftnl_1_1_0::*;
+    } else if #[cfg(feature = "nftnl-1-0-9")] {
+        mod nftnl_1_0_9;
+        pub use self::nftnl_1_0_9::*;
+    } else if #[cfg(feature = "nftnl-1-0-8")] {
+        mod nftnl_1_0_8;
+        pub use self::nftnl_1_0_8::*;
+    } else if #[cfg(feature = "nftnl-1-0-7")] {
+        mod nftnl_1_0_7;
+        pub use self::nftnl_1_0_7::*;
+    } else {
+        mod nftnl_1_0_6;
+        pub use self::nftnl_1_0_6::*;
+    }
+}
