@@ -15,13 +15,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 
 ## [Unreleased]
+
+
+## [0.2.0] - 2019-04-05
 ### Added
 - Add `add-get-tables-request` that can create requests to enumerate tables.
 - Add bindings to `libnftnl-1.1.2`.
 
 ### Changed
 - Upgrade crates to Rust 2018 edition.
-- Remove the `error-chain` dependency. Now panics on allocation error.
+- Remove the `error-chain` dependency. Now aborts on allocation error.
 
 
 ## [0.1.0] - 2018-09-10
