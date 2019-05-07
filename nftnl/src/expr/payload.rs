@@ -182,6 +182,7 @@ impl HeaderField for Ipv6HeaderField {
 pub enum TransportHeaderField {
     Tcp(TcpHeaderField),
     Udp(UdpHeaderField),
+    Icmpv6(Icmpv6HeaderField),
 }
 
 impl HeaderField for TransportHeaderField {
@@ -190,6 +191,7 @@ impl HeaderField for TransportHeaderField {
         match *self {
             Tcp(ref f) => f.offset(),
             Udp(ref f) => f.offset(),
+            Icmpv6(ref f) => f.offset(),
         }
     }
 
@@ -198,6 +200,7 @@ impl HeaderField for TransportHeaderField {
         match *self {
             Tcp(ref f) => f.len(),
             Udp(ref f) => f.len(),
+            Icmpv6(ref f) => f.len(),
         }
     }
 }
@@ -249,6 +252,33 @@ impl HeaderField for UdpHeaderField {
             Sport => 2,
             Dport => 2,
             Len => 2,
+        }
+    }
+}
+
+#[derive(Copy, Clone, Eq, PartialEq)]
+pub enum Icmpv6HeaderField {
+    Type,
+    Code,
+    Checksum,
+}
+
+impl HeaderField for Icmpv6HeaderField {
+    fn offset(&self) -> u32 {
+        use self::Icmpv6HeaderField::*;
+        match *self {
+            Type => 0,
+            Code => 1,
+            Checksum => 2,
+        }
+    }
+
+    fn len(&self) -> u32 {
+        use self::Icmpv6HeaderField::*;
+        match *self {
+            Type => 1,
+            Code => 1,
+            Checksum => 2,
         }
     }
 }
