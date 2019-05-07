@@ -146,6 +146,30 @@ fn main() -> Result<(), Error> {
     batch.add(&block_out_to_private_net_rule, nftnl::MsgType::Add);
 
 
+    // === ADD A RULE ALLOWING ALL OUTGOING ICMPv6 PACKETS WITH TYPE 133 AND CODE 0 ===
+
+    let mut allow_router_solicitation = Rule::new(&out_chain);
+
+    // Check that the packet is IPv6 and ICMPv6
+    allow_router_solicitation.add_expr(&nft_expr!(meta nfproto));
+    allow_router_solicitation.add_expr(&nft_expr!(cmp == libc::NFPROTO_IPV6 as u8));
+    allow_router_solicitation.add_expr(&nft_expr!(meta l4proto));
+    allow_router_solicitation.add_expr(&nft_expr!(cmp == libc::IPPROTO_ICMPV6 as u8));
+
+    allow_router_solicitation.add_expr(&nftnl::expr::Payload::Transport(
+        nftnl::expr::TransportHeaderField::Icmpv6(nftnl::expr::Icmpv6HeaderField::Type),
+    ));
+    allow_router_solicitation.add_expr(&nft_expr!(cmp == 133u8));
+    allow_router_solicitation.add_expr(&nftnl::expr::Payload::Transport(
+        nftnl::expr::TransportHeaderField::Icmpv6(nftnl::expr::Icmpv6HeaderField::Code),
+    ));
+    allow_router_solicitation.add_expr(&nft_expr!(cmp == 0u8));
+
+    allow_router_solicitation.add_expr(&nft_expr!(verdict accept));
+
+    batch.add(&allow_router_solicitation, nftnl::MsgType::Add);
+
+
     // === FINALIZE THE TRANSACTION AND SEND THE DATA TO NETFILTER ===
 
     // Finalize the batch. This means the batch end message is written into the batch, telling
