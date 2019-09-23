@@ -26,5 +26,5 @@ log = "0.4"
 nftnl-sys = { path = "../nftnl-sys", version = "0.2" }
 
 [dev-dependencies]
-ipnetwork = "0.14"
+ipnetwork = "0.15"
 mnl = "0.1"
