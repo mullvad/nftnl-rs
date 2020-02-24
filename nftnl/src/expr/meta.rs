@@ -4,6 +4,8 @@ use nftnl_sys::{self as sys, libc::c_char};
 
 /// A meta expression refers to meta data associated with a packet.
 pub enum Meta {
+    /// Socket control group (skb->sk->sk_classid).
+    Cgroup,
     /// Packet ethertype protocol (skb->protocol), invalid in OUTPUT.
     Protocol,
     /// Packet input interface index (dev->ifindex).
@@ -31,6 +33,7 @@ impl Meta {
     pub fn to_raw_key(&self) -> u32 {
         use self::Meta::*;
         match *self {
+            Cgroup => libc::NFT_META_CGROUP as u32,
             Protocol => libc::NFT_META_PROTOCOL as u32,
             Iif => libc::NFT_META_IIF as u32,
             Oif => libc::NFT_META_OIF as u32,
@@ -65,6 +68,9 @@ impl Expression for Meta {
 
 #[macro_export]
 macro_rules! nft_expr_meta {
+    (cgroup) => {
+        $crate::expr::Meta::Cgroup
+    };
     (proto) => {
         $crate::expr::Meta::Protocol
     };
