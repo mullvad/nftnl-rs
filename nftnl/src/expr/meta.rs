@@ -22,6 +22,8 @@ pub enum Meta {
     NfProto,
     /// Layer 4 protocol number.
     L4Proto,
+    /// Socket control group (skb->sk->sk_classid).
+    Cgroup,
     /// A 32bit pseudo-random number
     PRandom,
 }
@@ -40,6 +42,7 @@ impl Meta {
             OifType => libc::NFT_META_OIFTYPE as u32,
             NfProto => libc::NFT_META_NFPROTO as u32,
             L4Proto => libc::NFT_META_L4PROTO as u32,
+            Cgroup => libc::NFT_META_CGROUP as u32,
             PRandom => libc::NFT_META_PRANDOM as u32,
         }
     }
@@ -91,6 +94,9 @@ macro_rules! nft_expr_meta {
     };
     (l4proto) => {
         $crate::expr::Meta::L4Proto
+    };
+    (cgroup) => {
+        $crate::expr::Meta::Cgroup
     };
     (random) => {
         $crate::expr::Meta::PRandom
