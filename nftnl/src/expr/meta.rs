@@ -6,6 +6,8 @@ use nftnl_sys::{self as sys, libc::c_char};
 pub enum Meta {
     /// Socket control group (skb->sk->sk_classid).
     Cgroup,
+    /// Packet mark.
+    Mark(bool),
     /// Packet ethertype protocol (skb->protocol), invalid in OUTPUT.
     Protocol,
     /// Packet input interface index (dev->ifindex).
@@ -31,7 +33,7 @@ pub enum Meta {
 impl Meta {
     /// Returns the corresponding `NFT_*` constant for this meta expression.
     pub fn to_raw_key(&self) -> u32 {
-        use self::Meta::*;
+        use Meta::*;
         match *self {
             Cgroup => libc::NFT_META_CGROUP as u32,
             Protocol => libc::NFT_META_PROTOCOL as u32,
@@ -41,6 +43,7 @@ impl Meta {
             OifName => libc::NFT_META_OIFNAME as u32,
             IifType => libc::NFT_META_IIFTYPE as u32,
             OifType => libc::NFT_META_OIFTYPE as u32,
+            Mark(_) => libc::NFT_META_MARK as u32,
             NfProto => libc::NFT_META_NFPROTO as u32,
             L4Proto => libc::NFT_META_L4PROTO as u32,
             PRandom => libc::NFT_META_PRANDOM as u32,
@@ -55,11 +58,19 @@ impl Expression for Meta {
                 b"meta\0" as *const _ as *const c_char
             ));
 
-            sys::nftnl_expr_set_u32(
-                expr,
-                sys::NFTNL_EXPR_META_DREG as u16,
-                libc::NFT_REG_1 as u32,
-            );
+            if let Meta::Mark(true) = self {
+                sys::nftnl_expr_set_u32(
+                    expr,
+                    sys::NFTNL_EXPR_META_SREG as u16,
+                    libc::NFT_REG_1 as u32,
+                );
+            } else {
+                sys::nftnl_expr_set_u32(
+                    expr,
+                    sys::NFTNL_EXPR_META_DREG as u16,
+                    libc::NFT_REG_1 as u32,
+                );
+            }
             sys::nftnl_expr_set_u32(expr, sys::NFTNL_EXPR_META_KEY as u16, self.to_raw_key());
             expr
         }
@@ -70,6 +81,12 @@ impl Expression for Meta {
 macro_rules! nft_expr_meta {
     (cgroup) => {
         $crate::expr::Meta::Cgroup
+    };
+    (mark set) => {
+        $crate::expr::Meta::Mark(true)
+    };
+    (mark) => {
+        $crate::expr::Meta::Mark(false)
     };
     (proto) => {
         $crate::expr::Meta::Protocol
