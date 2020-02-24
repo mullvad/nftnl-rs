@@ -59,6 +59,9 @@ macro_rules! nft_expr {
     (lookup $set:expr) => {
         nft_expr_lookup!($set)
     };
+    (meta $expr:ident set) => {
+        nft_expr_meta!($expr set)
+    };
     (meta $expr:ident) => {
         nft_expr_meta!($expr)
     };
