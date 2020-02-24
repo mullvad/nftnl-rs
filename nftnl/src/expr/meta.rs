@@ -6,6 +6,8 @@ use nftnl_sys::{self as sys, libc::c_char};
 pub enum Meta {
     /// Socket control group (skb->sk->sk_classid).
     Cgroup,
+    /// Packet mark.
+    Mark,
     /// Packet ethertype protocol (skb->protocol), invalid in OUTPUT.
     Protocol,
     /// Packet input interface index (dev->ifindex).
@@ -28,11 +30,20 @@ pub enum Meta {
     PRandom,
 }
 
-impl Meta {
+pub struct MetaStruct {
+    meta_type: Meta,
+    set_value: bool,
+}
+
+impl MetaStruct {
+    pub fn new(meta_type: Meta, set_value: bool) -> Self {
+        MetaStruct { meta_type, set_value }
+    }
+
     /// Returns the corresponding `NFT_*` constant for this meta expression.
     pub fn to_raw_key(&self) -> u32 {
-        use self::Meta::*;
-        match *self {
+        use Meta::*;
+        match self.meta_type {
             Cgroup => libc::NFT_META_CGROUP as u32,
             Protocol => libc::NFT_META_PROTOCOL as u32,
             Iif => libc::NFT_META_IIF as u32,
@@ -41,6 +52,7 @@ impl Meta {
             OifName => libc::NFT_META_OIFNAME as u32,
             IifType => libc::NFT_META_IIFTYPE as u32,
             OifType => libc::NFT_META_OIFTYPE as u32,
+            Mark => libc::NFT_META_MARK as u32,
             NfProto => libc::NFT_META_NFPROTO as u32,
             L4Proto => libc::NFT_META_L4PROTO as u32,
             PRandom => libc::NFT_META_PRANDOM as u32,
@@ -48,57 +60,80 @@ impl Meta {
     }
 }
 
-impl Expression for Meta {
+impl Expression for MetaStruct {
     fn to_expr(&self) -> *mut sys::nftnl_expr {
         unsafe {
             let expr = try_alloc!(sys::nftnl_expr_alloc(
                 b"meta\0" as *const _ as *const c_char
             ));
 
-            sys::nftnl_expr_set_u32(
-                expr,
-                sys::NFTNL_EXPR_META_DREG as u16,
-                libc::NFT_REG_1 as u32,
-            );
+            if self.set_value {
+                sys::nftnl_expr_set_u32(
+                    expr,
+                    sys::NFTNL_EXPR_META_SREG as u16,
+                    libc::NFT_REG_1 as u32,
+                );
+            } else {
+                sys::nftnl_expr_set_u32(
+                    expr,
+                    sys::NFTNL_EXPR_META_DREG as u16,
+                    libc::NFT_REG_1 as u32,
+                );
+            }
             sys::nftnl_expr_set_u32(expr, sys::NFTNL_EXPR_META_KEY as u16, self.to_raw_key());
             expr
         }
     }
 }
 
-#[macro_export]
+#[macro_export(local_inner_macros)]
 macro_rules! nft_expr_meta {
-    (cgroup) => {
+    (@cgroup) => {
         $crate::expr::Meta::Cgroup
     };
-    (proto) => {
+    (@mark $(set)?) => {
+        $crate::expr::Meta::Mark
+    };
+    (@proto) => {
         $crate::expr::Meta::Protocol
     };
-    (iif) => {
+    (@iif) => {
         $crate::expr::Meta::Iif
     };
-    (oif) => {
+    (@oif) => {
         $crate::expr::Meta::Oif
     };
-    (iifname) => {
+    (@iifname) => {
         $crate::expr::Meta::IifName
     };
-    (oifname) => {
+    (@oifname) => {
         $crate::expr::Meta::OifName
     };
-    (iiftype) => {
+    (@iiftype) => {
         $crate::expr::Meta::IifType
     };
-    (oiftype) => {
+    (@oiftype) => {
         $crate::expr::Meta::OifType
     };
-    (nfproto) => {
+    (@nfproto) => {
         $crate::expr::Meta::NfProto
     };
-    (l4proto) => {
+    (@l4proto) => {
         $crate::expr::Meta::L4Proto
     };
-    (random) => {
+    (@random) => {
         $crate::expr::Meta::PRandom
+    };
+    ($option:ident set) => {
+        $crate::expr::MetaStruct::new(
+            nft_expr_meta!(@$option set),
+            true,
+        )
+    };
+    ($option:ident) => {
+        $crate::expr::MetaStruct::new(
+            nft_expr_meta!(@$option),
+            false,
+        )
     };
 }
