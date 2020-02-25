@@ -24,6 +24,9 @@ pub use self::counter::*;
 pub mod ct;
 pub use self::ct::Conntrack;
 
+mod immediate;
+pub use self::immediate::*;
+
 mod lookup;
 pub use self::lookup::*;
 
@@ -67,5 +70,8 @@ macro_rules! nft_expr {
     };
     (payload $proto:ident $field:ident) => {
         nft_expr_payload!($proto $field)
+    };
+    (immediate $expr:ident $value:expr) => {
+        nft_expr_immediate!($expr $value)
     };
 }

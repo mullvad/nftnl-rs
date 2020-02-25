@@ -1,0 +1,47 @@
+use super::Expression;
+use libc;
+use nftnl_sys::{self as sys, libc::{c_char, c_void}};
+use std::mem::size_of_val;
+
+/// An immediate expression.
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
+pub enum Immediate<T> {
+    /// Immediate data.
+    Data(T),
+}
+
+impl<T> Expression for Immediate<T> {
+    fn to_expr(&self) -> *mut sys::nftnl_expr {
+        unsafe {
+            let expr = try_alloc!(sys::nftnl_expr_alloc(
+                b"immediate\0" as *const _ as *const c_char
+            ));
+
+            sys::nftnl_expr_set_u32(
+                expr,
+                sys::NFTNL_EXPR_IMM_DREG as u16,
+                libc::NFT_REG_1 as u32,
+            );
+
+            match self {
+                Immediate::Data(val) => {
+                    sys::nftnl_expr_set(
+                        expr,
+                        sys::NFTNL_EXPR_IMM_DATA as u16,
+                        val as *const _ as *const c_void,
+                        size_of_val(val) as u32,
+                    )
+                }
+            };
+
+            expr
+        }
+    }
+}
+
+#[macro_export]
+macro_rules! nft_expr_immediate {
+    (data $value:expr) => {
+        $crate::expr::Immediate::Data($value)
+    };
+}
