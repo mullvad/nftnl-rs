@@ -68,4 +68,7 @@ macro_rules! nft_expr {
     (payload $proto:ident $field:ident) => {
         nft_expr_payload!($proto $field)
     };
+    (immediate $expr:ident $value:expr) => {
+        nft_expr_immediate!($expr $value)
+    };
 }
