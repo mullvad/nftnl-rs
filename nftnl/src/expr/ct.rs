@@ -14,12 +14,14 @@ bitflags::bitflags! {
 
 pub enum Conntrack {
     State,
+    Mark { set: bool },
 }
 
 impl Conntrack {
     fn raw_key(&self) -> u32 {
         match *self {
             Conntrack::State => libc::NFT_CT_STATE as u32,
+            Conntrack::Mark { .. } => libc::NFT_CT_MARK as u32,
         }
     }
 }
@@ -29,7 +31,11 @@ impl Expression for Conntrack {
         unsafe {
             let expr = try_alloc!(sys::nftnl_expr_alloc(b"ct\0" as *const _ as *const c_char));
 
-            sys::nftnl_expr_set_u32(expr, sys::NFTNL_EXPR_CT_DREG as u16, libc::NFT_REG_1 as u32);
+            if let Conntrack::Mark { set: true } = self {
+                sys::nftnl_expr_set_u32(expr, sys::NFTNL_EXPR_CT_SREG as u16, libc::NFT_REG_1 as u32);
+            } else {
+                sys::nftnl_expr_set_u32(expr, sys::NFTNL_EXPR_CT_DREG as u16, libc::NFT_REG_1 as u32);
+            }
             sys::nftnl_expr_set_u32(expr, sys::NFTNL_EXPR_CT_KEY as u16, self.raw_key());
 
             expr
@@ -41,5 +47,11 @@ impl Expression for Conntrack {
 macro_rules! nft_expr_ct {
     (state) => {
         $crate::expr::Conntrack::State
+    };
+    (mark set) => {
+        $crate::expr::Conntrack::Mark { set: true }
+    };
+    (mark) => {
+        $crate::expr::Conntrack::Mark { set: false }
     };
 }
