@@ -24,9 +24,6 @@ pub use self::counter::*;
 pub mod ct;
 pub use self::ct::Conntrack;
 
-mod immediate;
-pub use self::immediate::*;
-
 mod lookup;
 pub use self::lookup::*;
 
@@ -35,6 +32,9 @@ pub use self::meta::*;
 
 mod payload;
 pub use self::payload::*;
+
+mod verdict;
+pub use self::verdict::*;
 
 #[macro_export(local_inner_macros)]
 macro_rules! nft_expr {
