@@ -1,7 +1,7 @@
 use crate::{MsgType, Table};
 use libc;
 use nftnl_sys::{self as sys, libc::c_void};
-use std::ffi::CStr;
+use std::ffi::{CStr, CString};
 
 
 pub type Priority = u32;
@@ -31,6 +31,31 @@ pub enum Policy {
     Accept = libc::NF_ACCEPT as u32,
     /// Drop the packet.
     Drop = libc::NF_DROP as u32,
+}
+
+/// Base chain type.
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+#[repr(u32)]
+pub enum ChainType {
+    /// Used to filter packets.
+    /// Supported protocols: ip, ip6, inet, arp, and bridge tables.
+    Filter,
+    /// Used to reroute packets if IP headers or packet marks are modified.
+    /// Supported protocols: ip, and ip6 tables.
+    Route,
+    /// Used to perform NAT.
+    /// Supported protocols: ip, and ip6 tables.
+    Nat,
+}
+
+impl ChainType {
+    fn as_str(&self) -> &'static str {
+        match *self {
+            ChainType::Filter => "filter",
+            ChainType::Route => "route",
+            ChainType::Nat => "nat",
+        }
+    }
 }
 
 /// Abstraction of a `nftnl_chain`. Chains reside inside [`Table`]s and they hold [`Rule`]s.
@@ -70,10 +95,15 @@ impl<'a> Chain<'a> {
     /// By calling `set_hook` with a hook the chain that is created will be registered with that
     /// hook and is thus a "base chain". A "base chain" is an entry point for packets from the
     /// networking stack.
-    pub fn set_hook(&mut self, hook: Hook, priority: Priority) {
+    pub fn set_hook(&mut self, hook: Hook, priority: Priority, chain_type: ChainType) {
         unsafe {
             sys::nftnl_chain_set_u32(self.chain, sys::NFTNL_CHAIN_HOOKNUM as u16, hook as u32);
             sys::nftnl_chain_set_u32(self.chain, sys::NFTNL_CHAIN_PRIO as u16, priority);
+            sys::nftnl_chain_set_str(
+                self.chain,
+                sys::NFTNL_CHAIN_TYPE as u16,
+                CString::new(chain_type.as_str()).unwrap().as_ptr()
+            );
         }
     }
 
