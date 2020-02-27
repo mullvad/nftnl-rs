@@ -95,10 +95,17 @@ impl<'a> Chain<'a> {
     /// By calling `set_hook` with a hook the chain that is created will be registered with that
     /// hook and is thus a "base chain". A "base chain" is an entry point for packets from the
     /// networking stack.
-    pub fn set_hook(&mut self, hook: Hook, priority: Priority, chain_type: ChainType) {
+    pub fn set_hook(&mut self, hook: Hook, priority: Priority) {
         unsafe {
             sys::nftnl_chain_set_u32(self.chain, sys::NFTNL_CHAIN_HOOKNUM as u16, hook as u32);
             sys::nftnl_chain_set_u32(self.chain, sys::NFTNL_CHAIN_PRIO as u16, priority);
+        }
+    }
+
+    /// Set the type of a base chain. This only applies if the chain is registered
+    /// with a hook by calling `set_hook`.
+    pub fn set_base_type(&mut self, chain_type: ChainType) {
+        unsafe {
             sys::nftnl_chain_set_str(
                 self.chain,
                 sys::NFTNL_CHAIN_TYPE as u16,
