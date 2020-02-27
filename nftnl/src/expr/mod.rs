@@ -22,7 +22,7 @@ mod counter;
 pub use self::counter::*;
 
 pub mod ct;
-pub use self::ct::Conntrack;
+pub use self::ct::*;
 
 mod immediate;
 pub use self::immediate::*;
@@ -47,6 +47,9 @@ macro_rules! nft_expr {
     (counter) => {
         $crate::expr::Counter
     };
+    (ct $key:ident set) => {
+        nft_expr_ct!($key set)
+    };
     (ct $key:ident) => {
         nft_expr_ct!($key)
     };
@@ -59,10 +62,16 @@ macro_rules! nft_expr {
     (lookup $set:expr) => {
         nft_expr_lookup!($set)
     };
+    (meta $expr:ident set) => {
+        nft_expr_meta!($expr set)
+    };
     (meta $expr:ident) => {
         nft_expr_meta!($expr)
     };
     (payload $proto:ident $field:ident) => {
         nft_expr_payload!($proto $field)
+    };
+    (immediate $expr:ident $value:expr) => {
+        nft_expr_immediate!($expr $value)
     };
 }
