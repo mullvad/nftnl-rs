@@ -1,6 +1,6 @@
 use crate::{MsgType, Table};
 use libc;
-use nftnl_sys::{self as sys, libc::c_void};
+use nftnl_sys::{self as sys, libc::{c_char, c_void}};
 use std::ffi::CStr;
 
 
@@ -31,6 +31,30 @@ pub enum Policy {
     Accept = libc::NF_ACCEPT as u32,
     /// Drop the packet.
     Drop = libc::NF_DROP as u32,
+}
+
+/// Base chain type.
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+pub enum ChainType {
+    /// Used to filter packets.
+    /// Supported protocols: ip, ip6, inet, arp, and bridge tables.
+    Filter,
+    /// Used to reroute packets if IP headers or packet marks are modified.
+    /// Supported protocols: ip, and ip6 tables.
+    Route,
+    /// Used to perform NAT.
+    /// Supported protocols: ip, and ip6 tables.
+    Nat,
+}
+
+impl ChainType {
+    fn as_c_str(&self) -> &'static [u8] {
+        match *self {
+            ChainType::Filter => b"filter\0",
+            ChainType::Route => b"route\0",
+            ChainType::Nat => b"nat\0",
+        }
+    }
 }
 
 /// Abstraction of a `nftnl_chain`. Chains reside inside [`Table`]s and they hold [`Rule`]s.
@@ -74,6 +98,18 @@ impl<'a> Chain<'a> {
         unsafe {
             sys::nftnl_chain_set_u32(self.chain, sys::NFTNL_CHAIN_HOOKNUM as u16, hook as u32);
             sys::nftnl_chain_set_u32(self.chain, sys::NFTNL_CHAIN_PRIO as u16, priority);
+        }
+    }
+
+    /// Set the type of a base chain. This only applies if the chain has been registered
+    /// with a hook by calling `set_hook`.
+    pub fn set_type(&mut self, chain_type: ChainType) {
+        unsafe {
+            sys::nftnl_chain_set_str(
+                self.chain,
+                sys::NFTNL_CHAIN_TYPE as u16,
+                chain_type.as_c_str().as_ptr() as *const c_char
+            );
         }
     }
 
