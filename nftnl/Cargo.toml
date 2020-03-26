@@ -1,7 +1,7 @@
 [package]
 name = "nftnl"
-version = "0.2.1"
-authors = ["Mullvad VPN <admin@mullvad.net>", "Linus Färnstrand <linus@mullvad.net>"]
+version = "0.3.0"
+authors = ["Mullvad VPN"]
 license = "MIT/Apache-2.0"
 description = "Safe abstraction for libnftnl. Provides low-level userspace access to the in-kernel nf_tables subsystem"
 repository = "https://github.com/mullvad/nftnl-rs"
@@ -23,7 +23,7 @@ bitflags = "1.0"
 err-derive = "0.1.5"
 libc = "0.2.40"
 log = "0.4"
-nftnl-sys = { path = "../nftnl-sys", version = "0.2" }
+nftnl-sys = { path = "../nftnl-sys", version = "0.3" }
 
 [dev-dependencies]
 ipnetwork = "0.15"
