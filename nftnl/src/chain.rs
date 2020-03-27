@@ -4,7 +4,7 @@ use nftnl_sys::{self as sys, libc::{c_char, c_void}};
 use std::ffi::CStr;
 
 
-pub type Priority = u32;
+pub type Priority = i32;
 
 /// The netfilter event hooks a chain can register for.
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
@@ -77,6 +77,11 @@ impl<'a> Chain<'a> {
     pub fn new<T: AsRef<CStr>>(name: &T, table: &'a Table) -> Chain<'a> {
         unsafe {
             let chain = try_alloc!(sys::nftnl_chain_alloc());
+            sys::nftnl_chain_set_u32(
+                chain,
+                sys::NFTNL_CHAIN_FAMILY as u16,
+                table.get_family() as u32,
+            );
             sys::nftnl_chain_set_str(
                 chain,
                 sys::NFTNL_CHAIN_TABLE as u16,
@@ -97,7 +102,7 @@ impl<'a> Chain<'a> {
     pub fn set_hook(&mut self, hook: Hook, priority: Priority) {
         unsafe {
             sys::nftnl_chain_set_u32(self.chain, sys::NFTNL_CHAIN_HOOKNUM as u16, hook as u32);
-            sys::nftnl_chain_set_u32(self.chain, sys::NFTNL_CHAIN_PRIO as u16, priority);
+            sys::nftnl_chain_set_s32(self.chain, sys::NFTNL_CHAIN_PRIO as u16, priority);
         }
     }
 

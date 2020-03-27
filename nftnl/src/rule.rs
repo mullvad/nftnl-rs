@@ -15,6 +15,11 @@ impl<'a> Rule<'a> {
     pub fn new(chain: &'a Chain<'_>) -> Rule<'a> {
         unsafe {
             let rule = try_alloc!(sys::nftnl_rule_alloc());
+            sys::nftnl_rule_set_u32(
+                rule,
+                sys::NFTNL_RULE_FAMILY as u16,
+                chain.get_table().get_family() as u32,
+            );
             sys::nftnl_rule_set_str(
                 rule,
                 sys::NFTNL_RULE_TABLE as u16,
@@ -24,11 +29,6 @@ impl<'a> Rule<'a> {
                 rule,
                 sys::NFTNL_RULE_CHAIN as u16,
                 chain.get_name().as_ptr(),
-            );
-            sys::nftnl_rule_set_u32(
-                rule,
-                sys::NFTNL_RULE_FAMILY as u16,
-                chain.get_table().get_family() as u32,
             );
 
             Rule { rule, chain }
