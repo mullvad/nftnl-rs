@@ -1,7 +1,7 @@
 use crate::{MsgType, Table};
 use libc;
 use nftnl_sys::{self as sys, libc::{c_char, c_void}};
-use std::ffi::CStr;
+use std::ffi::{CStr, CString};
 
 
 pub type Priority = i32;
@@ -116,6 +116,22 @@ impl<'a> Chain<'a> {
                 chain_type.as_c_str().as_ptr() as *const c_char
             );
         }
+    }
+
+    /// Return a string representation of the chain.
+    pub fn dump(&self) -> CString {
+        let mut buffer: [u8; 4096] = [0; 4096];
+        unsafe {
+            sys::nftnl_chain_snprintf(
+                buffer.as_mut_ptr() as *mut i8,
+                buffer.len(),
+                self.chain,
+                0,
+                0,
+            );
+        }
+        let null_index = buffer.iter().position(|ch| *ch == b'\0').unwrap();
+        CString::new(&buffer[0..null_index]).unwrap()
     }
 
     /// Sets the default policy for this chain. That means what action netfilter will apply to
