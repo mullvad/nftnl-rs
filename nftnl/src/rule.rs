@@ -70,11 +70,15 @@ unsafe impl<'a> crate::NlMsg for Rule<'a> {
             MsgType::Add => libc::NFT_MSG_NEWRULE,
             MsgType::Del => libc::NFT_MSG_DELRULE,
         };
+        let flags: u16 = match msg_type {
+            MsgType::Add => (libc::NLM_F_CREATE | libc::NLM_F_APPEND | libc::NLM_F_EXCL) as u16,
+            MsgType::Del => 0u16,
+        };
         let header = sys::nftnl_nlmsg_build_hdr(
             buf as *mut i8,
             type_ as u16,
             self.chain.get_table().get_family() as u16,
-            (libc::NLM_F_APPEND | libc::NLM_F_CREATE | libc::NLM_F_EXCL) as u16,
+            flags,
             seq,
         );
         sys::nftnl_rule_nlmsg_build_payload(header, self.rule);
