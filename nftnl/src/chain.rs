@@ -166,11 +166,15 @@ unsafe impl<'a> crate::NlMsg for Chain<'a> {
             MsgType::Add => libc::NFT_MSG_NEWCHAIN,
             MsgType::Del => libc::NFT_MSG_DELCHAIN,
         };
+        let flags: u16 = match msg_type {
+            MsgType::Add => (libc::NLM_F_ACK | libc::NLM_F_CREATE) as u16,
+            MsgType::Del => libc::NLM_F_ACK as u16,
+        };
         let header = sys::nftnl_nlmsg_build_hdr(
             buf as *mut i8,
             raw_msg_type as u16,
             self.table.get_family() as u16,
-            libc::NLM_F_ACK as u16,
+            flags,
             seq,
         );
         sys::nftnl_chain_nlmsg_build_payload(header, self.chain);
