@@ -1,7 +1,7 @@
 use crate::{MsgType, Table};
 use libc;
 use nftnl_sys::{self as sys, libc::{c_char, c_void}};
-use std::ffi::{CStr, CString};
+use std::{ffi::CStr, fmt};
 
 
 pub type Priority = i32;
@@ -118,22 +118,6 @@ impl<'a> Chain<'a> {
         }
     }
 
-    /// Return a string representation of the chain.
-    pub fn dump(&self) -> CString {
-        let mut buffer: [u8; 4096] = [0; 4096];
-        unsafe {
-            sys::nftnl_chain_snprintf(
-                buffer.as_mut_ptr() as *mut i8,
-                buffer.len(),
-                self.chain,
-                0,
-                0,
-            );
-        }
-        let null_index = buffer.iter().position(|ch| *ch == b'\0').unwrap();
-        CString::new(&buffer[0..null_index]).unwrap()
-    }
-
     /// Sets the default policy for this chain. That means what action netfilter will apply to
     /// packets processed by this chain, but that did not match any rules in it.
     pub fn set_policy(&mut self, policy: Policy) {
@@ -155,6 +139,24 @@ impl<'a> Chain<'a> {
     /// [`Table`]: struct.Table.html
     pub fn get_table(&self) -> &Table {
         self.table
+    }
+}
+
+impl<'a> fmt::Debug for Chain<'a> {
+    /// Return a string representation of the chain.
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut buffer: [u8; 4096] = [0; 4096];
+        unsafe {
+            sys::nftnl_chain_snprintf(
+                buffer.as_mut_ptr() as *mut i8,
+                buffer.len(),
+                self.chain,
+                sys::NFTNL_OUTPUT_DEFAULT,
+                0,
+            );
+        }
+        let s = unsafe { CStr::from_ptr(buffer.as_ptr() as * const c_char) };
+        write!(fmt, "{:?}", s)
     }
 }
 
