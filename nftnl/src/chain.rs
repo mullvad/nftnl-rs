@@ -1,10 +1,10 @@
 use crate::{MsgType, Table};
 use libc;
 use nftnl_sys::{self as sys, libc::{c_char, c_void}};
-use std::ffi::CStr;
+use std::{ffi::CStr, fmt};
 
 
-pub type Priority = u32;
+pub type Priority = i32;
 
 /// The netfilter event hooks a chain can register for.
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
@@ -77,6 +77,11 @@ impl<'a> Chain<'a> {
     pub fn new<T: AsRef<CStr>>(name: &T, table: &'a Table) -> Chain<'a> {
         unsafe {
             let chain = try_alloc!(sys::nftnl_chain_alloc());
+            sys::nftnl_chain_set_u32(
+                chain,
+                sys::NFTNL_CHAIN_FAMILY as u16,
+                table.get_family() as u32,
+            );
             sys::nftnl_chain_set_str(
                 chain,
                 sys::NFTNL_CHAIN_TABLE as u16,
@@ -97,7 +102,7 @@ impl<'a> Chain<'a> {
     pub fn set_hook(&mut self, hook: Hook, priority: Priority) {
         unsafe {
             sys::nftnl_chain_set_u32(self.chain, sys::NFTNL_CHAIN_HOOKNUM as u16, hook as u32);
-            sys::nftnl_chain_set_u32(self.chain, sys::NFTNL_CHAIN_PRIO as u16, priority);
+            sys::nftnl_chain_set_s32(self.chain, sys::NFTNL_CHAIN_PRIO as u16, priority);
         }
     }
 
@@ -137,17 +142,39 @@ impl<'a> Chain<'a> {
     }
 }
 
+impl<'a> fmt::Debug for Chain<'a> {
+    /// Return a string representation of the chain.
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut buffer: [u8; 4096] = [0; 4096];
+        unsafe {
+            sys::nftnl_chain_snprintf(
+                buffer.as_mut_ptr() as *mut i8,
+                buffer.len(),
+                self.chain,
+                sys::NFTNL_OUTPUT_DEFAULT,
+                0,
+            );
+        }
+        let s = unsafe { CStr::from_ptr(buffer.as_ptr() as * const c_char) };
+        write!(fmt, "{:?}", s)
+    }
+}
+
 unsafe impl<'a> crate::NlMsg for Chain<'a> {
     unsafe fn write(&self, buf: *mut c_void, seq: u32, msg_type: MsgType) {
         let raw_msg_type = match msg_type {
             MsgType::Add => libc::NFT_MSG_NEWCHAIN,
             MsgType::Del => libc::NFT_MSG_DELCHAIN,
         };
+        let flags: u16 = match msg_type {
+            MsgType::Add => (libc::NLM_F_ACK | libc::NLM_F_CREATE) as u16,
+            MsgType::Del => libc::NLM_F_ACK as u16,
+        };
         let header = sys::nftnl_nlmsg_build_hdr(
             buf as *mut i8,
             raw_msg_type as u16,
             self.table.get_family() as u16,
-            libc::NLM_F_ACK as u16,
+            flags,
             seq,
         );
         sys::nftnl_chain_nlmsg_build_payload(header, self.chain);
