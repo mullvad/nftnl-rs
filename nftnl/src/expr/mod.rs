@@ -30,6 +30,9 @@ pub use self::immediate::*;
 mod lookup;
 pub use self::lookup::*;
 
+mod masquerade;
+pub use self::masquerade::*;
+
 mod meta;
 pub use self::meta::*;
 
@@ -61,6 +64,9 @@ macro_rules! nft_expr {
     };
     (lookup $set:expr) => {
         nft_expr_lookup!($set)
+    };
+    (masquerade) => {
+        $crate::expr::Masquerade
     };
     (meta $expr:ident set) => {
         nft_expr_meta!($expr set)
