@@ -148,7 +148,7 @@ impl<'a> fmt::Debug for Chain<'a> {
         let mut buffer: [u8; 4096] = [0; 4096];
         unsafe {
             sys::nftnl_chain_snprintf(
-                buffer.as_mut_ptr() as *mut i8,
+                buffer.as_mut_ptr() as *mut c_char,
                 buffer.len(),
                 self.chain,
                 sys::NFTNL_OUTPUT_DEFAULT,
@@ -171,7 +171,7 @@ unsafe impl<'a> crate::NlMsg for Chain<'a> {
             MsgType::Del => libc::NLM_F_ACK as u16,
         };
         let header = sys::nftnl_nlmsg_build_hdr(
-            buf as *mut i8,
+            buf as *mut c_char,
             raw_msg_type as u16,
             self.table.get_family() as u16,
             flags,

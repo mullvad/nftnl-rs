@@ -1,6 +1,6 @@
 use crate::{MsgType, NlMsg};
 use libc;
-use nftnl_sys::{self as sys, libc::c_void};
+use nftnl_sys::{self as sys, libc::{c_char, c_void}};
 use std::ptr;
 
 /// Error while communicating with netlink
@@ -84,12 +84,12 @@ impl Batch {
     }
 
     fn write_begin_msg(&mut self) {
-        unsafe { sys::nftnl_batch_begin(self.current() as *mut i8, self.seq) };
+        unsafe { sys::nftnl_batch_begin(self.current() as *mut c_char, self.seq) };
         self.next();
     }
 
     fn write_end_msg(&mut self) {
-        unsafe { sys::nftnl_batch_end(self.current() as *mut i8, self.seq) };
+        unsafe { sys::nftnl_batch_end(self.current() as *mut c_char, self.seq) };
         self.next();
     }
 
