@@ -1,6 +1,6 @@
 use crate::{chain::Chain, expr::Expression, MsgType};
 use libc;
-use nftnl_sys::{self as sys, libc::c_void};
+use nftnl_sys::{self as sys, libc::{c_char, c_void}};
 
 /// A nftables firewall rule.
 pub struct Rule<'a> {
@@ -75,7 +75,7 @@ unsafe impl<'a> crate::NlMsg for Rule<'a> {
             MsgType::Del => 0u16,
         };
         let header = sys::nftnl_nlmsg_build_hdr(
-            buf as *mut i8,
+            buf as *mut c_char,
             type_ as u16,
             self.chain.get_table().get_family() as u16,
             flags,

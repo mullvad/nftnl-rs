@@ -18,6 +18,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - Add support for masquerading.
 
+### Fixed
+- Fix compilation errors on ARM64 platforms.
+
 
 ## [0.2.1] - 2019-09-23
 ### Added

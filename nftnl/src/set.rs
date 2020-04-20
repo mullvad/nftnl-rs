@@ -1,6 +1,6 @@
 use crate::{table::Table, MsgType, ProtoFamily};
 use libc;
-use nftnl_sys::{self as sys, libc::c_void};
+use nftnl_sys::{self as sys, libc::{c_char, c_void}};
 use std::{
     cell::Cell,
     ffi::CStr,
@@ -114,7 +114,7 @@ unsafe impl<'a, K> crate::NlMsg for Set<'a, K> {
             MsgType::Del => libc::NFT_MSG_DELSET,
         };
         let header = sys::nftnl_nlmsg_build_hdr(
-            buf as *mut i8,
+            buf as *mut c_char,
             type_ as u16,
             self.table.get_family() as u16,
             (libc::NLM_F_APPEND | libc::NLM_F_CREATE | libc::NLM_F_ACK) as u16,
@@ -188,7 +188,7 @@ unsafe impl<'a, K> crate::NlMsg for SetElemsMsg<'a, K> {
             MsgType::Del => (libc::NFT_MSG_DELSETELEM, libc::NLM_F_ACK),
         };
         let header = sys::nftnl_nlmsg_build_hdr(
-            buf as *mut i8,
+            buf as *mut c_char,
             type_ as u16,
             self.set.get_family() as u16,
             flags as u16,
