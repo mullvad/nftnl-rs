@@ -39,6 +39,9 @@ pub use self::meta::*;
 mod payload;
 pub use self::payload::*;
 
+mod verdict;
+pub use self::verdict::*;
+
 #[macro_export(local_inner_macros)]
 macro_rules! nft_expr {
     (bitwise mask $mask:expr,xor $xor:expr) => {
