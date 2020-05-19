@@ -25,20 +25,6 @@ pub enum Verdict {
 }
 
 impl Verdict {
-    fn immediate_const(&self) -> Option<i32> {
-        match *self {
-            Verdict::Drop => Some(libc::NF_DROP),
-            Verdict::Accept => Some(libc::NF_ACCEPT),
-            Verdict::Queue => Some(libc::NF_QUEUE),
-            Verdict::Continue => Some(libc::NFT_CONTINUE),
-            Verdict::Break => Some(libc::NFT_BREAK),
-            Verdict::Jump { .. } => Some(libc::NFT_JUMP),
-            Verdict::Goto { .. } => Some(libc::NFT_GOTO),
-            Verdict::Return => Some(libc::NFT_RETURN),
-            _ => None,
-        }
-    }
-
     unsafe fn immediate_to_expr(&self, immediate_const: i32) -> *mut sys::nftnl_expr {
         let expr = try_alloc!(sys::nftnl_expr_alloc(
             b"immediate\0" as *const _ as *const c_char
@@ -62,6 +48,27 @@ impl Verdict {
         expr
     }
 
+    unsafe fn to_reject_expr(&self) -> *mut sys::nftnl_expr {
+        let expr = try_alloc!(sys::nftnl_expr_alloc(
+            b"reject\0" as *const _ as *const c_char
+        ));
+
+        sys::nftnl_expr_set_u32(
+            expr,
+            sys::NFTNL_EXPR_REJECT_TYPE as u16,
+            libc::NFT_REJECT_ICMPX_UNREACH as u32,
+        );
+
+        // TODO: Allow setting the ICMP code
+        sys::nftnl_expr_set_u8(
+            expr,
+            sys::NFTNL_EXPR_REJECT_CODE as u16,
+            libc::NFT_REJECT_ICMPX_HOST_UNREACH as u8,
+        );
+
+        expr
+    }
+
     fn chain(&self) -> Option<&CStr> {
         match *self {
             Verdict::Jump { ref chain } => Some(chain.as_c_str()),
@@ -72,37 +79,19 @@ impl Verdict {
 }
 
 impl Expression for Verdict {
-
     fn to_expr(&self) -> *mut sys::nftnl_expr {
-        if let Some(immediate_const) = self.immediate_const() {
-            return unsafe { self.immediate_to_expr(immediate_const) };
-        }
-
-        match *self {
-            Verdict::Reject => {
-                unsafe {
-                    let expr = try_alloc!(sys::nftnl_expr_alloc(
-                        b"reject\0" as *const _ as *const c_char
-                    ));
-
-                    sys::nftnl_expr_set_u32(
-                        expr,
-                        sys::NFTNL_EXPR_REJECT_TYPE as u16,
-                        libc::NFT_REJECT_ICMPX_UNREACH as u32,
-                    );
-
-                    // TODO: Allow setting the ICMP code
-                    sys::nftnl_expr_set_u8(
-                        expr,
-                        sys::NFTNL_EXPR_REJECT_CODE as u16,
-                        libc::NFT_REJECT_ICMPX_HOST_UNREACH as u8,
-                    );
-
-                    expr
-                }
-            }
-            _ => unreachable!("unsupported verdict"),
-        }
+        let immediate_const = match *self {
+            Verdict::Drop => libc::NF_DROP,
+            Verdict::Accept => libc::NF_ACCEPT,
+            Verdict::Queue => libc::NF_QUEUE,
+            Verdict::Continue => libc::NFT_CONTINUE,
+            Verdict::Break => libc::NFT_BREAK,
+            Verdict::Jump { .. } => libc::NFT_JUMP,
+            Verdict::Goto { .. } => libc::NFT_GOTO,
+            Verdict::Return => libc::NFT_RETURN,
+            Verdict::Reject => return unsafe { self.to_reject_expr() },
+        };
+        unsafe { self.immediate_to_expr(immediate_const) }
     }
 }
 
