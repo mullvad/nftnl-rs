@@ -11,7 +11,19 @@ pub enum Verdict {
     /// Accept the packet and let it pass.
     Accept,
     /// Reject the packet and return a message.
-    Reject,
+    Reject {
+        /// Reject expression reject types:
+        /// `NFT_REJECT_ICMP_UNREACH`: return an ICMP unreachable packet
+        /// `NFT_REJECT_TCP_RST`: reject using TCP RST
+        /// `NFT_REJECT_ICMPX_UNREACH`: ICMP unreachable for inet and bridge
+        reject_type: u32,
+        /// An ICMP reject code:
+        /// `NFT_REJECT_ICMPX_NO_ROUTE`,
+        /// `NFT_REJECT_ICMPX_PORT_UNREACH`,
+        /// `NFT_REJECT_ICMPX_HOST_UNREACH`, or
+        /// `NFT_REJECT_ICMPX_ADMIN_PROHIBITED`.
+        icmp_code: u8,
+    },
     Queue,
     Continue,
     Break,
@@ -48,7 +60,7 @@ impl Verdict {
         expr
     }
 
-    unsafe fn to_reject_expr(&self) -> *mut sys::nftnl_expr {
+    unsafe fn to_reject_expr(&self, reject_type: u32, icmp_code: u8) -> *mut sys::nftnl_expr {
         let expr = try_alloc!(sys::nftnl_expr_alloc(
             b"reject\0" as *const _ as *const c_char
         ));
@@ -56,14 +68,13 @@ impl Verdict {
         sys::nftnl_expr_set_u32(
             expr,
             sys::NFTNL_EXPR_REJECT_TYPE as u16,
-            libc::NFT_REJECT_ICMPX_UNREACH as u32,
+            reject_type,
         );
 
-        // TODO: Allow setting the ICMP code
         sys::nftnl_expr_set_u8(
             expr,
             sys::NFTNL_EXPR_REJECT_CODE as u16,
-            libc::NFT_REJECT_ICMPX_HOST_UNREACH as u8,
+            icmp_code,
         );
 
         expr
@@ -89,7 +100,9 @@ impl Expression for Verdict {
             Verdict::Jump { .. } => libc::NFT_JUMP,
             Verdict::Goto { .. } => libc::NFT_GOTO,
             Verdict::Return => libc::NFT_RETURN,
-            Verdict::Reject => return unsafe { self.to_reject_expr() },
+            Verdict::Reject { reject_type, icmp_code } => return unsafe {
+                self.to_reject_expr(reject_type, icmp_code)
+            },
         };
         unsafe { self.immediate_to_expr(immediate_const) }
     }
@@ -103,8 +116,8 @@ macro_rules! nft_expr_verdict {
     (accept) => {
         $crate::expr::Verdict::Accept
     };
-    (reject) => {
-        $crate::expr::Verdict::Reject
+    (reject $type:ident $code:ident) => {
+        $crate::expr::Verdict::Reject { reject_type: $type, code: $code }
     };
     (queue) => {
         $crate::expr::Verdict::Queue
