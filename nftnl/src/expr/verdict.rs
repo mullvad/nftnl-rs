@@ -1,4 +1,5 @@
 use super::Expression;
+use crate::ProtoFamily;
 use nftnl_sys::{self as sys, libc::{self, c_char}};
 use std::{ffi::{CStr, CString}};
 
@@ -11,19 +12,7 @@ pub enum Verdict {
     /// Accept the packet and let it pass.
     Accept,
     /// Reject the packet and return a message.
-    Reject {
-        /// Reject expression reject types:
-        /// `NFT_REJECT_ICMP_UNREACH`: return an ICMP unreachable packet
-        /// `NFT_REJECT_TCP_RST`: reject using TCP RST
-        /// `NFT_REJECT_ICMPX_UNREACH`: ICMP unreachable for inet and bridge
-        reject_type: u32,
-        /// An ICMP reject code:
-        /// `NFT_REJECT_ICMPX_NO_ROUTE`,
-        /// `NFT_REJECT_ICMPX_PORT_UNREACH`,
-        /// `NFT_REJECT_ICMPX_HOST_UNREACH`, or
-        /// `NFT_REJECT_ICMPX_ADMIN_PROHIBITED`.
-        icmp_code: u8,
-    },
+    Reject(RejectionType),
     Queue,
     Continue,
     Break,
@@ -34,6 +23,58 @@ pub enum Verdict {
         chain: CString,
     },
     Return,
+}
+
+/// The type of rejection message sent by the Reject verdict.
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
+pub enum RejectionType {
+    /// Return an ICMP unreachable packet
+    Icmp {
+        family: ProtoFamily,
+        code: IcmpCode,
+    },
+    /// Reject by sending a TCP RST packet
+    TcpRst,
+}
+
+impl From<RejectionType> for u32 {
+    fn from(reject_type: RejectionType) -> Self {
+        use libc::*;
+        let value = match reject_type {
+            RejectionType::Icmp { family, .. } => {
+                match family {
+                    ProtoFamily::Bridge | ProtoFamily::Inet => {
+                        NFT_REJECT_ICMPX_UNREACH
+                    }
+                    _ => NFT_REJECT_ICMP_UNREACH,
+                }
+            }
+            RejectionType::TcpRst => NFT_REJECT_TCP_RST,
+        };
+        value as u32
+    }
+}
+
+/// An ICMP reject code.
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
+pub enum IcmpCode {
+    NoRoute,
+    PortUnreach,
+    HostUnreach,
+    AdminProhibited,
+}
+
+impl From<IcmpCode> for u8 {
+    fn from(code: IcmpCode) -> Self {
+        use libc::*;
+        let value = match code {
+            IcmpCode::NoRoute => NFT_REJECT_ICMPX_NO_ROUTE,
+            IcmpCode::PortUnreach => NFT_REJECT_ICMPX_PORT_UNREACH,
+            IcmpCode::HostUnreach => NFT_REJECT_ICMPX_HOST_UNREACH,
+            IcmpCode::AdminProhibited => NFT_REJECT_ICMPX_ADMIN_PROHIBITED,
+        };
+        value as u8
+    }
 }
 
 impl Verdict {
@@ -60,7 +101,7 @@ impl Verdict {
         expr
     }
 
-    unsafe fn to_reject_expr(&self, reject_type: u32, icmp_code: u8) -> *mut sys::nftnl_expr {
+    unsafe fn to_reject_expr(&self, reject_type: RejectionType) -> *mut sys::nftnl_expr {
         let expr = try_alloc!(sys::nftnl_expr_alloc(
             b"reject\0" as *const _ as *const c_char
         ));
@@ -68,13 +109,20 @@ impl Verdict {
         sys::nftnl_expr_set_u32(
             expr,
             sys::NFTNL_EXPR_REJECT_TYPE as u16,
-            reject_type,
+            reject_type.into(),
         );
+
+        let reject_code = match reject_type {
+            RejectionType::Icmp { code, ..} => {
+                code.into()
+            }
+            RejectionType::TcpRst => 0,
+        };
 
         sys::nftnl_expr_set_u8(
             expr,
             sys::NFTNL_EXPR_REJECT_CODE as u16,
-            icmp_code,
+            reject_code,
         );
 
         expr
@@ -100,8 +148,8 @@ impl Expression for Verdict {
             Verdict::Jump { .. } => libc::NFT_JUMP,
             Verdict::Goto { .. } => libc::NFT_GOTO,
             Verdict::Return => libc::NFT_RETURN,
-            Verdict::Reject { reject_type, icmp_code } => return unsafe {
-                self.to_reject_expr(reject_type, icmp_code)
+            Verdict::Reject(reject_type) => return unsafe {
+                self.to_reject_expr(reject_type)
             },
         };
         unsafe { self.immediate_to_expr(immediate_const) }
@@ -116,8 +164,14 @@ macro_rules! nft_expr_verdict {
     (accept) => {
         $crate::expr::Verdict::Accept
     };
-    (reject $type:ident $code:ident) => {
-        $crate::expr::Verdict::Reject { reject_type: $type, code: $code }
+    (reject icmp $code:ident $family:expr) => {
+        $crate::expr::Verdict::Reject(RejectionType::Icmp {
+            family: $family,
+            code: $code,
+        })
+    };
+    (reject tcp-rst) => {
+        $crate::expr::Verdict::Reject(RejectionType::TcpRst)
     };
     (queue) => {
         $crate::expr::Verdict::Queue
