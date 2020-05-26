@@ -1,7 +1,10 @@
 use super::Expression;
 use crate::ProtoFamily;
-use nftnl_sys::{self as sys, libc::{self, c_char}};
-use std::{ffi::{CStr, CString}};
+use nftnl_sys::{
+    self as sys,
+    libc::{self, c_char},
+};
+use std::ffi::{CStr, CString};
 
 /// A verdict expression. In the background, this is usually an "Immediate" expression in nftnl
 /// terms, but here it is simplified to only represent a verdict.
@@ -29,10 +32,7 @@ pub enum Verdict {
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
 pub enum RejectionType {
     /// Return an ICMP unreachable packet
-    Icmp {
-        family: ProtoFamily,
-        code: IcmpCode,
-    },
+    Icmp { family: ProtoFamily, code: IcmpCode },
     /// Reject by sending a TCP RST packet
     TcpRst,
 }
@@ -41,14 +41,10 @@ impl From<RejectionType> for u32 {
     fn from(reject_type: RejectionType) -> Self {
         use libc::*;
         let value = match reject_type {
-            RejectionType::Icmp { family, .. } => {
-                match family {
-                    ProtoFamily::Bridge | ProtoFamily::Inet => {
-                        NFT_REJECT_ICMPX_UNREACH
-                    }
-                    _ => NFT_REJECT_ICMP_UNREACH,
-                }
-            }
+            RejectionType::Icmp { family, .. } => match family {
+                ProtoFamily::Bridge | ProtoFamily::Inet => NFT_REJECT_ICMPX_UNREACH,
+                _ => NFT_REJECT_ICMP_UNREACH,
+            },
             RejectionType::TcpRst => NFT_REJECT_TCP_RST,
         };
         value as u32
@@ -57,24 +53,12 @@ impl From<RejectionType> for u32 {
 
 /// An ICMP reject code.
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
+#[repr(u8)]
 pub enum IcmpCode {
-    NoRoute,
-    PortUnreach,
-    HostUnreach,
-    AdminProhibited,
-}
-
-impl From<IcmpCode> for u8 {
-    fn from(code: IcmpCode) -> Self {
-        use libc::*;
-        let value = match code {
-            IcmpCode::NoRoute => NFT_REJECT_ICMPX_NO_ROUTE,
-            IcmpCode::PortUnreach => NFT_REJECT_ICMPX_PORT_UNREACH,
-            IcmpCode::HostUnreach => NFT_REJECT_ICMPX_HOST_UNREACH,
-            IcmpCode::AdminProhibited => NFT_REJECT_ICMPX_ADMIN_PROHIBITED,
-        };
-        value as u8
-    }
+    NoRoute = libc::NFT_REJECT_ICMPX_NO_ROUTE as u8,
+    PortUnreach = libc::NFT_REJECT_ICMPX_PORT_UNREACH as u8,
+    HostUnreach = libc::NFT_REJECT_ICMPX_HOST_UNREACH as u8,
+    AdminProhibited = libc::NFT_REJECT_ICMPX_ADMIN_PROHIBITED as u8,
 }
 
 impl Verdict {
@@ -109,21 +93,15 @@ impl Verdict {
         sys::nftnl_expr_set_u32(
             expr,
             sys::NFTNL_EXPR_REJECT_TYPE as u16,
-            reject_type.into(),
+            u32::from(reject_type),
         );
 
         let reject_code = match reject_type {
-            RejectionType::Icmp { code, ..} => {
-                code.into()
-            }
+            RejectionType::Icmp { code, .. } => code as u8,
             RejectionType::TcpRst => 0,
         };
 
-        sys::nftnl_expr_set_u8(
-            expr,
-            sys::NFTNL_EXPR_REJECT_CODE as u16,
-            reject_code,
-        );
+        sys::nftnl_expr_set_u8(expr, sys::NFTNL_EXPR_REJECT_CODE as u16, reject_code);
 
         expr
     }
@@ -148,9 +126,7 @@ impl Expression for Verdict {
             Verdict::Jump { .. } => libc::NFT_JUMP,
             Verdict::Goto { .. } => libc::NFT_GOTO,
             Verdict::Return => libc::NFT_RETURN,
-            Verdict::Reject(reject_type) => return unsafe {
-                self.to_reject_expr(reject_type)
-            },
+            Verdict::Reject(reject_type) => return unsafe { self.to_reject_expr(reject_type) },
         };
         unsafe { self.immediate_to_expr(immediate_const) }
     }
