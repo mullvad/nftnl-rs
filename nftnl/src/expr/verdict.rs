@@ -1,4 +1,4 @@
-use super::Expression;
+use super::{Expression, Rule};
 use crate::ProtoFamily;
 use nftnl_sys::{
     self as sys,
@@ -116,7 +116,7 @@ impl Verdict {
 }
 
 impl Expression for Verdict {
-    fn to_expr(&self) -> *mut sys::nftnl_expr {
+    fn to_expr(&self, _rule: &Rule) -> *mut sys::nftnl_expr {
         let immediate_const = match *self {
             Verdict::Drop => libc::NF_DROP,
             Verdict::Accept => libc::NF_ACCEPT,

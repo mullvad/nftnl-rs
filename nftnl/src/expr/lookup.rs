@@ -1,4 +1,4 @@
-use super::Expression;
+use super::{Expression, Rule};
 use crate::set::Set;
 use libc;
 use nftnl_sys::{self as sys, libc::c_char};
@@ -19,7 +19,7 @@ impl Lookup {
 }
 
 impl Expression for Lookup {
-    fn to_expr(&self) -> *mut sys::nftnl_expr {
+    fn to_expr(&self, _rule: &Rule) -> *mut sys::nftnl_expr {
         unsafe {
             let expr = try_alloc!(sys::nftnl_expr_alloc(
                 b"lookup\0" as *const _ as *const c_char
