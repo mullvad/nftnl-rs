@@ -32,16 +32,16 @@ pub enum Verdict {
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
 pub enum RejectionType {
     /// Return an ICMP unreachable packet
-    Icmp { family: ProtoFamily, code: IcmpCode },
+    Icmp(IcmpCode),
     /// Reject by sending a TCP RST packet
     TcpRst,
 }
 
-impl From<RejectionType> for u32 {
-    fn from(reject_type: RejectionType) -> Self {
+impl RejectionType {
+    fn to_raw(&self, family: ProtoFamily) -> u32 {
         use libc::*;
-        let value = match reject_type {
-            RejectionType::Icmp { family, .. } => match family {
+        let value = match *self {
+            RejectionType::Icmp(..) => match family {
                 ProtoFamily::Bridge | ProtoFamily::Inet => NFT_REJECT_ICMPX_UNREACH,
                 _ => NFT_REJECT_ICMP_UNREACH,
             },
@@ -85,7 +85,11 @@ impl Verdict {
         expr
     }
 
-    unsafe fn to_reject_expr(&self, reject_type: RejectionType) -> *mut sys::nftnl_expr {
+    unsafe fn to_reject_expr(
+        &self,
+        reject_type: RejectionType,
+        family: ProtoFamily,
+    ) -> *mut sys::nftnl_expr {
         let expr = try_alloc!(sys::nftnl_expr_alloc(
             b"reject\0" as *const _ as *const c_char
         ));
@@ -93,11 +97,11 @@ impl Verdict {
         sys::nftnl_expr_set_u32(
             expr,
             sys::NFTNL_EXPR_REJECT_TYPE as u16,
-            u32::from(reject_type),
+            reject_type.to_raw(family),
         );
 
         let reject_code = match reject_type {
-            RejectionType::Icmp { code, .. } => code as u8,
+            RejectionType::Icmp(code) => code as u8,
             RejectionType::TcpRst => 0,
         };
 
@@ -116,7 +120,7 @@ impl Verdict {
 }
 
 impl Expression for Verdict {
-    fn to_expr(&self, _rule: &Rule) -> *mut sys::nftnl_expr {
+    fn to_expr(&self, rule: &Rule) -> *mut sys::nftnl_expr {
         let immediate_const = match *self {
             Verdict::Drop => libc::NF_DROP,
             Verdict::Accept => libc::NF_ACCEPT,
@@ -126,7 +130,11 @@ impl Expression for Verdict {
             Verdict::Jump { .. } => libc::NFT_JUMP,
             Verdict::Goto { .. } => libc::NFT_GOTO,
             Verdict::Return => libc::NFT_RETURN,
-            Verdict::Reject(reject_type) => return unsafe { self.to_reject_expr(reject_type) },
+            Verdict::Reject(reject_type) => {
+                return unsafe {
+                    self.to_reject_expr(reject_type, rule.get_chain().get_table().get_family())
+                }
+            }
         };
         unsafe { self.immediate_to_expr(immediate_const) }
     }
@@ -140,11 +148,8 @@ macro_rules! nft_expr_verdict {
     (accept) => {
         $crate::expr::Verdict::Accept
     };
-    (reject icmp $code:ident $family:expr) => {
-        $crate::expr::Verdict::Reject(RejectionType::Icmp {
-            family: $family,
-            code: $code,
-        })
+    (reject icmp $code:expr) => {
+        $crate::expr::Verdict::Reject(RejectionType::Icmp($code))
     };
     (reject tcp-rst) => {
         $crate::expr::Verdict::Reject(RejectionType::TcpRst)
