@@ -53,7 +53,7 @@ impl<'a> Rule<'a> {
     /// As soon as an expression does not match the packet it's being evaluated for, evaluation
     /// stops and the packet is evaluated against the next rule in the chain.
     pub fn add_expr(&mut self, expr: &impl Expression) {
-        unsafe { sys::nftnl_rule_add_expr(self.rule, expr.to_expr()) }
+        unsafe { sys::nftnl_rule_add_expr(self.rule, expr.to_expr(self)) }
     }
 
     /// Returns a reference to the [`Chain`] this rule lives in.

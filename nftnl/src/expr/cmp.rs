@@ -1,4 +1,4 @@
-use super::Expression;
+use super::{Expression, Rule};
 use libc;
 use nftnl_sys::{
     self as sys,
@@ -59,7 +59,7 @@ impl<T: ToSlice> Cmp<T> {
 }
 
 impl<T: ToSlice> Expression for Cmp<T> {
-    fn to_expr(&self) -> *mut sys::nftnl_expr {
+    fn to_expr(&self, _rule: &Rule) -> *mut sys::nftnl_expr {
         unsafe {
             let expr = try_alloc!(sys::nftnl_expr_alloc(b"cmp\0" as *const _ as *const c_char));
 
