@@ -87,7 +87,7 @@ pub enum MsgType {
 }
 
 /// Denotes a protocol. Used to specify which protocol a table or set belongs to.
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 #[repr(u16)]
 pub enum ProtoFamily {
     Unspec = libc::NFPROTO_UNSPEC as u16,

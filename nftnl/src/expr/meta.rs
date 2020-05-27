@@ -1,4 +1,4 @@
-use super::Expression;
+use super::{Expression, Rule};
 use libc;
 use nftnl_sys::{self as sys, libc::c_char};
 
@@ -52,7 +52,7 @@ impl Meta {
 }
 
 impl Expression for Meta {
-    fn to_expr(&self) -> *mut sys::nftnl_expr {
+    fn to_expr(&self, _rule: &Rule) -> *mut sys::nftnl_expr {
         unsafe {
             let expr = try_alloc!(sys::nftnl_expr_alloc(
                 b"meta\0" as *const _ as *const c_char
