@@ -62,7 +62,7 @@ pub enum IcmpCode {
 }
 
 impl Verdict {
-    unsafe fn immediate_to_expr(&self, immediate_const: i32) -> *mut sys::nftnl_expr {
+    unsafe fn to_immediate_expr(&self, immediate_const: i32) -> *mut sys::nftnl_expr {
         let expr = try_alloc!(sys::nftnl_expr_alloc(
             b"immediate\0" as *const _ as *const c_char
         ));
@@ -136,7 +136,7 @@ impl Expression for Verdict {
                 }
             }
         };
-        unsafe { self.immediate_to_expr(immediate_const) }
+        unsafe { self.to_immediate_expr(immediate_const) }
     }
 }
 
