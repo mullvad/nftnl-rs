@@ -1,6 +1,6 @@
 use super::{Expression, Rule};
-use libc;
-use nftnl_sys::{self as sys, libc::c_char};
+use nftnl_sys::{self as sys, libc};
+use std::os::raw::c_char;
 
 bitflags::bitflags! {
     pub struct States: u32 {
@@ -32,9 +32,17 @@ impl Expression for Conntrack {
             let expr = try_alloc!(sys::nftnl_expr_alloc(b"ct\0" as *const _ as *const c_char));
 
             if let Conntrack::Mark { set: true } = self {
-                sys::nftnl_expr_set_u32(expr, sys::NFTNL_EXPR_CT_SREG as u16, libc::NFT_REG_1 as u32);
+                sys::nftnl_expr_set_u32(
+                    expr,
+                    sys::NFTNL_EXPR_CT_SREG as u16,
+                    libc::NFT_REG_1 as u32,
+                );
             } else {
-                sys::nftnl_expr_set_u32(expr, sys::NFTNL_EXPR_CT_DREG as u16, libc::NFT_REG_1 as u32);
+                sys::nftnl_expr_set_u32(
+                    expr,
+                    sys::NFTNL_EXPR_CT_DREG as u16,
+                    libc::NFT_REG_1 as u32,
+                );
             }
             sys::nftnl_expr_set_u32(expr, sys::NFTNL_EXPR_CT_KEY as u16, self.raw_key());
 

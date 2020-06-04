@@ -1,6 +1,7 @@
 use crate::{MsgType, NlMsg};
-use libc;
-use nftnl_sys::{self as sys, libc::{c_char, c_void}};
+use nftnl_sys::{self as sys, libc};
+use std::ffi::c_void;
+use std::os::raw::c_char;
 use std::ptr;
 
 /// Error while communicating with netlink

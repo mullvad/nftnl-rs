@@ -21,7 +21,7 @@ nftnl-1-1-2 = ["nftnl-1-1-1"]
 
 [dependencies]
 cfg-if = "0.1.7"
-libc = "0.2.40"
+libc = "0.2.43"
 
 [build-dependencies]
 cfg-if = "0.1.7"

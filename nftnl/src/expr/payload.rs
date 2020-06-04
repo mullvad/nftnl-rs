@@ -1,6 +1,6 @@
 use super::{Expression, Rule};
-use libc;
-use nftnl_sys::{self as sys, libc::c_char};
+use nftnl_sys::{self as sys, libc};
+use std::os::raw::c_char;
 
 trait HeaderField {
     fn offset(&self) -> u32;
@@ -14,7 +14,6 @@ pub enum Payload {
     Network(NetworkHeaderField),
     Transport(TransportHeaderField),
 }
-
 
 impl Payload {
     fn base(self) -> u32 {

@@ -1,7 +1,8 @@
 use super::{Expression, Rule};
-use libc;
-use nftnl_sys::{self as sys, libc::{c_char, c_void}};
+use nftnl_sys::{self as sys, libc};
+use std::ffi::c_void;
 use std::mem::size_of_val;
+use std::os::raw::c_char;
 
 /// An immediate expression. Used to set immediate data.
 /// Verdicts are handled separately by [Verdict].

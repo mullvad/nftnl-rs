@@ -22,9 +22,8 @@
 //! # nft delete table inet example-filter-ethernet
 //! ```
 
-use nftnl::{nft_expr, Batch, Chain, FinalizedBatch, ProtoFamily, Rule, Table};
+use nftnl::{nft_expr, nftnl_sys::libc, Batch, Chain, FinalizedBatch, ProtoFamily, Rule, Table};
 use std::{ffi::CString, io};
-
 
 const TABLE_NAME: &str = "example-filter-ethernet";
 const OUT_CHAIN_NAME: &str = "chain-for-outgoing-packets";
@@ -43,7 +42,6 @@ fn main() -> Result<(), Error> {
     out_chain.set_policy(nftnl::Policy::Accept);
     batch.add(&out_chain, nftnl::MsgType::Add);
 
-
     // === ADD RULE DROPPING ALL TRAFFIC TO THE MAC ADDRESS IN `BLOCK_THIS_MAC` ===
 
     let mut block_ethernet_rule = Rule::new(&out_chain);
@@ -61,7 +59,6 @@ fn main() -> Result<(), Error> {
     block_ethernet_rule.add_expr(&nft_expr!(verdict drop));
 
     batch.add(&block_ethernet_rule, nftnl::MsgType::Add);
-
 
     // === FOR FUN, ADD A PACKET THAT MATCHES 50% OF ALL PACKETS ===
 
@@ -120,7 +117,6 @@ fn socket_recv<'a>(socket: &mnl::Socket, buf: &'a mut [u8]) -> Result<Option<&'a
         Ok(None)
     }
 }
-
 
 #[derive(Debug)]
 struct Error(String);

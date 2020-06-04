@@ -1,13 +1,10 @@
 use super::{Expression, Rule};
-use libc;
-use nftnl_sys::{
-    self as sys,
-    libc::{c_char, c_void},
-};
+use nftnl_sys::{self as sys, libc};
 use std::{
     borrow::Cow,
-    ffi::CString,
+    ffi::{c_void, CString},
     net::{IpAddr, Ipv4Addr, Ipv6Addr},
+    os::raw::c_char,
     slice,
 };
 
@@ -42,7 +39,6 @@ impl CmpOp {
         }
     }
 }
-
 
 /// Comparator expression. Allows comparing the content of the netfilter register with any value.
 pub struct Cmp<T: ToSlice> {
@@ -108,7 +104,6 @@ macro_rules! nft_expr_cmp {
         $crate::expr::Cmp::new(nft_expr_cmp!(@cmp_op $op), $data)
     };
 }
-
 
 /// A type that can be converted into a byte buffer.
 pub trait ToSlice {

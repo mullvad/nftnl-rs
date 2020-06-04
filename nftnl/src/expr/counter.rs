@@ -1,5 +1,6 @@
 use super::{Expression, Rule};
-use nftnl_sys::{self as sys, libc::c_char};
+use nftnl_sys as sys;
+use std::os::raw::c_char;
 
 /// A counter expression adds a counter to the rule that is incremented to count number of packets
 /// and number of bytes for all packets that has matched the rule.

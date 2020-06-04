@@ -1,6 +1,6 @@
 use super::{Expression, Rule};
-use libc;
-use nftnl_sys::{self as sys, libc::c_char};
+use nftnl_sys::{self as sys, libc};
+use std::os::raw::c_char;
 
 /// A meta expression refers to meta data associated with a packet.
 #[non_exhaustive]
