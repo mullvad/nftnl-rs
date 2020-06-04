@@ -3,6 +3,7 @@ use libc;
 use nftnl_sys::{self as sys, libc::c_char};
 
 /// A meta expression refers to meta data associated with a packet.
+#[non_exhaustive]
 pub enum Meta {
     /// Packet ethertype protocol (skb->protocol), invalid in OUTPUT.
     Protocol,

@@ -68,6 +68,7 @@ impl Expression for Payload {
 }
 
 #[derive(Copy, Clone, Eq, PartialEq)]
+#[non_exhaustive]
 pub enum LLHeaderField {
     Daddr,
     Saddr,
@@ -119,6 +120,7 @@ impl HeaderField for NetworkHeaderField {
 }
 
 #[derive(Copy, Clone, Eq, PartialEq)]
+#[non_exhaustive]
 pub enum Ipv4HeaderField {
     Ttl,
     Protocol,
@@ -149,6 +151,7 @@ impl HeaderField for Ipv4HeaderField {
 }
 
 #[derive(Copy, Clone, Eq, PartialEq)]
+#[non_exhaustive]
 pub enum Ipv6HeaderField {
     NextHeader,
     HopLimit,
@@ -179,6 +182,7 @@ impl HeaderField for Ipv6HeaderField {
 }
 
 #[derive(Copy, Clone, Eq, PartialEq)]
+#[non_exhaustive]
 pub enum TransportHeaderField {
     Tcp(TcpHeaderField),
     Udp(UdpHeaderField),
@@ -206,6 +210,7 @@ impl HeaderField for TransportHeaderField {
 }
 
 #[derive(Copy, Clone, Eq, PartialEq)]
+#[non_exhaustive]
 pub enum TcpHeaderField {
     Sport,
     Dport,
@@ -230,6 +235,7 @@ impl HeaderField for TcpHeaderField {
 }
 
 #[derive(Copy, Clone, Eq, PartialEq)]
+#[non_exhaustive]
 pub enum UdpHeaderField {
     Sport,
     Dport,
@@ -257,6 +263,7 @@ impl HeaderField for UdpHeaderField {
 }
 
 #[derive(Copy, Clone, Eq, PartialEq)]
+#[non_exhaustive]
 pub enum Icmpv6HeaderField {
     Type,
     Code,

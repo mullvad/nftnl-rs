@@ -18,6 +18,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - Add support for matching on socket UID and socket GID in `Meta` expressions.
 
+### Changed
+- Mark `Meta` and many payload enums as `#[non_exhaustive]`. Allows adding more expressions
+  without a breaking release in the future.
+- Increase minimum supported rust version to 1.40 due to `#[non_exhaustive]`.
+
 
 ## [0.4.0] - 2020-05-27
 ### Added
