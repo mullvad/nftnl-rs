@@ -37,13 +37,12 @@
 //! ```
 
 use ipnetwork::{IpNetwork, Ipv4Network};
-use nftnl::{nft_expr, Batch, Chain, FinalizedBatch, ProtoFamily, Rule, Table};
+use nftnl::{nft_expr, nftnl_sys::libc, Batch, Chain, FinalizedBatch, ProtoFamily, Rule, Table};
 use std::{
     ffi::{self, CString},
     io,
     net::Ipv4Addr,
 };
-
 
 const TABLE_NAME: &str = "example-table";
 const OUT_CHAIN_NAME: &str = "chain-for-outgoing-packets";
@@ -80,7 +79,6 @@ fn main() -> Result<(), Error> {
     batch.add(&out_chain, nftnl::MsgType::Add);
     batch.add(&in_chain, nftnl::MsgType::Add);
 
-
     // === ADD RULE ALLOWING ALL TRAFFIC TO THE LOOPBACK DEVICE ===
 
     // Create a new rule object under the input chain.
@@ -106,7 +104,6 @@ fn main() -> Result<(), Error> {
 
     // Add the rule to the batch.
     batch.add(&allow_loopback_in_rule, nftnl::MsgType::Add);
-
 
     // === ADD A RULE ALLOWING (AND COUNTING) ALL PACKETS TO THE 10.1.0.0/24 NETWORK ===
 
@@ -145,7 +142,6 @@ fn main() -> Result<(), Error> {
     // and all the work on `block_out_to_private_net_rule` so far would go to waste.
     batch.add(&block_out_to_private_net_rule, nftnl::MsgType::Add);
 
-
     // === ADD A RULE ALLOWING ALL OUTGOING ICMPv6 PACKETS WITH TYPE 133 AND CODE 0 ===
 
     let mut allow_router_solicitation = Rule::new(&out_chain);
@@ -168,7 +164,6 @@ fn main() -> Result<(), Error> {
     allow_router_solicitation.add_expr(&nft_expr!(verdict accept));
 
     batch.add(&allow_router_solicitation, nftnl::MsgType::Add);
-
 
     // === FINALIZE THE TRANSACTION AND SEND THE DATA TO NETFILTER ===
 
@@ -223,7 +218,6 @@ fn socket_recv<'a>(socket: &mnl::Socket, buf: &'a mut [u8]) -> Result<Option<&'a
         Ok(None)
     }
 }
-
 
 #[derive(Debug)]
 struct Error(String);

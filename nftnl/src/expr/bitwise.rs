@@ -1,10 +1,8 @@
 use super::{Expression, Rule};
 use crate::expr::cmp::ToSlice;
-use libc;
-use nftnl_sys::{
-    self as sys,
-    libc::{c_char, c_void},
-};
+use nftnl_sys::{self as sys, libc};
+use std::ffi::c_void;
+use std::os::raw::c_char;
 
 /// Expression for performing bitwise masking and XOR on the data in a register.
 pub struct Bitwise<M: ToSlice, X: ToSlice> {

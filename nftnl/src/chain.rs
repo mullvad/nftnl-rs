@@ -1,8 +1,10 @@
 use crate::{MsgType, Table};
-use libc;
-use nftnl_sys::{self as sys, libc::{c_char, c_void}};
-use std::{ffi::CStr, fmt};
-
+use nftnl_sys::{self as sys, libc};
+use std::{
+    ffi::{c_void, CStr},
+    fmt,
+    os::raw::c_char,
+};
 
 pub type Priority = i32;
 
@@ -113,7 +115,7 @@ impl<'a> Chain<'a> {
             sys::nftnl_chain_set_str(
                 self.chain,
                 sys::NFTNL_CHAIN_TYPE as u16,
-                chain_type.as_c_str().as_ptr() as *const c_char
+                chain_type.as_c_str().as_ptr() as *const c_char,
             );
         }
     }
@@ -155,7 +157,7 @@ impl<'a> fmt::Debug for Chain<'a> {
                 0,
             );
         }
-        let s = unsafe { CStr::from_ptr(buffer.as_ptr() as * const c_char) };
+        let s = unsafe { CStr::from_ptr(buffer.as_ptr() as *const c_char) };
         write!(fmt, "{:?}", s)
     }
 }

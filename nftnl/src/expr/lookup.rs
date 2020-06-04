@@ -1,8 +1,8 @@
 use super::{Expression, Rule};
 use crate::set::Set;
-use libc;
-use nftnl_sys::{self as sys, libc::c_char};
+use nftnl_sys::{self as sys, libc};
 use std::ffi::CString;
+use std::os::raw::c_char;
 
 pub struct Lookup {
     set_name: CString,

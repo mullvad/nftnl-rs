@@ -37,9 +37,9 @@
 #[macro_use]
 extern crate log;
 
-
 pub use nftnl_sys;
-use nftnl_sys::libc::c_void;
+use nftnl_sys::libc;
+use std::ffi::c_void;
 
 macro_rules! try_alloc {
     ($e:expr) => {{

@@ -1,5 +1,6 @@
 use super::{Expression, Rule};
-use nftnl_sys::{self as sys, libc::c_char};
+use nftnl_sys as sys;
+use std::os::raw::c_char;
 
 /// Sets the source IP to that of the output interface.
 pub struct Masquerade;
