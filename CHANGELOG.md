@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 
 ## [Unreleased]
+
+
+
+## [0.5.0] - 2020-06-04
 ### Added
 - Add support for matching on socket UID and socket GID in `Meta` expressions.
 
