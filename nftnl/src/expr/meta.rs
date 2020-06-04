@@ -20,6 +20,10 @@ pub enum Meta {
     IifType,
     /// Packet output interface type (dev->type).
     OifType,
+    /// Originating socket UID (fsuid).
+    SkUid,
+    /// Originating socket GID (fsgid).
+    SkGid,
     /// Netfilter protocol (Transport layer protocol).
     NfProto,
     /// Layer 4 protocol number.
@@ -43,6 +47,8 @@ impl Meta {
             OifName => libc::NFT_META_OIFNAME as u32,
             IifType => libc::NFT_META_IIFTYPE as u32,
             OifType => libc::NFT_META_OIFTYPE as u32,
+            SkUid => libc::NFT_META_SKUID as u32,
+            SkGid => libc::NFT_META_SKGID as u32,
             NfProto => libc::NFT_META_NFPROTO as u32,
             L4Proto => libc::NFT_META_L4PROTO as u32,
             Cgroup => libc::NFT_META_CGROUP as u32,
@@ -105,6 +111,12 @@ macro_rules! nft_expr_meta {
     };
     (oiftype) => {
         $crate::expr::Meta::OifType
+    };
+    (skuid) => {
+        $crate::expr::Meta::SkUid
+    };
+    (skgid) => {
+        $crate::expr::Meta::SkGid
     };
     (nfproto) => {
         $crate::expr::Meta::NfProto
