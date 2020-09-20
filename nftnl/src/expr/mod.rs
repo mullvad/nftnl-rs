@@ -54,6 +54,9 @@ pub use self::masquerade::*;
 mod meta;
 pub use self::meta::*;
 
+mod nat;
+pub use self::nat::*;
+
 mod payload;
 pub use self::payload::*;
 
