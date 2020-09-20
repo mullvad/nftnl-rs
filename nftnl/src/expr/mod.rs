@@ -4,13 +4,30 @@
 //! [`Rule`]: struct.Rule.html
 
 use super::rule::Rule;
-use nftnl_sys as sys;
+use nftnl_sys::{self as sys, libc};
 
 /// Trait for every safe wrapper of an nftables expression.
 pub trait Expression {
     /// Allocates and returns the low level `nftnl_expr` representation of this expression.
     /// The caller to this method is responsible for freeing the expression.
     fn to_expr(&self, rule: &Rule) -> *mut sys::nftnl_expr;
+}
+
+/// A netfilter data register. The expressions store and read data to and from these
+/// when evaluating rule statements.
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+#[repr(i32)]
+pub enum Register {
+    Reg1 = libc::NFT_REG_1,
+    Reg2 = libc::NFT_REG_2,
+    Reg3 = libc::NFT_REG_3,
+    Reg4 = libc::NFT_REG_4,
+}
+
+impl Register {
+    pub fn to_raw(self) -> u32 {
+        self as u32
+    }
 }
 
 mod bitwise;
