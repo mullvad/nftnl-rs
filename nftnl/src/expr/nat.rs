@@ -17,8 +17,8 @@ pub enum NatType {
 pub struct Nat {
     pub nat_type: NatType,
     pub family: ProtoFamily,
-    pub ip_reg: Register,
-    pub port_reg: Option<Register>,
+    pub ip_register: Register,
+    pub port_register: Option<Register>,
 }
 
 impl Expression for Nat {
@@ -32,13 +32,13 @@ impl Expression for Nat {
             sys::nftnl_expr_set_u32(
                 expr,
                 sys::NFTNL_EXPR_NAT_REG_ADDR_MIN as u16,
-                self.ip_reg.to_raw(),
+                self.ip_register.to_raw(),
             );
-            if let Some(port_reg) = self.port_reg {
+            if let Some(port_register) = self.port_register {
                 sys::nftnl_expr_set_u32(
                     expr,
                     sys::NFTNL_EXPR_NAT_REG_PROTO_MIN as u16,
-                    port_reg.to_raw(),
+                    port_register.to_raw(),
                 );
             }
         }
