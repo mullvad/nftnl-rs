@@ -1,5 +1,5 @@
-use super::{Expression, Rule};
-use nftnl_sys::{self as sys, libc};
+use super::{Expression, Register, Rule};
+use nftnl_sys as sys;
 use std::ffi::c_void;
 use std::mem::size_of_val;
 use std::os::raw::c_char;
@@ -9,6 +9,13 @@ use std::os::raw::c_char;
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub struct Immediate<T> {
     pub data: T,
+    pub register: Register,
+}
+
+impl<T> Immediate<T> {
+    pub fn new(data: T, register: Register) -> Self {
+        Self { data, register }
+    }
 }
 
 impl<T> Expression for Immediate<T> {
@@ -21,7 +28,7 @@ impl<T> Expression for Immediate<T> {
             sys::nftnl_expr_set_u32(
                 expr,
                 sys::NFTNL_EXPR_IMM_DREG as u16,
-                libc::NFT_REG_1 as u32,
+                self.register.to_raw(),
             );
 
             sys::nftnl_expr_set(
@@ -39,6 +46,9 @@ impl<T> Expression for Immediate<T> {
 #[macro_export]
 macro_rules! nft_expr_immediate {
     (data $value:expr) => {
-        $crate::expr::Immediate { data: $value }
+        $crate::expr::Immediate {
+            data: $value,
+            register: Register::Reg1,
+        }
     };
 }
