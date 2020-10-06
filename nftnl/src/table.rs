@@ -15,6 +15,11 @@ pub struct Table {
     family: ProtoFamily,
 }
 
+// Safety: It should be safe to pass this around and *read* from it
+// from multiple threads
+unsafe impl Send for Table {}
+unsafe impl Sync for Table {}
+
 impl Table {
     /// Creates a new table instance with the given name and protocol family.
     pub fn new<T: AsRef<CStr>>(name: &T, family: ProtoFamily) -> Table {
