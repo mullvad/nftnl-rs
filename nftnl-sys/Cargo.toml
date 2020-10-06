@@ -20,9 +20,9 @@ nftnl-1-1-1 = ["nftnl-1-1-0"]
 nftnl-1-1-2 = ["nftnl-1-1-1"]
 
 [dependencies]
-cfg-if = "0.1.7"
+cfg-if = "1.0"
 libc = "0.2.43"
 
 [build-dependencies]
-cfg-if = "0.1.7"
+cfg-if = "1.0"
 pkg-config = "0.3"
