@@ -9,6 +9,11 @@ pub struct Rule<'a> {
     chain: &'a Chain<'a>,
 }
 
+// Safety: It should be safe to pass this around and *read* from it
+// from multiple threads
+unsafe impl<'a> Send for Rule<'a> {}
+unsafe impl<'a> Sync for Rule<'a> {}
+
 impl<'a> Rule<'a> {
     /// Creates a new rule object in the given [`Chain`].
     ///
