@@ -72,6 +72,11 @@ pub struct Chain<'a> {
     table: &'a Table,
 }
 
+// Safety: It should be safe to pass this around and *read* from it
+// from multiple threads
+unsafe impl<'a> Send for Chain<'a> {}
+unsafe impl<'a> Sync for Chain<'a> {}
+
 impl<'a> Chain<'a> {
     /// Creates a new chain instance inside the given [`Table`] and with the given name.
     ///

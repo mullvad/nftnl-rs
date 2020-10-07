@@ -25,6 +25,11 @@ pub struct Batch {
     seq: u32,
 }
 
+// Safety: It should be safe to pass this around and *read* from it
+// from multiple threads
+unsafe impl Send for Batch {}
+unsafe impl Sync for Batch {}
+
 impl Batch {
     /// Creates a new nftnl batch with the [default page size].
     ///
@@ -152,6 +157,11 @@ pub struct Iter<'a> {
     iovecs: ::std::vec::IntoIter<libc::iovec>,
     _marker: ::std::marker::PhantomData<&'a ()>,
 }
+
+// Safety: It should be safe to pass this around and *read* from it
+// from multiple threads.
+unsafe impl<'a> Send for Iter<'a> {}
+unsafe impl<'a> Sync for Iter<'a> {}
 
 impl<'a> Iterator for Iter<'a> {
     type Item = &'a [u8];

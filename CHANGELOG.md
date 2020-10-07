@@ -15,7 +15,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 
 ## [Unreleased]
-
+### Added
+- Implement Send+Sync for Table, Chain, Rule, Batch and Iter (batch iterator)
 
 
 ## [0.5.0] - 2020-06-04
