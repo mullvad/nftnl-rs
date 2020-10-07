@@ -16,7 +16,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 ### Added
-- Implement Send+Sync for Table, Chain, Rule, Batch and Iter (batch iterator)
+- Implement Send+Sync for Table, Chain, Rule, Batch and Iter (batch iterator).
+- Add `Nat` expression allowing SNat and DNat rules.
+
+### Changed
+- Add `Register` enum and a register field to the `Immediate` expression. Allowing control
+  over which netfilter register the immediate data is loaded into
 
 
 ## [0.5.0] - 2020-06-04
