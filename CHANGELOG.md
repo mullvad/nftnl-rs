@@ -23,6 +23,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Add `Register` enum and a register field to the `Immediate` expression. Allowing control
   over which netfilter register the immediate data is loaded into
 
+### Fixed
+- Fix memory leak in `table::get_tables_cb`.
+
 
 ## [0.5.0] - 2020-06-04
 ### Added

@@ -94,6 +94,7 @@ pub fn get_tables_cb(header: &libc::nlmsghdr, tables: &mut HashSet<CString>) -> 
         let err = sys::nftnl_table_nlmsg_parse(header, nf_table);
         if err < 0 {
             error!("Failed to parse nelink table message - {}", err);
+            sys::nftnl_table_free(nf_table);
             return err;
         }
         let table_name = CStr::from_ptr(sys::nftnl_table_get_str(
@@ -102,6 +103,7 @@ pub fn get_tables_cb(header: &libc::nlmsghdr, tables: &mut HashSet<CString>) -> 
         ))
         .to_owned();
         tables.insert(table_name);
+        sys::nftnl_table_free(nf_table);
     };
     return 1;
 }
