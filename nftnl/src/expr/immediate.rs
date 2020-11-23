@@ -48,7 +48,7 @@ macro_rules! nft_expr_immediate {
     (data $value:expr) => {
         $crate::expr::Immediate {
             data: $value,
-            register: Register::Reg1,
+            register: $crate::expr::Register::Reg1,
         }
     };
 }
