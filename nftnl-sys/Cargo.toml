@@ -2,7 +2,7 @@
 name = "nftnl-sys"
 version = "0.6.0"
 authors = ["Mullvad VPN"]
-license = "MIT/Apache-2.0"
+license = "MIT OR Apache-2.0"
 description = "Low level FFI bindings to libnftnl. Provides low-level userspace access to the in-kernel nf_tables subsystem"
 repository = "https://github.com/mullvad/nftnl-rs"
 readme = "README.md"
