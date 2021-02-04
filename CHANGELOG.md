@@ -17,6 +17,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 
 
+## [0.6.1] - 2021-02-04
+### Changed
+- Upgrade the err-derive dependency to 0.3.0.
+
+
 ## [0.6.0] - 2020-11-23
 ### Added
 - Implement Send+Sync for Table, Chain, Rule, Batch and Iter (batch iterator).
