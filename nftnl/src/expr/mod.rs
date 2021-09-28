@@ -74,6 +74,9 @@ macro_rules! nft_expr {
     (cmp $op:tt $data:expr) => {
         nft_expr_cmp!($op $data)
     };
+    (log group $group:ident) => {
+        nft_expr_log!(group $group)
+    };
     (log) => {
         nft_expr_log!()
     };
