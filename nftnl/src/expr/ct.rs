@@ -12,8 +12,30 @@ bitflags::bitflags! {
     }
 }
 
+bitflags::bitflags! {
+    pub struct ConntrackStatus: u32 {
+        const EXPECTED = 1;
+        const SEEN_REPLY = 2;
+        const ASSURED = 4;
+        const CONFIRMED = 8;
+        const SRC_NAT = 16;
+        const DST_NAT = 32;
+        const SEQ_ADJUST = 64;
+        const SRC_NAT_DONE = 128;
+        const DST_NAT_DONE = 256;
+        const DYING = 512;
+        const FIXED_TIMEOUT = 1024;
+        const TEMPLATE = 2048;
+        const UNTRACKED = 4096;
+        const HELPER = 8192;
+        const OFFLOAD = 16384;
+        const HW_OFFLOAD = 32768;
+    }
+}
+
 pub enum Conntrack {
     State,
+    Status,
     Mark { set: bool },
 }
 
@@ -21,6 +43,7 @@ impl Conntrack {
     fn raw_key(&self) -> u32 {
         match *self {
             Conntrack::State => libc::NFT_CT_STATE as u32,
+            Conntrack::Status => libc::NFT_CT_STATUS as u32,
             Conntrack::Mark { .. } => libc::NFT_CT_MARK as u32,
         }
     }
@@ -55,6 +78,9 @@ impl Expression for Conntrack {
 macro_rules! nft_expr_ct {
     (state) => {
         $crate::expr::Conntrack::State
+    };
+    (status) => {
+        $crate::expr::Conntrack::Status
     };
     (mark set) => {
         $crate::expr::Conntrack::Mark { set: true }
