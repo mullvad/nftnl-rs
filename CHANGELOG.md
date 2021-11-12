@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 
 ## [Unreleased]
+### Added
+- Add `ct status` to load the conntrack status, and add conntrack status bitflags.
 
 
 ## [0.6.1] - 2021-02-04
