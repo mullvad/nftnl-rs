@@ -25,4 +25,4 @@ libc = "0.2.43"
 
 [build-dependencies]
 cfg-if = "1.0"
-pkg-config = "0.3"
+pkg-config = "0.3.19"
