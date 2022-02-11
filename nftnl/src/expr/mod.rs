@@ -60,6 +60,9 @@ pub use self::nat::*;
 mod payload;
 pub use self::payload::*;
 
+mod log;
+pub use self::log::*;
+
 mod verdict;
 pub use self::verdict::*;
 
@@ -70,6 +73,12 @@ macro_rules! nft_expr {
     };
     (cmp $op:tt $data:expr) => {
         nft_expr_cmp!($op $data)
+    };
+    (log group $group:ident) => {
+        nft_expr_log!(group $group)
+    };
+    (log) => {
+        nft_expr_log!()
     };
     (counter) => {
         $crate::expr::Counter
