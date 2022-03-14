@@ -185,6 +185,7 @@ impl HeaderField for Ipv6HeaderField {
 pub enum TransportHeaderField {
     Tcp(TcpHeaderField),
     Udp(UdpHeaderField),
+    Icmp(IcmpHeaderField),
     Icmpv6(Icmpv6HeaderField),
 }
 
@@ -194,6 +195,7 @@ impl HeaderField for TransportHeaderField {
         match *self {
             Tcp(ref f) => f.offset(),
             Udp(ref f) => f.offset(),
+            Icmp(ref f) => f.offset(),
             Icmpv6(ref f) => f.offset(),
         }
     }
@@ -203,6 +205,7 @@ impl HeaderField for TransportHeaderField {
         match *self {
             Tcp(ref f) => f.len(),
             Udp(ref f) => f.len(),
+            Icmp(ref f) => f.len(),
             Icmpv6(ref f) => f.len(),
         }
     }
@@ -257,6 +260,34 @@ impl HeaderField for UdpHeaderField {
             Sport => 2,
             Dport => 2,
             Len => 2,
+        }
+    }
+}
+
+#[derive(Copy, Clone, Eq, PartialEq)]
+#[non_exhaustive]
+pub enum IcmpHeaderField {
+    Type,
+    Code,
+    Checksum,
+}
+
+impl HeaderField for IcmpHeaderField {
+    fn offset(&self) -> u32 {
+        use self::IcmpHeaderField::*;
+        match *self {
+            Type => 0,
+            Code => 1,
+            Checksum => 2,
+        }
+    }
+
+    fn len(&self) -> u32 {
+        use self::IcmpHeaderField::*;
+        match *self {
+            Type => 1,
+            Code => 1,
+            Checksum => 2,
         }
     }
 }
@@ -334,6 +365,20 @@ macro_rules! nft_expr_payload {
         $crate::expr::UdpHeaderField::Len
     };
 
+    (@icmp_field icmptype) => {
+        $crate::expr::IcmpHeaderField::Type
+    };
+    (@icmp_field code) => {
+        $crate::expr::IcmpHeaderField::Code
+    };
+
+    (@icmpv6_field icmptype) => {
+        $crate::expr::Icmpv6HeaderField::Type
+    };
+    (@icmpv6_field code) => {
+        $crate::expr::Icmpv6HeaderField::Code
+    };
+
     (ethernet daddr) => {
         $crate::expr::Payload::LinkLayer($crate::expr::LLHeaderField::Daddr)
     };
@@ -363,6 +408,17 @@ macro_rules! nft_expr_payload {
     (udp $field:ident) => {
         $crate::expr::Payload::Transport($crate::expr::TransportHeaderField::Udp(
             nft_expr_payload!(@udp_field $field),
+        ))
+    };
+
+    (icmp $field:ident) => {
+        $crate::expr::Payload::Transport($crate::expr::TransportHeaderField::Icmp(
+            nft_expr_payload!(@icmp_field $field),
+        ))
+    };
+    (icmpv6 $field:ident) => {
+        $crate::expr::Payload::Transport($crate::expr::TransportHeaderField::Icmpv6(
+            nft_expr_payload!(@icmpv6_field $field),
         ))
     };
 }
