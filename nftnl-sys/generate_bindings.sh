@@ -15,14 +15,14 @@ bindgen \
     --no-doc-comments \
     --use-core \
     --no-prepend-enum-name \
-    --whitelist-function '^nftnl_.+$' \
-    --whitelist-type '^nftnl_.+$' \
-    --whitelist-var '^nftnl_.+$' \
-    --whitelist-var '^NFTNL_.+$' \
-    --blacklist-type '(FILE|iovec)' \
-    --blacklist-type '^_IO_.+$' \
-    --blacklist-type '^__.+$' \
-    --blacklist-type 'nlmsghdr' \
+    --allowlist-function '^nftnl_.+$' \
+    --allowlist-type '^nftnl_.+$' \
+    --allowlist-var '^nftnl_.+$' \
+    --allowlist-var '^NFTNL_.+$' \
+    --blocklist-type '(FILE|iovec)' \
+    --blocklist-type '^_IO_.+$' \
+    --blocklist-type '^__.+$' \
+    --blocklist-type 'nlmsghdr' \
     --raw-line 'use libc::{c_char, c_int, c_void, iovec, nlmsghdr, FILE};' \
     --raw-line 'use core::option::Option;' \
     --ctypes-prefix 'libc' \
@@ -48,7 +48,7 @@ sed -i -e '/^pub struct .* {$/ {
 
 # Remove all }\nextern "C" { to condense code a bit
 #   Search regex: }\nextern "C" {
-#   Replace string: 
+#   Replace string:
 sed -i -e '/^extern "C" {$/ {
     :loop
     n
