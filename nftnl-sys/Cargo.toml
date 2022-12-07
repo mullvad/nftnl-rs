@@ -18,6 +18,7 @@ nftnl-1-0-9 = ["nftnl-1-0-8"]
 nftnl-1-1-0 = ["nftnl-1-0-9"]
 nftnl-1-1-1 = ["nftnl-1-1-0"]
 nftnl-1-1-2 = ["nftnl-1-1-1"]
+nftnl-1-1-9 = ["nftnl-1-1-9"]
 
 [dependencies]
 cfg-if = "1.0"

@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 
 ## [Unreleased]
+### Added
+- Add bindings to `libnftnl-1.1.9`.
 
 
 ## [0.6.2] - 2022-02-11
