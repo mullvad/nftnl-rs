@@ -17,9 +17,9 @@ macro_rules! nft_set {
         nft_set!($name, $id, $table, $family)
     };
     ($name:expr, $id:expr, $table:expr, $family:expr; [ $($value:expr,)* ]) => {{
-        let mut set = nft_set!($name, $id, $table, $family).expect("Set allocation failed");
+        let mut set = nft_set!($name, $id, $table, $family);
         $(
-            set.add($value).expect(stringify!(Unable to add $value to set $name));
+            set.add($value);
         )*
         set
     }};
