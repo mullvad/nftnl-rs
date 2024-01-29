@@ -17,9 +17,9 @@ macro_rules! nft_set {
         nft_set!($name, $id, $table, $family)
     };
     ($name:expr, $id:expr, $table:expr, $family:expr; [ $($value:expr,)* ]) => {{
-        let mut set = nft_set!($name, $id, $table, $family).expect("Set allocation failed");
+        let mut set = nft_set!($name, $id, $table, $family);
         $(
-            set.add($value).expect(stringify!(Unable to add $value to set $name));
+            set.add($value);
         )*
         set
     }};
@@ -45,11 +45,6 @@ impl<'a, K> Set<'a, K> {
             sys::nftnl_set_set_str(set, sys::NFTNL_SET_NAME as u16, name.as_ptr());
             sys::nftnl_set_set_u32(set, sys::NFTNL_SET_ID as u16, id);
 
-            sys::nftnl_set_set_u32(
-                set,
-                sys::NFTNL_SET_FLAGS as u16,
-                (libc::NFT_SET_ANONYMOUS | libc::NFT_SET_CONSTANT) as u32,
-            );
             sys::nftnl_set_set_u32(set, sys::NFTNL_SET_KEY_TYPE as u16, K::TYPE);
             sys::nftnl_set_set_u32(set, sys::NFTNL_SET_KEY_LEN as u16, K::LEN);
 
