@@ -37,6 +37,7 @@ pub enum Conntrack {
     State,
     Status,
     Mark { set: bool },
+    Zone { set: bool },
 }
 
 impl Conntrack {
@@ -45,6 +46,9 @@ impl Conntrack {
             Conntrack::State => libc::NFT_CT_STATE as u32,
             Conntrack::Status => libc::NFT_CT_STATUS as u32,
             Conntrack::Mark { .. } => libc::NFT_CT_MARK as u32,
+            // TODO: Update this once libc has definitions for NFT_CT_ZONE
+            // (https://github.com/rust-lang/libc/issues/3566)
+            Conntrack::Zone { .. } => 17 as u32,
         }
     }
 }
@@ -54,19 +58,23 @@ impl Expression for Conntrack {
         unsafe {
             let expr = try_alloc!(sys::nftnl_expr_alloc(b"ct\0" as *const _ as *const c_char));
 
-            if let Conntrack::Mark { set: true } = self {
-                sys::nftnl_expr_set_u32(
-                    expr,
-                    sys::NFTNL_EXPR_CT_SREG as u16,
-                    libc::NFT_REG_1 as u32,
-                );
-            } else {
-                sys::nftnl_expr_set_u32(
-                    expr,
-                    sys::NFTNL_EXPR_CT_DREG as u16,
-                    libc::NFT_REG_1 as u32,
-                );
+            match &self {
+                Conntrack::Mark { set: true } | Conntrack::Zone { set: true } => {
+                    sys::nftnl_expr_set_u32(
+                        expr,
+                        sys::NFTNL_EXPR_CT_SREG as u16,
+                        libc::NFT_REG_1 as u32,
+                    );
+                }
+                _ => {
+                    sys::nftnl_expr_set_u32(
+                        expr,
+                        sys::NFTNL_EXPR_CT_DREG as u16,
+                        libc::NFT_REG_1 as u32,
+                    );
+                }
             }
+
             sys::nftnl_expr_set_u32(expr, sys::NFTNL_EXPR_CT_KEY as u16, self.raw_key());
 
             expr
@@ -87,5 +95,11 @@ macro_rules! nft_expr_ct {
     };
     (mark) => {
         $crate::expr::Conntrack::Mark { set: false }
+    };
+    (zone set) => {
+        $crate::expr::Conntrack::Zone { set: true }
+    };
+    (zone) => {
+        $crate::expr::Conntrack::Zone { set: false }
     };
 }
