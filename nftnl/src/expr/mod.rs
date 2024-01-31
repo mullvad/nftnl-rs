@@ -63,6 +63,9 @@ pub use self::payload::*;
 mod verdict;
 pub use self::verdict::*;
 
+mod fib;
+pub use self::fib::*;
+
 #[macro_export(local_inner_macros)]
 macro_rules! nft_expr {
     (bitwise mask $mask:expr,xor $xor:expr) => {
@@ -103,5 +106,8 @@ macro_rules! nft_expr {
     };
     (immediate $expr:ident $value:expr) => {
         nft_expr_immediate!($expr $value)
+    };
+    (fib $expr:ident $result:expr) => {
+        nft_expr_fib!($expr $result)
     };
 }
