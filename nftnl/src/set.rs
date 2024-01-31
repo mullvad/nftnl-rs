@@ -32,6 +32,11 @@ pub struct Set<'a, K> {
     _marker: ::std::marker::PhantomData<K>,
 }
 
+// Safety: It should be safe to pass this around and
+// *read* from it from multiple threads
+unsafe impl<'a, K> Send for Set<'a, K> where K: Send + Sync {}
+unsafe impl<'a, K> Sync for Set<'a, K> where K: Send + Sync {}
+
 impl<'a, K> Set<'a, K> {
     pub fn new(name: &CStr, id: u32, table: &'a Table, family: ProtoFamily) -> Self
     where
