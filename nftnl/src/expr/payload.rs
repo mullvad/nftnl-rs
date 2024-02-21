@@ -121,6 +121,7 @@ impl HeaderField for NetworkHeaderField {
 #[derive(Copy, Clone, Eq, PartialEq)]
 #[non_exhaustive]
 pub enum Ipv4HeaderField {
+    Len,
     Ttl,
     Protocol,
     Saddr,
@@ -130,7 +131,9 @@ pub enum Ipv4HeaderField {
 impl HeaderField for Ipv4HeaderField {
     fn offset(&self) -> u32 {
         use self::Ipv4HeaderField::*;
+        // Field offsets in struct iphdr
         match *self {
+            Len => 2,
             Ttl => 8,
             Protocol => 9,
             Saddr => 12,
@@ -140,7 +143,9 @@ impl HeaderField for Ipv4HeaderField {
 
     fn len(&self) -> u32 {
         use self::Ipv4HeaderField::*;
+        // Size of field in struct iphdr
         match *self {
+            Len => 1,
             Ttl => 1,
             Protocol => 1,
             Saddr => 4,
@@ -152,6 +157,7 @@ impl HeaderField for Ipv4HeaderField {
 #[derive(Copy, Clone, Eq, PartialEq)]
 #[non_exhaustive]
 pub enum Ipv6HeaderField {
+    Len,
     NextHeader,
     HopLimit,
     Saddr,
@@ -161,7 +167,9 @@ pub enum Ipv6HeaderField {
 impl HeaderField for Ipv6HeaderField {
     fn offset(&self) -> u32 {
         use self::Ipv6HeaderField::*;
+        // Field offsets in struct ip6hdr
         match *self {
+            Len => 4,
             NextHeader => 6,
             HopLimit => 7,
             Saddr => 8,
@@ -171,7 +179,9 @@ impl HeaderField for Ipv6HeaderField {
 
     fn len(&self) -> u32 {
         use self::Ipv6HeaderField::*;
+        // Size of field in struct ip6hdr
         match *self {
+            Len => 2,
             NextHeader => 1,
             HopLimit => 1,
             Saddr => 16,
@@ -291,6 +301,9 @@ impl HeaderField for Icmpv6HeaderField {
 
 #[macro_export(local_inner_macros)]
 macro_rules! nft_expr_payload {
+    (@ipv4_field len) => {
+        $crate::expr::Ipv4HeaderField::Len
+    };
     (@ipv4_field ttl) => {
         $crate::expr::Ipv4HeaderField::Ttl
     };
@@ -304,6 +317,9 @@ macro_rules! nft_expr_payload {
         $crate::expr::Ipv4HeaderField::Daddr
     };
 
+    (@ipv6_field len) => {
+        $crate::expr::Ipv6HeaderField::Len
+    };
     (@ipv6_field nextheader) => {
         $crate::expr::Ipv6HeaderField::NextHeader
     };
