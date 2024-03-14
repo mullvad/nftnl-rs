@@ -27,7 +27,7 @@ impl Expression for Log {
 #[macro_export]
 macro_rules! nft_expr_log {
     (group $group:ident) => {
-        $crate::expr::Log::new(group $group)
+        $crate::expr::Log::new($group)
     };
     () => {
         $crate::expr::Log::new(None)
