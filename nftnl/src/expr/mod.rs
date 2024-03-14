@@ -45,6 +45,9 @@ pub use self::ct::*;
 mod immediate;
 pub use self::immediate::*;
 
+mod log;
+pub use self::log::*;
+
 mod lookup;
 pub use self::lookup::*;
 
@@ -85,6 +88,12 @@ macro_rules! nft_expr {
     };
     (verdict $verdict:ident $chain:expr) => {
         nft_expr_verdict!($verdict $chain)
+    };
+    (log group $group:ident) => {
+        crate::expr::Log::new($group)
+    };
+    (log) => {
+        crate::expr::Log::new(None)
     };
     (lookup $set:expr) => {
         nft_expr_lookup!($set)
