@@ -7,8 +7,12 @@ pub struct Log {
 }
 
 impl Log {
-    pub fn new(group: Option<u16>) -> Self {
-        Log { group }
+    pub fn new() -> Self {
+        Log { group: None }
+    }
+
+    pub fn new_with_group(group: u16) -> Self {
+        Log { group: Some(group) }
     }
 }
 
@@ -26,10 +30,10 @@ impl Expression for Log {
 
 #[macro_export]
 macro_rules! nft_expr_log {
-    (group $group:literal) => {
-        $crate::expr::Log::new($group)
+    (group $group:expr) => {
+        $crate::expr::Log::new_with_group($group)
     };
     () => {
-        $crate::expr::Log::new(None)
+        $crate::expr::Log::new()
     };
 }
