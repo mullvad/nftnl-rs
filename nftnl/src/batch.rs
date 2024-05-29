@@ -1,13 +1,21 @@
 use crate::{MsgType, NlMsg};
+use core::fmt;
 use nftnl_sys::{self as sys, libc};
 use std::ffi::c_void;
 use std::os::raw::c_char;
 use std::ptr;
 
 /// Error while communicating with netlink
-#[derive(err_derive::Error, Debug)]
-#[error(display = "Error while communicating with netlink")]
+#[derive(Debug)]
 pub struct NetlinkError(());
+
+impl fmt::Display for NetlinkError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        "Error while communicating with netlink".fmt(f)
+    }
+}
+
+impl std::error::Error for NetlinkError {}
 
 /// Check if the kernel supports batched netlink messages to netfilter.
 pub fn batch_is_supported() -> std::result::Result<bool, NetlinkError> {
