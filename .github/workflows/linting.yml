@@ -12,6 +12,11 @@ jobs:
   clippy-linting:
     runs-on: ubuntu-latest
     steps:
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libnftnl-dev libmnl-dev
+
       - uses: actions/checkout@v4
 
       - uses: actions-rs/toolchain@v1.0.6
