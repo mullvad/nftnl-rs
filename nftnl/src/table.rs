@@ -105,5 +105,5 @@ pub fn get_tables_cb(header: &libc::nlmsghdr, tables: &mut HashSet<CString>) -> 
         tables.insert(table_name);
         sys::nftnl_table_free(nf_table);
     };
-    return 1;
+    1
 }
