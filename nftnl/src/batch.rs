@@ -38,6 +38,12 @@ pub struct Batch {
 unsafe impl Send for Batch {}
 unsafe impl Sync for Batch {}
 
+impl Default for Batch {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Batch {
     /// Creates a new nftnl batch with the [default page size].
     ///
