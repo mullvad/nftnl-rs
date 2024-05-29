@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 
 ## [Unreleased]
+### Changed
+- Upgrade crates to Rust 2021 edition.
 
 
 ## [0.6.2] - 2022-02-11
