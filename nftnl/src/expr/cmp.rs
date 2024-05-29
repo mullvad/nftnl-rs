@@ -111,7 +111,7 @@ pub trait ToSlice {
     fn to_slice(&self) -> Cow<'_, [u8]>;
 }
 
-impl<'a> ToSlice for [u8; 0] {
+impl ToSlice for [u8; 0] {
     fn to_slice(&self) -> Cow<'_, [u8]> {
         Cow::Borrowed(&[])
     }
