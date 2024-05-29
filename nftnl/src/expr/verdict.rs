@@ -38,9 +38,9 @@ pub enum RejectionType {
 }
 
 impl RejectionType {
-    fn to_raw(&self, family: ProtoFamily) -> u32 {
+    fn to_raw(self, family: ProtoFamily) -> u32 {
         use libc::*;
-        let value = match *self {
+        let value = match self {
             RejectionType::Icmp(..) => match family {
                 ProtoFamily::Bridge | ProtoFamily::Inet => NFT_REJECT_ICMPX_UNREACH,
                 _ => NFT_REJECT_ICMP_UNREACH,
