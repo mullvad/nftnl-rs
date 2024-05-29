@@ -21,6 +21,11 @@ jobs:
         rust: [stable, beta, nightly, 1.56.0]
     runs-on: ubuntu-latest
     steps:
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libnftnl-dev libmnl-dev
+
       - uses: actions/checkout@v4
 
       - uses: actions-rs/toolchain@16499b5e05bf2e26879000db0c1d13f7e13fa3af #v1.0.7
@@ -41,6 +46,11 @@ jobs:
   minimal-versions:
     runs-on: ubuntu-latest
     steps:
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libnftnl-dev libmnl-dev
+
       - uses: actions/checkout@v4
 
       - name: Install stable Rust
