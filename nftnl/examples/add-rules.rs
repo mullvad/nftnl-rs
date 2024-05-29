@@ -38,17 +38,13 @@
 
 use ipnetwork::{IpNetwork, Ipv4Network};
 use nftnl::{nft_expr, nftnl_sys::libc, Batch, Chain, FinalizedBatch, ProtoFamily, Rule, Table};
-use std::{
-    ffi::{self, CString},
-    io,
-    net::Ipv4Addr,
-};
+use std::{ffi::CString, io, net::Ipv4Addr};
 
 const TABLE_NAME: &str = "example-table";
 const OUT_CHAIN_NAME: &str = "chain-for-outgoing-packets";
 const IN_CHAIN_NAME: &str = "chain-for-incoming-packets";
 
-fn main() -> Result<(), Error> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Create a batch. This is used to store all the netlink messages we will later send.
     // Creating a new batch also automatically writes the initial batch begin message needed
     // to tell netlink this is a single transaction that might arrive over multiple netlink packets.
@@ -179,17 +175,17 @@ fn main() -> Result<(), Error> {
 }
 
 // Look up the interface index for a given interface name.
-fn iface_index(name: &str) -> Result<libc::c_uint, Error> {
-    let c_name = CString::new(name)?;
+fn iface_index(name: &str) -> io::Result<libc::c_uint> {
+    let c_name = CString::new(name).unwrap();
     let index = unsafe { libc::if_nametoindex(c_name.as_ptr()) };
     if index == 0 {
-        Err(Error::from(io::Error::last_os_error()))
+        Err(io::Error::last_os_error())
     } else {
         Ok(index)
     }
 }
 
-fn send_and_process(batch: &FinalizedBatch) -> Result<(), Error> {
+fn send_and_process(batch: &FinalizedBatch) -> io::Result<()> {
     // Create a netlink socket to netfilter.
     let socket = mnl::Socket::new(mnl::Bus::Netfilter)?;
     // Send all the bytes in the batch.
@@ -210,32 +206,11 @@ fn send_and_process(batch: &FinalizedBatch) -> Result<(), Error> {
     Ok(())
 }
 
-fn socket_recv<'a>(socket: &mnl::Socket, buf: &'a mut [u8]) -> Result<Option<&'a [u8]>, Error> {
+fn socket_recv<'a>(socket: &mnl::Socket, buf: &'a mut [u8]) -> io::Result<Option<&'a [u8]>> {
     let ret = socket.recv(buf)?;
     if ret > 0 {
         Ok(Some(&buf[..ret]))
     } else {
         Ok(None)
-    }
-}
-
-#[derive(Debug)]
-struct Error(String);
-
-impl From<io::Error> for Error {
-    fn from(error: io::Error) -> Self {
-        Error(error.to_string())
-    }
-}
-
-impl From<ffi::NulError> for Error {
-    fn from(error: ffi::NulError) -> Self {
-        Error(error.to_string())
-    }
-}
-
-impl From<ipnetwork::IpNetworkError> for Error {
-    fn from(error: ipnetwork::IpNetworkError) -> Self {
-        Error(error.to_string())
     }
 }

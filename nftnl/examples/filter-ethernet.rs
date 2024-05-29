@@ -30,7 +30,7 @@ const OUT_CHAIN_NAME: &str = "chain-for-outgoing-packets";
 
 const BLOCK_THIS_MAC: &[u8] = &[0, 0, 0, 0, 0, 0];
 
-fn main() -> Result<(), Error> {
+fn main() -> io::Result<()> {
     // For verbose explanations of what all these lines up until the rule creation does, see the
     // `add-rules` example.
     let mut batch = Batch::new();
@@ -88,7 +88,7 @@ fn main() -> Result<(), Error> {
     Ok(())
 }
 
-fn send_and_process(batch: &FinalizedBatch) -> Result<(), Error> {
+fn send_and_process(batch: &FinalizedBatch) -> io::Result<()> {
     // Create a netlink socket to netfilter.
     let socket = mnl::Socket::new(mnl::Bus::Netfilter)?;
     // Send all the bytes in the batch.
@@ -109,20 +109,11 @@ fn send_and_process(batch: &FinalizedBatch) -> Result<(), Error> {
     Ok(())
 }
 
-fn socket_recv<'a>(socket: &mnl::Socket, buf: &'a mut [u8]) -> Result<Option<&'a [u8]>, Error> {
+fn socket_recv<'a>(socket: &mnl::Socket, buf: &'a mut [u8]) -> io::Result<Option<&'a [u8]>> {
     let ret = socket.recv(buf)?;
     if ret > 0 {
         Ok(Some(&buf[..ret]))
     } else {
         Ok(None)
-    }
-}
-
-#[derive(Debug)]
-struct Error(String);
-
-impl From<io::Error> for Error {
-    fn from(error: io::Error) -> Self {
-        Error(error.to_string())
     }
 }
