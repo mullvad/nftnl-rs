@@ -1,3 +1,6 @@
+// for missing `iovec`
+#include <sys/uio.h>
+
 #include <libnftnl/batch.h>
 #include <libnftnl/chain.h>
 #include <libnftnl/common.h>
