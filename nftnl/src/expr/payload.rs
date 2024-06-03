@@ -72,6 +72,7 @@ pub enum LLHeaderField {
     Daddr,
     Saddr,
     EtherType,
+    Raw { offset_bits: u32, length_bits: u32 },
 }
 
 impl HeaderField for LLHeaderField {
@@ -81,6 +82,7 @@ impl HeaderField for LLHeaderField {
             Daddr => 0,
             Saddr => 6,
             EtherType => 12,
+            Raw { offset_bits, .. } => offset_bits,
         }
     }
 
@@ -90,6 +92,7 @@ impl HeaderField for LLHeaderField {
             Daddr => 6,
             Saddr => 6,
             EtherType => 2,
+            Raw { length_bits, .. } => length_bits,
         }
     }
 }
@@ -98,6 +101,7 @@ impl HeaderField for LLHeaderField {
 pub enum NetworkHeaderField {
     Ipv4(Ipv4HeaderField),
     Ipv6(Ipv6HeaderField),
+    Raw { offset_bits: u32, length_bits: u32 },
 }
 
 impl HeaderField for NetworkHeaderField {
@@ -106,6 +110,7 @@ impl HeaderField for NetworkHeaderField {
         match *self {
             Ipv4(ref f) => f.offset(),
             Ipv6(ref f) => f.offset(),
+            Raw { offset_bits, .. } => offset_bits,
         }
     }
 
@@ -114,6 +119,7 @@ impl HeaderField for NetworkHeaderField {
         match *self {
             Ipv4(ref f) => f.len(),
             Ipv6(ref f) => f.len(),
+            Raw { length_bits, .. } => length_bits,
         }
     }
 }
@@ -186,6 +192,7 @@ pub enum TransportHeaderField {
     Tcp(TcpHeaderField),
     Udp(UdpHeaderField),
     Icmpv6(Icmpv6HeaderField),
+    Raw { offset_bits: u32, length_bits: u32 },
 }
 
 impl HeaderField for TransportHeaderField {
@@ -195,6 +202,7 @@ impl HeaderField for TransportHeaderField {
             Tcp(ref f) => f.offset(),
             Udp(ref f) => f.offset(),
             Icmpv6(ref f) => f.offset(),
+            Raw { offset_bits, .. } => offset_bits,
         }
     }
 
@@ -204,6 +212,7 @@ impl HeaderField for TransportHeaderField {
             Tcp(ref f) => f.len(),
             Udp(ref f) => f.len(),
             Icmpv6(ref f) => f.len(),
+            Raw { length_bits, .. } => length_bits,
         }
     }
 }
@@ -334,6 +343,10 @@ macro_rules! nft_expr_payload {
         $crate::expr::UdpHeaderField::Len
     };
 
+    (ll $offset:expr, $length:expr) => {
+        $crate::expr::Payload::LinkLayer($crate::expr::LLHeaderField::Raw { offset_bits: $offset, length_bits: $length })
+    };
+
     (ethernet daddr) => {
         $crate::expr::Payload::LinkLayer($crate::expr::LLHeaderField::Daddr)
     };
@@ -342,6 +355,10 @@ macro_rules! nft_expr_payload {
     };
     (ethernet ethertype) => {
         $crate::expr::Payload::LinkLayer($crate::expr::LLHeaderField::EtherType)
+    };
+
+    (nh $offset:expr, $length:expr) => {
+        $crate::expr::Payload::Network($crate::expr::NetworkHeaderField::Raw { offset_bits: $offset, length_bits: $length })
     };
 
     (ipv4 $field:ident) => {
@@ -353,6 +370,10 @@ macro_rules! nft_expr_payload {
         $crate::expr::Payload::Network($crate::expr::NetworkHeaderField::Ipv6(
             nft_expr_payload!(@ipv6_field $field),
         ))
+    };
+
+    (th $offset:expr, $length:expr) => {
+        $crate::expr::Payload::Transport($crate::expr::TransportHeaderField::Raw { offset_bits: $offset, length_bits: $length })
     };
 
     (tcp $field:ident) => {
