@@ -26,6 +26,11 @@ fn get_env(var: &'static str) -> Option<PathBuf> {
 }
 
 fn main() {
+    // Do NOT link when building documentation on docs.rs
+    if std::env::var("DOCS_RS").is_ok() {
+        return;
+    }
+
     if let Some(lib_dir) = get_env("LIBNFTNL_LIB_DIR") {
         if !lib_dir.is_dir() {
             panic!(
