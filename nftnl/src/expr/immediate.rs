@@ -5,7 +5,7 @@ use std::mem::size_of_val;
 use std::os::raw::c_char;
 
 /// An immediate expression. Used to set immediate data.
-/// Verdicts are handled separately by [Verdict].
+/// Verdicts are handled separately by [Verdict](super::Verdict).
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub struct Immediate<T> {
     pub data: T,

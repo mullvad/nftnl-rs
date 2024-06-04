@@ -38,6 +38,12 @@ pub struct Batch {
 unsafe impl Send for Batch {}
 unsafe impl Sync for Batch {}
 
+impl Default for Batch {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Batch {
     /// Creates a new nftnl batch with the [default page size].
     ///
@@ -141,7 +147,7 @@ impl FinalizedBatch {
             };
             num_pages
         ];
-        let iovecs_ptr = iovecs.as_mut_ptr() as *mut sys::libc::iovec;
+        let iovecs_ptr = iovecs.as_mut_ptr();
         unsafe {
             sys::nftnl_batch_iovec(self.batch.as_raw_batch(), iovecs_ptr, num_pages as u32);
         }
