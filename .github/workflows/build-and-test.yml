@@ -40,6 +40,11 @@ jobs:
       - name: Test
         run: cargo test
 
+      # Make sure documentation builds without warnings (broken links etc)
+      - name: Generate documentation
+        if: matrix.rust == 'stable'
+        run: RUSTDOCFLAGS="--deny warnings" cargo doc
+
   # Make sure the library builds with all dependencies downgraded to their
   # oldest versions allowed by the semver spec. This ensures we have not
   # under-specified any dependency
