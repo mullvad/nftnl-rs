@@ -22,11 +22,11 @@
 //! # nft delete table inet example-filter-ethernet
 //! ```
 
-use nftnl::{nft_expr, nftnl_sys::libc, Batch, Chain, FinalizedBatch, ProtoFamily, Rule, Table};
-use std::{ffi::CString, io};
+use nftnl::{nft_expr, nftnl_sys::libc, *};
+use std::{ffi::CStr, io};
 
-const TABLE_NAME: &str = "example-filter-ethernet";
-const OUT_CHAIN_NAME: &str = "chain-for-outgoing-packets";
+const TABLE_NAME: &CStr = c"example-filter-ethernet";
+const OUT_CHAIN_NAME: &CStr = c"chain-for-outgoing-packets";
 
 const BLOCK_THIS_MAC: &[u8] = &[0, 0, 0, 0, 0, 0];
 
@@ -34,12 +34,16 @@ fn main() -> io::Result<()> {
     // For verbose explanations of what all these lines up until the rule creation does, see the
     // `add-rules` example.
     let mut batch = Batch::new();
-    let table = Table::new(&CString::new(TABLE_NAME).unwrap(), ProtoFamily::Inet);
+    let table = Table::new(TABLE_NAME, ProtoFamily::Inet);
     batch.add(&table, nftnl::MsgType::Add);
 
-    let mut out_chain = Chain::new(&CString::new(OUT_CHAIN_NAME).unwrap(), &table);
-    out_chain.set_hook(nftnl::Hook::Out, 3);
-    out_chain.set_policy(nftnl::Policy::Accept);
+    let mut out_chain = Chain::new(OUT_CHAIN_NAME, &table);
+    let setter = BaseChainSetter::new()
+        .chain_type(ChainType::Filter)
+        .hook(Hook::Out)
+        .priority(Priority::Integer(3))
+        .policy(Some(Policy::Accept));
+    setter.try_set(&mut out_chain).unwrap();
     batch.add(&out_chain, nftnl::MsgType::Add);
 
     // === ADD RULE DROPPING ALL TRAFFIC TO THE MAC ADDRESS IN `BLOCK_THIS_MAC` ===
