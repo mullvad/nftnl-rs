@@ -504,6 +504,131 @@ pub const NFTNL_EXPR_SYNPROXY_WSCALE: u32 = 2;
 pub const NFTNL_EXPR_SYNPROXY_FLAGS: u32 = 3;
 
 #[repr(C)]
+pub struct nftnl_flowtable(c_void);
+
+extern "C" {
+    pub fn nftnl_flowtable_alloc() -> *mut nftnl_flowtable;
+
+    pub fn nftnl_flowtable_free(arg1: *const nftnl_flowtable);
+}
+pub const NFTNL_FLOWTABLE_NAME: nftnl_flowtable_attr = 0;
+pub const NFTNL_FLOWTABLE_FAMILY: nftnl_flowtable_attr = 1;
+pub const NFTNL_FLOWTABLE_TABLE: nftnl_flowtable_attr = 2;
+pub const NFTNL_FLOWTABLE_HOOKNUM: nftnl_flowtable_attr = 3;
+pub const NFTNL_FLOWTABLE_PRIO: nftnl_flowtable_attr = 4;
+pub const NFTNL_FLOWTABLE_USE: nftnl_flowtable_attr = 5;
+pub const NFTNL_FLOWTABLE_DEVICES: nftnl_flowtable_attr = 6;
+pub const NFTNL_FLOWTABLE_SIZE: nftnl_flowtable_attr = 7;
+pub const NFTNL_FLOWTABLE_FLAGS: nftnl_flowtable_attr = 8;
+pub const NFTNL_FLOWTABLE_HANDLE: nftnl_flowtable_attr = 9;
+pub const __NFTNL_FLOWTABLE_MAX: nftnl_flowtable_attr = 10;
+pub type nftnl_flowtable_attr = c_uint;
+extern "C" {
+    pub fn nftnl_flowtable_is_set(c: *const nftnl_flowtable, attr: u16) -> bool;
+
+    pub fn nftnl_flowtable_unset(c: *mut nftnl_flowtable, attr: u16);
+
+    pub fn nftnl_flowtable_set(t: *mut nftnl_flowtable, attr: u16, data: *const c_void);
+
+    pub fn nftnl_flowtable_set_data(
+        t: *mut nftnl_flowtable,
+        attr: u16,
+        data: *const c_void,
+        data_len: u32,
+    ) -> c_int;
+
+    pub fn nftnl_flowtable_set_u32(t: *mut nftnl_flowtable, attr: u16, data: u32);
+
+    pub fn nftnl_flowtable_set_s32(t: *mut nftnl_flowtable, attr: u16, data: i32);
+
+    pub fn nftnl_flowtable_set_u64(t: *mut nftnl_flowtable, attr: u16, data: u64);
+
+    pub fn nftnl_flowtable_set_str(
+        t: *mut nftnl_flowtable,
+        attr: u16,
+        str_: *const c_char,
+    ) -> c_int;
+
+    pub fn nftnl_flowtable_set_array(
+        t: *mut nftnl_flowtable,
+        attr: u16,
+        data: *mut *const c_char,
+    ) -> c_int;
+
+    pub fn nftnl_flowtable_get(c: *const nftnl_flowtable, attr: u16) -> *const c_void;
+
+    pub fn nftnl_flowtable_get_data(
+        c: *const nftnl_flowtable,
+        attr: u16,
+        data_len: *mut u32,
+    ) -> *const c_void;
+
+    pub fn nftnl_flowtable_get_str(c: *const nftnl_flowtable, attr: u16) -> *const c_char;
+
+    pub fn nftnl_flowtable_get_u32(c: *const nftnl_flowtable, attr: u16) -> u32;
+
+    pub fn nftnl_flowtable_get_s32(c: *const nftnl_flowtable, attr: u16) -> i32;
+
+    pub fn nftnl_flowtable_get_u64(c: *const nftnl_flowtable, attr: u16) -> u64;
+
+    pub fn nftnl_flowtable_get_array(t: *const nftnl_flowtable, attr: u16) -> *const *const c_char;
+
+    pub fn nftnl_flowtable_nlmsg_build_payload(nlh: *mut nlmsghdr, t: *const nftnl_flowtable);
+
+    pub fn nftnl_flowtable_parse(
+        c: *mut nftnl_flowtable,
+        type_: nftnl_parse_type,
+        data: *const c_char,
+        err: *mut nftnl_parse_err,
+    ) -> c_int;
+
+    pub fn nftnl_flowtable_parse_file(
+        c: *mut nftnl_flowtable,
+        type_: nftnl_parse_type,
+        fp: *mut FILE,
+        err: *mut nftnl_parse_err,
+    ) -> c_int;
+
+    pub fn nftnl_flowtable_snprintf(
+        buf: *mut c_char,
+        size: usize,
+        t: *const nftnl_flowtable,
+        type_: u32,
+        flags: u32,
+    ) -> c_int;
+
+    pub fn nftnl_flowtable_fprintf(
+        fp: *mut FILE,
+        c: *const nftnl_flowtable,
+        type_: u32,
+        flags: u32,
+    ) -> c_int;
+
+    pub fn nftnl_flowtable_nlmsg_parse(nlh: *const nlmsghdr, t: *mut nftnl_flowtable) -> c_int;
+}
+#[repr(C)]
+pub struct nftnl_flowtable_list(c_void);
+
+extern "C" {
+    pub fn nftnl_flowtable_list_alloc() -> *mut nftnl_flowtable_list;
+
+    pub fn nftnl_flowtable_list_free(list: *mut nftnl_flowtable_list);
+
+    pub fn nftnl_flowtable_list_is_empty(list: *const nftnl_flowtable_list) -> c_int;
+
+    pub fn nftnl_flowtable_list_add(s: *mut nftnl_flowtable, list: *mut nftnl_flowtable_list);
+
+    pub fn nftnl_flowtable_list_add_tail(s: *mut nftnl_flowtable, list: *mut nftnl_flowtable_list);
+
+    pub fn nftnl_flowtable_list_del(s: *mut nftnl_flowtable);
+
+    pub fn nftnl_flowtable_list_foreach(
+        flowtable_list: *mut nftnl_flowtable_list,
+        cb: Option<unsafe extern "C" fn(t: *mut nftnl_flowtable, data: *mut c_void) -> c_int>,
+        data: *mut c_void,
+    ) -> c_int;
+}
+#[repr(C)]
 pub struct nftnl_gen(c_void);
 
 extern "C" {
