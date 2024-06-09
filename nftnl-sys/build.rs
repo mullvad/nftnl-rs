@@ -3,7 +3,35 @@ extern crate pkg_config;
 use std::{env, path::PathBuf};
 
 cfg_if::cfg_if! {
-    if #[cfg(feature = "nftnl-1-1-2")] {
+    if #[cfg(feature = "nftnl-1-2-6")] {
+        const MIN_VERSION: &str = "1.2.6";
+    } else if #[cfg(feature = "nftnl-1-2-5")] {
+        const MIN_VERSION: &str = "1.2.5";
+    } else if #[cfg(feature = "nftnl-1-2-4")] {
+        const MIN_VERSION: &str = "1.2.4";
+    } else if #[cfg(feature = "nftnl-1-2-3")] {
+        const MIN_VERSION: &str = "1.2.3";
+    } else if #[cfg(feature = "nftnl-1-2-2")] {
+        const MIN_VERSION: &str = "1.2.2";
+    } else if #[cfg(feature = "nftnl-1-2-1")] {
+        const MIN_VERSION: &str = "1.2.1";
+    } else if #[cfg(feature = "nftnl-1-2-0")] {
+        const MIN_VERSION: &str = "1.2.0";
+    } else if #[cfg(feature = "nftnl-1-1-9")] {
+        const MIN_VERSION: &str = "1.1.9";
+    } else if #[cfg(feature = "nftnl-1-1-8")] {
+        const MIN_VERSION: &str = "1.1.8";
+    } else if #[cfg(feature = "nftnl-1-1-7")] {
+        const MIN_VERSION: &str = "1.1.7";
+    } else if #[cfg(feature = "nftnl-1-1-6")] {
+        const MIN_VERSION: &str = "1.1.6";
+    } else if #[cfg(feature = "nftnl-1-1-5")] {
+        const MIN_VERSION: &str = "1.1.5";
+    } else if #[cfg(feature = "nftnl-1-1-4")] {
+        const MIN_VERSION: &str = "1.1.4";
+    } else if #[cfg(feature = "nftnl-1-1-3")] {
+        const MIN_VERSION: &str = "1.1.3";
+    } else if #[cfg(feature = "nftnl-1-1-2")] {
         const MIN_VERSION: &str = "1.1.2";
     } else if #[cfg(feature = "nftnl-1-1-1")] {
         const MIN_VERSION: &str = "1.1.1";
