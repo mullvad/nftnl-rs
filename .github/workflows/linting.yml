@@ -1,0 +1,32 @@
+---
+name: Rust linting
+on:
+  pull_request:
+    paths:
+      - .github/workflows/linting.yml
+      - '**/*.rs'
+      - Cargo.toml
+      - Cargo.lock
+  workflow_dispatch:
+jobs:
+  clippy-linting:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libnftnl-dev libmnl-dev
+
+      - uses: actions/checkout@v4
+
+      - uses: actions-rs/toolchain@v1.0.6
+        with:
+          toolchain: stable
+          profile: minimal
+          components: clippy
+          default: true
+
+      - name: Clippy check
+        env:
+          RUSTFLAGS: --deny warnings
+        run: cargo clippy --locked --all-targets
