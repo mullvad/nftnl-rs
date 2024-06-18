@@ -37,12 +37,12 @@
 //! ```
 
 use ipnetwork::{IpNetwork, Ipv4Network};
-use nftnl::{nft_expr, nftnl_sys::libc, Batch, Chain, FinalizedBatch, ProtoFamily, Rule, Table};
-use std::{ffi::CString, io, net::Ipv4Addr};
+use nftnl::{nft_expr, nftnl_sys::libc, *};
+use std::{ffi::{CStr, CString}, io, net::Ipv4Addr};
 
-const TABLE_NAME: &str = "example-table";
-const OUT_CHAIN_NAME: &str = "chain-for-outgoing-packets";
-const IN_CHAIN_NAME: &str = "chain-for-incoming-packets";
+const TABLE_NAME: &CStr = c"example-table";
+const OUT_CHAIN_NAME: &CStr = c"chain-for-outgoing-packets";
+const IN_CHAIN_NAME: &CStr = c"chain-for-incoming-packets";
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Create a batch. This is used to store all the netlink messages we will later send.
@@ -51,24 +51,25 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut batch = Batch::new();
 
     // Create a netfilter table operating on both IPv4 and IPv6 (ProtoFamily::Inet)
-    let table = Table::new(&CString::new(TABLE_NAME).unwrap(), ProtoFamily::Inet);
+    let table = Table::new(TABLE_NAME, ProtoFamily::Inet);
     // Add the table to the batch with the `MsgType::Add` type, thus instructing netfilter to add
     // this table under its `ProtoFamily::Inet` ruleset.
     batch.add(&table, nftnl::MsgType::Add);
 
     // Create input and output chains under the table we created above.
-    let mut out_chain = Chain::new(&CString::new(OUT_CHAIN_NAME).unwrap(), &table);
-    let mut in_chain = Chain::new(&CString::new(IN_CHAIN_NAME).unwrap(), &table);
+    let mut out_chain = Chain::new(OUT_CHAIN_NAME, &table);
+    let mut in_chain = Chain::new(IN_CHAIN_NAME, &table);
 
-    // Hook the chains to the input and output event hooks, with highest priority (priority zero).
-    // See the `Chain::set_hook` documentation for details.
-    out_chain.set_hook(nftnl::Hook::Out, 0);
-    in_chain.set_hook(nftnl::Hook::In, 0);
+    let setter = BaseChainSetter::new()
+        .chain_type(ChainType::Filter)
+        .hook(Hook::Out)
+        .priority(Priority::Integer(0))
+        .policy(Some(Policy::Accept));
 
-    // Set the default policies on the chains. If no rule matches a packet processed by the
-    // `out_chain` or the `in_chain` it will accept the packet.
-    out_chain.set_policy(nftnl::Policy::Accept);
-    in_chain.set_policy(nftnl::Policy::Accept);
+    setter.try_set(&mut out_chain).unwrap();
+
+    let setter = setter.hook(Hook::In);
+    setter.try_set(&mut in_chain).unwrap();
 
     // Add the two chains to the batch with the `MsgType` to tell netfilter to create the chains
     // under the table.

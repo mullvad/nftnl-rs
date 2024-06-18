@@ -62,7 +62,7 @@ pub mod table;
 pub use table::Table;
 
 mod chain;
-pub use chain::{Chain, ChainType, Hook, Policy, Priority};
+pub use chain::{BaseChainSetter, BaseChainError, Chain, ChainType, Hook, Policy, Priority, PriorityName};
 
 mod rule;
 pub use rule::Rule;
