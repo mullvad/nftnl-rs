@@ -127,5 +127,5 @@ pub unsafe trait NlMsg {
 /// length (nla_len) is 16 bits, the largest message is a bit larger than
 /// 64 KBytes.
 pub fn nft_nlmsg_maxsize() -> u32 {
-    u32::from(::std::u16::MAX) + unsafe { libc::sysconf(libc::_SC_PAGESIZE) } as u32
+    u32::from(u16::MAX) + unsafe { libc::sysconf(libc::_SC_PAGESIZE) } as u32
 }
