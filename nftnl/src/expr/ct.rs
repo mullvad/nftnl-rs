@@ -3,6 +3,7 @@ use nftnl_sys::{self as sys, libc};
 use std::os::raw::c_char;
 
 bitflags::bitflags! {
+    #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
     pub struct States: u32 {
         const INVALID = 1;
         const ESTABLISHED = 2;
@@ -13,6 +14,7 @@ bitflags::bitflags! {
 }
 
 bitflags::bitflags! {
+    #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
     pub struct ConntrackStatus: u32 {
         const EXPECTED = 1;
         const SEEN_REPLY = 2;

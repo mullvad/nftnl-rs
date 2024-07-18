@@ -18,6 +18,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
 - Upgrade crates to Rust 2021 edition.
 
+### Removed
+- Remove `Ord` and `PartialOrd` implementation on `States` and `ConntrackStatus`.
+
 
 ## [0.6.2] - 2022-02-11
 ### Added
