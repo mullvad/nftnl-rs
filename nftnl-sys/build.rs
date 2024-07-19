@@ -26,7 +26,9 @@ fn get_env(var: &'static str) -> Option<PathBuf> {
 }
 
 fn main() {
-    // Do NOT link when building documentation on docs.rs
+    // Do NOT link when building documentation on docs.rs. The native libraries are not
+    // present on their build machines and just makes the compilation fail. Documentation
+    // generation will work without linking.
     if std::env::var("DOCS_RS").is_ok() {
         return;
     }
