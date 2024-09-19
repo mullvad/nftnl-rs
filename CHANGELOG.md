@@ -15,11 +15,25 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 
 ## [Unreleased]
+### Added
+- Implement `Default` for `nftnl::batch::Batch`.
+- Add support for Raw payload expressions.
+
 ### Changed
 - Upgrade crates to Rust 2021 edition.
+- Specify MSRV for `nftnl` and `nftnl-sys` to version 1.56.0.
+- Upgrade `bitflags` dependency to version 2.6.0.
+- Fix minimal allowed version of `mnl` to  0.2.2.
+- Remove the `error-derive` dependency. `std::error::Error` is now implemented manually for
+  `NetlinkError`.
 
 ### Removed
 - Remove `Ord` and `PartialOrd` implementation on `States` and `ConntrackStatus`.
+
+### Fixed
+- Fix building documentation on docs.rs by not linking to `libmnl` and `libmnl` during documentation
+  generation.
+- Fix compile errors by removing `expect` statments from `nft_set` macro
 
 
 ## [0.6.2] - 2022-02-11
