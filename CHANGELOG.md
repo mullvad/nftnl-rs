@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 
 ## [Unreleased]
+
+
+## [1.0.0] - 2024-09-19
 ### Added
 - Implement `Default` for `nftnl::batch::Batch`.
 - Add support for Raw payload expressions: https://github.com/mullvad/nftnl-rs/pull/52.
