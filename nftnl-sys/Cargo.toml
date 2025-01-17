@@ -9,7 +9,7 @@ readme = "README.md"
 keywords = ["nftables", "nft", "firewall", "iptables", "netfilter"]
 categories = ["network-programming", "os::unix-apis", "external-ffi-bindings", "no-std"]
 edition = "2021"
-rust-version = "1.56.0"
+rust-version = "1.63.0"
 
 
 [features]
@@ -22,7 +22,7 @@ nftnl-1-1-2 = ["nftnl-1-1-1"]
 
 [dependencies]
 cfg-if = "1.0"
-libc = "0.2.44"
+libc = "0.2.166"
 
 [build-dependencies]
 cfg-if = "1.0"
