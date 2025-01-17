@@ -11,8 +11,8 @@ pub struct Rule<'a> {
 
 // Safety: It should be safe to pass this around and *read* from it
 // from multiple threads
-unsafe impl<'a> Send for Rule<'a> {}
-unsafe impl<'a> Sync for Rule<'a> {}
+unsafe impl Send for Rule<'_> {}
+unsafe impl Sync for Rule<'_> {}
 
 impl<'a> Rule<'a> {
     /// Creates a new rule object in the given [`Chain`].
@@ -70,7 +70,7 @@ impl<'a> Rule<'a> {
     }
 }
 
-unsafe impl<'a> crate::NlMsg for Rule<'a> {
+unsafe impl crate::NlMsg for Rule<'_> {
     unsafe fn write(&self, buf: *mut c_void, seq: u32, msg_type: MsgType) {
         let type_ = match msg_type {
             MsgType::Add => libc::NFT_MSG_NEWRULE,
@@ -91,7 +91,7 @@ unsafe impl<'a> crate::NlMsg for Rule<'a> {
     }
 }
 
-impl<'a> Drop for Rule<'a> {
+impl Drop for Rule<'_> {
     fn drop(&mut self) {
         unsafe { sys::nftnl_rule_free(self.rule) };
     }

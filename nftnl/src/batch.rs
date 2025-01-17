@@ -174,8 +174,8 @@ pub struct Iter<'a> {
 
 // Safety: It should be safe to pass this around and *read* from it
 // from multiple threads.
-unsafe impl<'a> Send for Iter<'a> {}
-unsafe impl<'a> Sync for Iter<'a> {}
+unsafe impl Send for Iter<'_> {}
+unsafe impl Sync for Iter<'_> {}
 
 impl<'a> Iterator for Iter<'a> {
     type Item = &'a [u8];
