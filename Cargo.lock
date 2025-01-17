@@ -25,9 +25,9 @@ dependencies = [
 
 [[package]]
 name = "libc"
-version = "0.2.44"
+version = "0.2.166"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "10923947f84a519a45c8fefb7dd1b3e8c08747993381adee176d7a82b4195311"
+checksum = "c2ccc108bbc0b1331bd061864e7cd823c0cab660bbe6970e66e2c0614decde36"
 
 [[package]]
 name = "log"

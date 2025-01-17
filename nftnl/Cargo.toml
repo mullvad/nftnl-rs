@@ -9,7 +9,7 @@ readme = "../README.md"
 keywords = ["nftables", "nft", "firewall", "iptables", "netfilter"]
 categories = ["network-programming", "os::unix-apis", "api-bindings"]
 edition = "2021"
-rust-version = "1.56.0"
+rust-version = "1.63.0"
 
 [features]
 nftnl-1-0-7 = ["nftnl-sys/nftnl-1-0-7"]

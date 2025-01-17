@@ -22,6 +22,8 @@ pub enum Hook {
     Out = libc::NF_INET_LOCAL_OUT as u16,
     /// Hook into the post-routing stage of netfilter. Corresponds to `NF_INET_POST_ROUTING`.
     PostRouting = libc::NF_INET_POST_ROUTING as u16,
+    /// Hook into the ingress stage of netfilter. Corresponds to `NF_INET_INGRESS`.
+    Ingress = libc::NF_INET_INGRESS as u16,
 }
 
 /// A chain policy. Decides what to do with a packet that was processed by the chain but did not
@@ -130,6 +132,17 @@ impl<'a> Chain<'a> {
     pub fn set_policy(&mut self, policy: Policy) {
         unsafe {
             sys::nftnl_chain_set_u32(self.chain, sys::NFTNL_CHAIN_POLICY as u16, policy as u32);
+        }
+    }
+
+    /// Sets the device for this chain. This only applies if the chain has been registered with an `ingress` hook by calling `set_hook`.
+    pub fn set_device<T: AsRef<CStr>>(&mut self, device: &T) {
+        unsafe {
+            sys::nftnl_chain_set_str(
+                self.chain,
+                sys::NFTNL_CHAIN_DEV as u16,
+                device.as_ref().as_ptr(),
+            );
         }
     }
 
