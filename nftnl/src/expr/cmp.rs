@@ -117,13 +117,13 @@ impl ToSlice for [u8; 0] {
     }
 }
 
-impl<'a> ToSlice for &'a [u8] {
+impl ToSlice for &'_ [u8] {
     fn to_slice(&self) -> Cow<'_, [u8]> {
         Cow::Borrowed(self)
     }
 }
 
-impl<'a> ToSlice for &'a [u16] {
+impl ToSlice for &'_ [u16] {
     fn to_slice(&self) -> Cow<'_, [u8]> {
         let ptr = self.as_ptr() as *const u8;
         let len = self.len() * 2;
@@ -186,7 +186,7 @@ impl ToSlice for i32 {
     }
 }
 
-impl<'a> ToSlice for &'a str {
+impl ToSlice for &'_ str {
     fn to_slice(&self) -> Cow<'_, [u8]> {
         Cow::from(self.as_bytes())
     }
@@ -218,7 +218,7 @@ impl ToSlice for InterfaceName {
     }
 }
 
-impl<'a> ToSlice for &'a InterfaceName {
+impl ToSlice for &'_ InterfaceName {
     fn to_slice(&self) -> Cow<'_, [u8]> {
         let bytes = match *self {
             InterfaceName::Exact(ref name) => name.as_bytes_with_nul(),

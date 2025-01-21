@@ -74,8 +74,8 @@ pub struct Chain<'a> {
 
 // Safety: It should be safe to pass this around and *read* from it
 // from multiple threads
-unsafe impl<'a> Send for Chain<'a> {}
-unsafe impl<'a> Sync for Chain<'a> {}
+unsafe impl Send for Chain<'_> {}
+unsafe impl Sync for Chain<'_> {}
 
 impl<'a> Chain<'a> {
     /// Creates a new chain instance inside the given [`Table`] and with the given name.
@@ -149,7 +149,7 @@ impl<'a> Chain<'a> {
     }
 }
 
-impl<'a> fmt::Debug for Chain<'a> {
+impl fmt::Debug for Chain<'_> {
     /// Return a string representation of the chain.
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut buffer: [u8; 4096] = [0; 4096];
@@ -167,7 +167,7 @@ impl<'a> fmt::Debug for Chain<'a> {
     }
 }
 
-unsafe impl<'a> crate::NlMsg for Chain<'a> {
+unsafe impl crate::NlMsg for Chain<'_> {
     unsafe fn write(&self, buf: *mut c_void, seq: u32, msg_type: MsgType) {
         let raw_msg_type = match msg_type {
             MsgType::Add => libc::NFT_MSG_NEWCHAIN,
@@ -188,7 +188,7 @@ unsafe impl<'a> crate::NlMsg for Chain<'a> {
     }
 }
 
-impl<'a> Drop for Chain<'a> {
+impl Drop for Chain<'_> {
     fn drop(&mut self) {
         unsafe { sys::nftnl_chain_free(self.chain) };
     }

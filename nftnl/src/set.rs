@@ -106,7 +106,7 @@ impl<'a, K> Set<'a, K> {
     }
 }
 
-unsafe impl<'a, K> crate::NlMsg for Set<'a, K> {
+unsafe impl<K> crate::NlMsg for Set<'_, K> {
     unsafe fn write(&self, buf: *mut c_void, seq: u32, msg_type: MsgType) {
         let type_ = match msg_type {
             MsgType::Add => libc::NFT_MSG_NEWSET,
@@ -123,7 +123,7 @@ unsafe impl<'a, K> crate::NlMsg for Set<'a, K> {
     }
 }
 
-impl<'a, K> Drop for Set<'a, K> {
+impl<K> Drop for Set<'_, K> {
     fn drop(&mut self) {
         unsafe { sys::nftnl_set_free(self.set) };
     }
@@ -164,7 +164,7 @@ impl<'a, K: 'a> Iterator for SetElemsIter<'a, K> {
     }
 }
 
-impl<'a, K> Drop for SetElemsIter<'a, K> {
+impl<K> Drop for SetElemsIter<'_, K> {
     fn drop(&mut self) {
         unsafe { sys::nftnl_set_elems_iter_destroy(self.iter) };
     }
@@ -176,7 +176,7 @@ pub struct SetElemsMsg<'a, K> {
     ret: Rc<Cell<i32>>,
 }
 
-unsafe impl<'a, K> crate::NlMsg for SetElemsMsg<'a, K> {
+unsafe impl<K> crate::NlMsg for SetElemsMsg<'_, K> {
     unsafe fn write(&self, buf: *mut c_void, seq: u32, msg_type: MsgType) {
         trace!("Writing SetElemsMsg to NlMsg");
         let (type_, flags) = match msg_type {
