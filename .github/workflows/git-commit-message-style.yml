@@ -2,6 +2,7 @@
 name: Git - Check commit message style
 on:
   push:
+  pull_request:
   workflow_dispatch:
 
 jobs:
