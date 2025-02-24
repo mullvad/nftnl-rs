@@ -1,6 +1,6 @@
 use crate::{MsgType, chain::Chain, expr::Expression};
-use nftnl_sys::{self as sys, libc};
-use std::ffi::c_void;
+use nftnl_sys::{self as sys, libc, nftnl_udata_buf_alloc};
+use std::ffi::{CStr, c_void};
 use std::os::raw::c_char;
 use std::ptr;
 
@@ -65,6 +65,25 @@ impl<'a> Rule<'a> {
     /// stops and the packet is evaluated against the next rule in the chain.
     pub fn add_expr(&mut self, expr: &impl Expression) {
         unsafe { sys::nftnl_rule_add_expr(self.rule.as_ptr(), expr.to_expr(self).as_ptr()) }
+    }
+
+    pub fn set_comment<T: AsRef<CStr>>(&mut self, comment: T) {
+        unsafe {
+            let udata_buf = nftnl_udata_buf_alloc(256);
+            // NFTNL_UDATA_RULE_COMMENT = 0
+            if !sys::nftnl_udata_put_strz(udata_buf, 0, comment.as_ref().as_ptr()) {
+                std::process::abort();
+            }
+            let data = sys::nftnl_udata_buf_data(udata_buf);
+            let len = sys::nftnl_udata_buf_len(udata_buf);
+            sys::nftnl_rule_set_data(
+                self.rule.as_ptr(),
+                sys::NFTNL_RULE_USERDATA as u16,
+                data,
+                len,
+            );
+            sys::nftnl_udata_buf_free(udata_buf);
+        }
     }
 
     /// Returns a reference to the [`Chain`] this rule lives in.
