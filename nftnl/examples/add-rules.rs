@@ -194,7 +194,7 @@ fn send_and_process(batch: &FinalizedBatch) -> io::Result<()> {
     // Try to parse the messages coming back from netfilter. This part is still very unclear.
     let portid = socket.portid();
     let mut buffer = vec![0; nftnl::nft_nlmsg_maxsize() as usize];
-    let very_unclear_what_this_is_for = 2;
+    let very_unclear_what_this_is_for = 0;
     while let Some(message) = socket_recv(&socket, &mut buffer[..])? {
         match mnl::cb_run(message, very_unclear_what_this_is_for, portid)? {
             mnl::CbResult::Stop => {
