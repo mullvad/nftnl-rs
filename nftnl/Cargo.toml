@@ -1,6 +1,6 @@
 [package]
 name = "nftnl"
-version = "0.7.0"
+version = "0.7.1-129"
 authors = ["Mullvad VPN"]
 license = "MIT OR Apache-2.0"
 description = "Safe abstraction for libnftnl. Provides low-level userspace access to the in-kernel nf_tables subsystem"
@@ -12,6 +12,7 @@ edition = "2021"
 rust-version = "1.63.0"
 
 [features]
+default = ["nftnl-1-2-9"]
 nftnl-1-0-7 = ["nftnl-sys/nftnl-1-0-7"]
 nftnl-1-0-8 = ["nftnl-sys/nftnl-1-0-8"]
 nftnl-1-0-9 = ["nftnl-sys/nftnl-1-0-9"]
@@ -32,11 +33,12 @@ nftnl-1-2-3 = ["nftnl-sys/nftnl-1-2-3"]
 nftnl-1-2-4 = ["nftnl-sys/nftnl-1-2-4"]
 nftnl-1-2-5 = ["nftnl-sys/nftnl-1-2-5"]
 nftnl-1-2-6 = ["nftnl-sys/nftnl-1-2-6"]
+nftnl-1-2-9 = ["nftnl-sys/nftnl-1-2-9"]
 
 [dependencies]
 bitflags = "2.6.0"
 log = "0.4"
-nftnl-sys = { path = "../nftnl-sys", version = "0.6.2" }
+nftnl-sys = { path = "../nftnl-sys", version = "0.6.3-129" }
 
 [dev-dependencies]
 ipnetwork = "0.20.0"

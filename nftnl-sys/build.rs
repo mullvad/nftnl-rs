@@ -3,7 +3,9 @@ extern crate pkg_config;
 use std::{env, path::PathBuf};
 
 cfg_if::cfg_if! {
-    if #[cfg(feature = "nftnl-1-2-6")] {
+    if #[cfg(feature = "nftnl-1-2-9")] {
+        const MIN_VERSION: &str = "1.2.9";
+    } else if #[cfg(feature = "nftnl-1-2-6")] {
         const MIN_VERSION: &str = "1.2.6";
     } else if #[cfg(feature = "nftnl-1-2-5")] {
         const MIN_VERSION: &str = "1.2.5";

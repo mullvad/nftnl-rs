@@ -1,6 +1,6 @@
 [package]
 name = "nftnl-sys"
-version = "0.6.2"
+version = "0.6.3-129"
 authors = ["Mullvad VPN"]
 license = "MIT OR Apache-2.0"
 description = "Low level FFI bindings to libnftnl. Provides low-level userspace access to the in-kernel nf_tables subsystem"
@@ -13,6 +13,7 @@ rust-version = "1.63.0"
 
 
 [features]
+default = ["nftnl-1-2-9"]
 nftnl-1-0-7 = []
 nftnl-1-0-8 = []
 nftnl-1-0-9 = []
@@ -33,6 +34,7 @@ nftnl-1-2-3 = []
 nftnl-1-2-4 = []
 nftnl-1-2-5 = []
 nftnl-1-2-6 = []
+nftnl-1-2-9 = []
 
 [dependencies]
 cfg-if = "1.0"
