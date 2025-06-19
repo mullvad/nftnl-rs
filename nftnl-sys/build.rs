@@ -5,6 +5,10 @@ use std::{env, path::PathBuf};
 cfg_if::cfg_if! {
     if #[cfg(feature = "nftnl-1-2-9")] {
         const MIN_VERSION: &str = "1.2.9";
+    } else if #[cfg(feature = "nftnl-1-2-8")] {
+        const MIN_VERSION: &str = "1.2.8";
+    } else if #[cfg(feature = "nftnl-1-2-7")] {
+        const MIN_VERSION: &str = "1.2.7";
     } else if #[cfg(feature = "nftnl-1-2-6")] {
         const MIN_VERSION: &str = "1.2.6";
     } else if #[cfg(feature = "nftnl-1-2-5")] {
