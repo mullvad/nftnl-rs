@@ -43,7 +43,7 @@ checksum = "d1a5469630da93e1813bb257964c0ccee3b26b6879dd858039ddec35cc8681ed"
 dependencies = [
  "libc",
  "log",
- "mnl-sys",
+ "mnl-sys 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -51,6 +51,15 @@ name = "mnl-sys"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9750685b201e1ecfaaf7aa5d0387829170fa565989cc481b49080aa155f70457"
+dependencies = [
+ "libc",
+ "pkg-config",
+]
+
+[[package]]
+name = "mnl-sys"
+version = "0.2.1"
+source = "git+https://github.com/mullvad/mnl-rs?rev=bf8829a6e00249f41438c7a97173803cc325bfe3#bf8829a6e00249f41438c7a97173803cc325bfe3"
 dependencies = [
  "libc",
  "pkg-config",
@@ -73,6 +82,7 @@ version = "0.6.2"
 dependencies = [
  "cfg-if",
  "libc",
+ "mnl-sys 0.2.1 (git+https://github.com/mullvad/mnl-rs?rev=bf8829a6e00249f41438c7a97173803cc325bfe3)",
  "pkg-config",
 ]
 

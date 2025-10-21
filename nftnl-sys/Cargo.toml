@@ -23,6 +23,7 @@ nftnl-1-1-2 = ["nftnl-1-1-1"]
 [dependencies]
 cfg-if = "1.0"
 libc = "0.2.166"
+mnl-sys = { git = "https://github.com/mullvad/mnl-rs", rev = "bf8829a6e00249f41438c7a97173803cc325bfe3" } # Find and link `libmnl`
 
 [build-dependencies]
 cfg-if = "1.0"

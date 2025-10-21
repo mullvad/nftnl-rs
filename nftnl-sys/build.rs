@@ -50,21 +50,4 @@ fn main() {
             .probe("libnftnl")
             .unwrap();
     }
-
-    if let Some(lib_dir) = get_env("LIBMNL_LIB_DIR") {
-        if !lib_dir.is_dir() {
-            panic!(
-                "libmnl library directory does not exist: {}",
-                lib_dir.display()
-            );
-        }
-        println!("cargo:rustc-link-search=native={}", lib_dir.display());
-        println!("cargo:rustc-link-lib=mnl");
-    } else {
-        // Trying with pkg-config instead
-        pkg_config::Config::new()
-            .atleast_version("1.0.0")
-            .probe("libmnl")
-            .unwrap();
-    }
 }
