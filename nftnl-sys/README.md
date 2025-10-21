@@ -7,10 +7,22 @@ See [`nftnl`] for a higher level safe abstraction.
 
 ## Linking to libmnl and libnftnl
 
+### `pkg-config`
 By default this crate uses pkg-config to find and link to its C dependencies, [`libmnl`] and
-[`libnftnl`]. To manually configure where to look for these libraries, set the environment
+[`libnftnl`].
+
+### Manually
+To manually configure where to look for these libraries, either set the environment
 variables `LIBMNL_LIB_DIR` and `LIBNFTNL_LIB_DIR` to point to the directories where `libmnl.so`
-(or `libmnl.a`) and `libnftnl.so` (or `libnftnl.a`) reside.
+(or `libmnl.a`) and `libnftnl.so` (or `libnftnl.a`) reside, or [`override the build script`] to
+manually set the linker directives for both `nftnl` and `mnl`:
+
+```toml
+# .cargo/config.toml
+[target.x86_64-unknown-linux-gnu.nftnl]
+rustc-link-lib = ["nftnl", "mnl"]
+rustc-link-search = ["<type>=<path-to-libnftnl>", "<type>=<path-to-libmnl>"]
+```
 
 ## Selecting version of `libnftnl`
 
@@ -31,5 +43,6 @@ nftnl-sys = { version = "0.1", features = ["nftnl-1-0-9"] }
 [`libmnl`]: https://netfilter.org/projects/libmnl/
 [`nftnl`]: https://crates.io/crates/nftnl
 [`bindgen`]: https://crates.io/crates/bindgen
+[`override the build script`]: https://doc.rust-lang.org/cargo/reference/build-scripts.html#overriding-build-scripts
 
 License: MIT/Apache-2.0
