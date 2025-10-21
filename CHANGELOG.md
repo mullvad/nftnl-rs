@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 
 ## [Unreleased]
+- Specify `links` manifest key `nftnl-sys`. This allows dependants to pass custom build flags.
 
 
 ## [0.7.0] - 2024-09-19
