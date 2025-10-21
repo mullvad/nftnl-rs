@@ -24,6 +24,7 @@ nftnl-1-1-2 = ["nftnl-1-1-1"]
 [dependencies]
 cfg-if = "1.0"
 libc = "0.2.166"
+mnl-sys = "0.2.2" # Find and link `libmnl`
 
 [build-dependencies]
 cfg-if = "1.0"
