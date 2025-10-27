@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Specify `links` manifest key `nftnl-sys`. This allows dependants to pass custom build flags.
 
 ### Changed
-- Bump MSRV to 1.63.0 for `nftnl` and `nftnl-sys`.
+- Bump MSRV to 1.85.0 for `nftnl` and `nftnl-sys`.
 
 
 ## [0.7.0] - 2024-09-19
