@@ -1,6 +1,6 @@
 [package]
 name = "nftnl-sys"
-version = "0.6.2"
+version = "0.6.3"
 authors = ["Mullvad VPN"]
 license = "MIT OR Apache-2.0"
 description = "Low level FFI bindings to libnftnl. Provides low-level userspace access to the in-kernel nf_tables subsystem"
