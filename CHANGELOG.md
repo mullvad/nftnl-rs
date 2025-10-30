@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 
 ## [Unreleased]
+
+
+## [0.8.0] - 2025-10-30
 ### Added
 - Add support for ingress hooks. Corresponds to `NF_INET_INGRESS`.
 - Specify `links` manifest key `nftnl-sys`. This allows dependants to pass custom build flags.
