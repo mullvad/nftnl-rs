@@ -48,9 +48,9 @@ dependencies = [
 
 [[package]]
 name = "mnl-sys"
-version = "0.2.1"
+version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9750685b201e1ecfaaf7aa5d0387829170fa565989cc481b49080aa155f70457"
+checksum = "a0f3c607af12ed53f3cade8ee7adeced5533800abc0b07f5b6bdc7081d1e0d4c"
 dependencies = [
  "libc",
  "pkg-config",
@@ -73,6 +73,7 @@ version = "0.6.2"
 dependencies = [
  "cfg-if",
  "libc",
+ "mnl-sys",
  "pkg-config",
 ]
 
