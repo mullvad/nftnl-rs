@@ -1,6 +1,6 @@
 [package]
 name = "nftnl-sys"
-version = "0.6.2"
+version = "0.6.3"
 authors = ["Mullvad VPN"]
 license = "MIT OR Apache-2.0"
 description = "Low level FFI bindings to libnftnl. Provides low-level userspace access to the in-kernel nf_tables subsystem"
@@ -9,7 +9,7 @@ readme = "README.md"
 keywords = ["nftables", "nft", "firewall", "iptables", "netfilter"]
 categories = ["network-programming", "os::unix-apis", "external-ffi-bindings", "no-std"]
 edition = "2021"
-rust-version = "1.63.0"
+rust-version = "1.85.0"
 links = "nftnl"
 
 
