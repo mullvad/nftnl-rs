@@ -53,7 +53,14 @@ impl Batch {
     }
 
     /// Creates a new nftnl batch with the given batch size.
+    ///
+    /// # Panics
+    /// Panics if `batch_page_size + nft_nlmsg_maxsize` would overflow.
     pub fn with_page_size(batch_page_size: u32) -> Self {
+        batch_page_size
+            .checked_add(crate::nft_nlmsg_maxsize())
+            .expect("batch_page_size is too large and would overflow");
+
         let batch = try_alloc!(unsafe {
             sys::nftnl_batch_alloc(batch_page_size, crate::nft_nlmsg_maxsize())
         });
