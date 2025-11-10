@@ -45,7 +45,61 @@
 pub use libc;
 
 cfg_if::cfg_if! {
-    if #[cfg(feature = "nftnl-1-1-2")] {
+    if #[cfg(feature = "nftnl-1-3-0")] {
+        mod nftnl_1_3_0;
+        pub use self::nftnl_1_3_0::*;
+    } else if #[cfg(feature = "nftnl-1-2-9")] {
+        mod nftnl_1_2_9;
+        pub use self::nftnl_1_2_9::*;
+    } else if #[cfg(feature = "nftnl-1-2-8")] {
+        mod nftnl_1_2_8;
+        pub use self::nftnl_1_2_8::*;
+    } else if #[cfg(feature = "nftnl-1-2-7")] {
+        mod nftnl_1_2_7;
+        pub use self::nftnl_1_2_7::*;
+    } else if #[cfg(feature = "nftnl-1-2-6")] {
+        mod nftnl_1_2_6;
+        pub use self::nftnl_1_2_6::*;
+    } else if #[cfg(feature = "nftnl-1-2-5")] {
+        mod nftnl_1_2_5;
+        pub use self::nftnl_1_2_5::*;
+    } else if #[cfg(feature = "nftnl-1-2-4")] {
+        mod nftnl_1_2_4;
+        pub use self::nftnl_1_2_4::*;
+    } else if #[cfg(feature = "nftnl-1-2-3")] {
+        mod nftnl_1_2_3;
+        pub use self::nftnl_1_2_3::*;
+    } else if #[cfg(feature = "nftnl-1-2-2")] {
+        mod nftnl_1_2_2;
+        pub use self::nftnl_1_2_2::*;
+    } else if #[cfg(feature = "nftnl-1-2-1")] {
+        mod nftnl_1_2_1;
+        pub use self::nftnl_1_2_1::*;
+    } else if #[cfg(feature = "nftnl-1-2-0")] {
+        mod nftnl_1_2_0;
+        pub use self::nftnl_1_2_0::*;
+    } else if #[cfg(feature = "nftnl-1-1-9")] {
+        mod nftnl_1_1_9;
+        pub use self::nftnl_1_1_9::*;
+    } else if #[cfg(feature = "nftnl-1-1-8")] {
+        mod nftnl_1_1_8;
+        pub use self::nftnl_1_1_8::*;
+    } else if #[cfg(feature = "nftnl-1-1-7")] {
+        mod nftnl_1_1_7;
+        pub use self::nftnl_1_1_7::*;
+    } else if #[cfg(feature = "nftnl-1-1-6")] {
+        mod nftnl_1_1_6;
+        pub use self::nftnl_1_1_6::*;
+    } else if #[cfg(feature = "nftnl-1-1-5")] {
+        mod nftnl_1_1_5;
+        pub use self::nftnl_1_1_5::*;
+    } else if #[cfg(feature = "nftnl-1-1-4")] {
+        mod nftnl_1_1_4;
+        pub use self::nftnl_1_1_4::*;
+    } else if #[cfg(feature = "nftnl-1-1-3")] {
+        mod nftnl_1_1_3;
+        pub use self::nftnl_1_1_3::*;
+    } else if #[cfg(feature = "nftnl-1-1-2")] {
         mod nftnl_1_1_2;
         pub use self::nftnl_1_1_2::*;
     } else if #[cfg(feature = "nftnl-1-1-1")] {
