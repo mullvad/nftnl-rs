@@ -1,7 +1,7 @@
 use crate::{MsgType, Table};
 use nftnl_sys::{self as sys, libc};
 use std::{
-    ffi::{c_void, CStr},
+    ffi::{CStr, c_void},
     fmt,
     os::raw::c_char,
 };
@@ -190,14 +190,16 @@ unsafe impl crate::NlMsg for Chain<'_> {
             MsgType::Add => (libc::NLM_F_ACK | libc::NLM_F_CREATE) as u16,
             MsgType::Del => libc::NLM_F_ACK as u16,
         };
-        let header = sys::nftnl_nlmsg_build_hdr(
-            buf as *mut c_char,
-            raw_msg_type as u16,
-            self.table.get_family() as u16,
-            flags,
-            seq,
-        );
-        sys::nftnl_chain_nlmsg_build_payload(header, self.chain);
+        let header = unsafe {
+            sys::nftnl_nlmsg_build_hdr(
+                buf.cast::<c_char>(),
+                raw_msg_type as u16,
+                self.table.get_family() as u16,
+                flags,
+                seq,
+            )
+        };
+        unsafe { sys::nftnl_chain_nlmsg_build_payload(header, self.chain) };
     }
 }
 

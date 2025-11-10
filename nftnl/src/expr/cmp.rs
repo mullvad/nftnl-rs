@@ -2,7 +2,7 @@ use super::{Expression, Rule};
 use nftnl_sys::{self as sys, libc};
 use std::{
     borrow::Cow,
-    ffi::{c_void, CString},
+    ffi::{CString, c_void},
     net::{IpAddr, Ipv4Addr, Ipv6Addr},
     os::raw::c_char,
     slice,
@@ -210,9 +210,9 @@ pub enum InterfaceName {
 
 impl ToSlice for InterfaceName {
     fn to_slice(&self) -> Cow<'_, [u8]> {
-        let bytes = match *self {
-            InterfaceName::Exact(ref name) => name.as_bytes_with_nul(),
-            InterfaceName::StartingWith(ref name) => name.as_bytes(),
+        let bytes = match self {
+            InterfaceName::Exact(name) => name.as_bytes_with_nul(),
+            InterfaceName::StartingWith(name) => name.as_bytes(),
         };
         Cow::from(bytes)
     }
@@ -221,8 +221,8 @@ impl ToSlice for InterfaceName {
 impl ToSlice for &'_ InterfaceName {
     fn to_slice(&self) -> Cow<'_, [u8]> {
         let bytes = match *self {
-            InterfaceName::Exact(ref name) => name.as_bytes_with_nul(),
-            InterfaceName::StartingWith(ref name) => name.as_bytes(),
+            InterfaceName::Exact(name) => name.as_bytes_with_nul(),
+            InterfaceName::StartingWith(name) => name.as_bytes(),
         };
         Cow::from(bytes)
     }

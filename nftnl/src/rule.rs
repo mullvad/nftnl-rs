@@ -1,4 +1,4 @@
-use crate::{chain::Chain, expr::Expression, MsgType};
+use crate::{MsgType, chain::Chain, expr::Expression};
 use nftnl_sys::{self as sys, libc};
 use std::ffi::c_void;
 use std::os::raw::c_char;
@@ -80,14 +80,16 @@ unsafe impl crate::NlMsg for Rule<'_> {
             MsgType::Add => (libc::NLM_F_CREATE | libc::NLM_F_APPEND | libc::NLM_F_EXCL) as u16,
             MsgType::Del => 0u16,
         };
-        let header = sys::nftnl_nlmsg_build_hdr(
-            buf as *mut c_char,
-            type_ as u16,
-            self.chain.get_table().get_family() as u16,
-            flags,
-            seq,
-        );
-        sys::nftnl_rule_nlmsg_build_payload(header, self.rule);
+        let header = unsafe {
+            sys::nftnl_nlmsg_build_hdr(
+                buf.cast::<c_char>(),
+                type_ as u16,
+                self.chain.get_table().get_family() as u16,
+                flags,
+                seq,
+            )
+        };
+        unsafe { sys::nftnl_rule_nlmsg_build_payload(header, self.rule) };
     }
 }
 
