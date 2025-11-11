@@ -2,7 +2,7 @@ use crate::{MsgType, ProtoFamily};
 use nftnl_sys::{self as sys, libc};
 use std::{
     collections::HashSet,
-    ffi::{c_void, CStr, CString},
+    ffi::{CStr, CString, c_void},
     os::raw::c_char,
 };
 
@@ -53,14 +53,16 @@ unsafe impl crate::NlMsg for Table {
             MsgType::Add => libc::NFT_MSG_NEWTABLE,
             MsgType::Del => libc::NFT_MSG_DELTABLE,
         };
-        let header = sys::nftnl_nlmsg_build_hdr(
-            buf as *mut c_char,
-            raw_msg_type as u16,
-            self.family as u16,
-            libc::NLM_F_ACK as u16,
-            seq,
-        );
-        sys::nftnl_table_nlmsg_build_payload(header, self.table);
+        let header = unsafe {
+            sys::nftnl_nlmsg_build_hdr(
+                buf.cast::<c_char>(),
+                raw_msg_type as u16,
+                self.family as u16,
+                libc::NLM_F_ACK as u16,
+                seq,
+            )
+        };
+        unsafe { sys::nftnl_table_nlmsg_build_payload(header, self.table) };
     }
 }
 
@@ -76,7 +78,7 @@ pub fn get_tables_nlmsg(seq: u32) -> Vec<u8> {
     let mut buffer = vec![0; crate::nft_nlmsg_maxsize() as usize];
     let _ = unsafe {
         sys::nftnl_nlmsg_build_hdr(
-            buffer.as_mut_ptr() as *mut c_char,
+            buffer.as_mut_ptr().cast::<c_char>(),
             libc::NFT_MSG_GETTABLE as u16,
             ProtoFamily::Unspec as u16,
             (libc::NLM_F_ROOT | libc::NLM_F_MATCH) as u16,

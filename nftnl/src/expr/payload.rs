@@ -1,6 +1,5 @@
 use super::{Expression, Rule};
 use nftnl_sys::{self as sys, libc};
-use std::os::raw::c_char;
 
 trait HeaderField {
     fn offset(&self) -> u32;
@@ -48,9 +47,7 @@ impl HeaderField for Payload {
 impl Expression for Payload {
     fn to_expr(&self, _rule: &Rule) -> *mut sys::nftnl_expr {
         unsafe {
-            let expr = try_alloc!(sys::nftnl_expr_alloc(
-                b"payload\0" as *const _ as *const c_char
-            ));
+            let expr = try_alloc!(sys::nftnl_expr_alloc(c"payload".as_ptr()));
 
             sys::nftnl_expr_set_u32(expr, sys::NFTNL_EXPR_PAYLOAD_BASE as u16, self.base());
             sys::nftnl_expr_set_u32(expr, sys::NFTNL_EXPR_PAYLOAD_OFFSET as u16, self.offset());

@@ -8,16 +8,34 @@ repository = "https://github.com/mullvad/nftnl-rs"
 readme = "../README.md"
 keywords = ["nftables", "nft", "firewall", "iptables", "netfilter"]
 categories = ["network-programming", "os::unix-apis", "api-bindings"]
-edition = "2021"
+edition = "2024"
 rust-version = "1.85.0"
 
 [features]
-nftnl-1-0-7 = ["nftnl-sys/nftnl-1-0-7"]
-nftnl-1-0-8 = ["nftnl-sys/nftnl-1-0-8"]
-nftnl-1-0-9 = ["nftnl-sys/nftnl-1-0-9"]
-nftnl-1-1-0 = ["nftnl-sys/nftnl-1-1-0"]
-nftnl-1-1-1 = ["nftnl-sys/nftnl-1-1-1"]
+nftnl-1-3-0 = ["nftnl-sys/nftnl-1-3-0"]
+nftnl-1-2-9 = ["nftnl-sys/nftnl-1-2-9"]
+nftnl-1-2-8 = ["nftnl-sys/nftnl-1-2-8"]
+nftnl-1-2-7 = ["nftnl-sys/nftnl-1-2-7"]
+nftnl-1-2-6 = ["nftnl-sys/nftnl-1-2-6"]
+nftnl-1-2-5 = ["nftnl-sys/nftnl-1-2-5"]
+nftnl-1-2-4 = ["nftnl-sys/nftnl-1-2-4"]
+nftnl-1-2-3 = ["nftnl-sys/nftnl-1-2-3"]
+nftnl-1-2-2 = ["nftnl-sys/nftnl-1-2-2"]
+nftnl-1-2-1 = ["nftnl-sys/nftnl-1-2-1"]
+nftnl-1-2-0 = ["nftnl-sys/nftnl-1-2-0"]
+nftnl-1-1-9 = ["nftnl-sys/nftnl-1-1-9"]
+nftnl-1-1-8 = ["nftnl-sys/nftnl-1-1-8"]
+nftnl-1-1-7 = ["nftnl-sys/nftnl-1-1-7"]
+nftnl-1-1-6 = ["nftnl-sys/nftnl-1-1-6"]
+nftnl-1-1-5 = ["nftnl-sys/nftnl-1-1-5"]
+nftnl-1-1-4 = ["nftnl-sys/nftnl-1-1-4"]
+nftnl-1-1-3 = ["nftnl-sys/nftnl-1-1-3"]
 nftnl-1-1-2 = ["nftnl-sys/nftnl-1-1-2"]
+nftnl-1-1-1 = ["nftnl-sys/nftnl-1-1-1"]
+nftnl-1-1-0 = ["nftnl-sys/nftnl-1-1-0"]
+nftnl-1-0-9 = ["nftnl-sys/nftnl-1-0-9"]
+nftnl-1-0-8 = ["nftnl-sys/nftnl-1-0-8"]
+nftnl-1-0-7 = ["nftnl-sys/nftnl-1-0-7"]
 
 [dependencies]
 bitflags = "2.6.0"

@@ -2,9 +2,8 @@ use super::{Expression, Rule};
 use nftnl_sys::{self as sys, libc};
 use std::{
     borrow::Cow,
-    ffi::{c_void, CString},
+    ffi::{CString, c_void},
     net::{IpAddr, Ipv4Addr, Ipv6Addr},
-    os::raw::c_char,
     slice,
 };
 
@@ -57,7 +56,7 @@ impl<T: ToSlice> Cmp<T> {
 impl<T: ToSlice> Expression for Cmp<T> {
     fn to_expr(&self, _rule: &Rule) -> *mut sys::nftnl_expr {
         unsafe {
-            let expr = try_alloc!(sys::nftnl_expr_alloc(b"cmp\0" as *const _ as *const c_char));
+            let expr = try_alloc!(sys::nftnl_expr_alloc(c"cmp".as_ptr()));
 
             let data = self.data.to_slice();
             trace!("Creating a cmp expr comparing with data {:?}", data);
@@ -210,9 +209,9 @@ pub enum InterfaceName {
 
 impl ToSlice for InterfaceName {
     fn to_slice(&self) -> Cow<'_, [u8]> {
-        let bytes = match *self {
-            InterfaceName::Exact(ref name) => name.as_bytes_with_nul(),
-            InterfaceName::StartingWith(ref name) => name.as_bytes(),
+        let bytes = match self {
+            InterfaceName::Exact(name) => name.as_bytes_with_nul(),
+            InterfaceName::StartingWith(name) => name.as_bytes(),
         };
         Cow::from(bytes)
     }
@@ -221,8 +220,8 @@ impl ToSlice for InterfaceName {
 impl ToSlice for &'_ InterfaceName {
     fn to_slice(&self) -> Cow<'_, [u8]> {
         let bytes = match *self {
-            InterfaceName::Exact(ref name) => name.as_bytes_with_nul(),
-            InterfaceName::StartingWith(ref name) => name.as_bytes(),
+            InterfaceName::Exact(name) => name.as_bytes_with_nul(),
+            InterfaceName::StartingWith(name) => name.as_bytes(),
         };
         Cow::from(bytes)
     }

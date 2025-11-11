@@ -1,8 +1,8 @@
-use crate::{table::Table, MsgType, ProtoFamily};
+use crate::{MsgType, ProtoFamily, table::Table};
 use nftnl_sys::{self as sys, libc};
 use std::{
     cell::Cell,
-    ffi::{c_void, CStr},
+    ffi::{CStr, c_void},
     net::{Ipv4Addr, Ipv6Addr},
     os::raw::c_char,
     rc::Rc,
@@ -112,14 +112,16 @@ unsafe impl<K> crate::NlMsg for Set<'_, K> {
             MsgType::Add => libc::NFT_MSG_NEWSET,
             MsgType::Del => libc::NFT_MSG_DELSET,
         };
-        let header = sys::nftnl_nlmsg_build_hdr(
-            buf as *mut c_char,
-            type_ as u16,
-            self.table.get_family() as u16,
-            (libc::NLM_F_APPEND | libc::NLM_F_CREATE | libc::NLM_F_ACK) as u16,
-            seq,
-        );
-        sys::nftnl_set_nlmsg_build_payload(header, self.set);
+        let header = unsafe {
+            sys::nftnl_nlmsg_build_hdr(
+                buf.cast::<c_char>(),
+                type_ as u16,
+                self.table.get_family() as u16,
+                (libc::NLM_F_APPEND | libc::NLM_F_CREATE | libc::NLM_F_ACK) as u16,
+                seq,
+            )
+        };
+        unsafe { sys::nftnl_set_nlmsg_build_payload(header, self.set) };
     }
 }
 
@@ -186,16 +188,17 @@ unsafe impl<K> crate::NlMsg for SetElemsMsg<'_, K> {
             ),
             MsgType::Del => (libc::NFT_MSG_DELSETELEM, libc::NLM_F_ACK),
         };
-        let header = sys::nftnl_nlmsg_build_hdr(
-            buf as *mut c_char,
-            type_ as u16,
-            self.set.get_family() as u16,
-            flags as u16,
-            seq,
-        );
-        self.ret.set(sys::nftnl_set_elems_nlmsg_build_payload_iter(
-            header, self.iter,
-        ));
+        let header = unsafe {
+            sys::nftnl_nlmsg_build_hdr(
+                buf.cast::<c_char>(),
+                type_ as u16,
+                self.set.get_family() as u16,
+                flags as u16,
+                seq,
+            )
+        };
+        self.ret
+            .set(unsafe { sys::nftnl_set_elems_nlmsg_build_payload_iter(header, self.iter) });
     }
 }
 

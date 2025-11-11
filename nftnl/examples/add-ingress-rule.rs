@@ -32,8 +32,8 @@
 //! ```
 
 use nftnl::{
-    nft_expr, nftnl_sys::libc, Batch, Chain, ChainType, FinalizedBatch, Policy, ProtoFamily, Rule,
-    Table,
+    Batch, Chain, ChainType, FinalizedBatch, Policy, ProtoFamily, Rule, Table, nft_expr,
+    nftnl_sys::libc,
 };
 use std::{ffi::CString, io, net::Ipv4Addr};
 

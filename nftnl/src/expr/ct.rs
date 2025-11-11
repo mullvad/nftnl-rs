@@ -1,6 +1,5 @@
 use super::{Expression, Rule};
 use nftnl_sys::{self as sys, libc};
-use std::os::raw::c_char;
 
 bitflags::bitflags! {
     #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -54,7 +53,7 @@ impl Conntrack {
 impl Expression for Conntrack {
     fn to_expr(&self, _rule: &Rule) -> *mut sys::nftnl_expr {
         unsafe {
-            let expr = try_alloc!(sys::nftnl_expr_alloc(b"ct\0" as *const _ as *const c_char));
+            let expr = try_alloc!(sys::nftnl_expr_alloc(c"ct".as_ptr()));
 
             if let Conntrack::Mark { set: true } = self {
                 sys::nftnl_expr_set_u32(

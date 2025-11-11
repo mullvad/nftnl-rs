@@ -111,12 +111,12 @@ impl Batch {
     }
 
     fn write_begin_msg(&mut self) {
-        unsafe { sys::nftnl_batch_begin(self.current() as *mut c_char, self.seq) };
+        unsafe { sys::nftnl_batch_begin(self.current().cast::<c_char>(), self.seq) };
         self.next();
     }
 
     fn write_end_msg(&mut self) {
-        unsafe { sys::nftnl_batch_end(self.current() as *mut c_char, self.seq) };
+        unsafe { sys::nftnl_batch_end(self.current().cast::<c_char>(), self.seq) };
         self.next();
     }
 

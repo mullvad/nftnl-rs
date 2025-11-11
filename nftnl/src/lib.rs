@@ -54,7 +54,7 @@ macro_rules! try_alloc {
 }
 
 mod batch;
-pub use batch::{batch_is_supported, default_batch_page_size, Batch, FinalizedBatch, NetlinkError};
+pub use batch::{Batch, FinalizedBatch, NetlinkError, batch_is_supported, default_batch_page_size};
 
 pub mod expr;
 

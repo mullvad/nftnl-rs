@@ -3,6 +3,7 @@
 use core::option::Option;
 use libc::{FILE, c_char, c_int, c_uint, c_void, iovec, nlmsghdr};
 
+pub const NFTNL_UDATA_COMMENT_MAXLEN: u32 = 128;
 #[repr(C)]
 pub struct nftnl_batch(c_void);
 
@@ -59,9 +60,9 @@ pub struct nftnl_parse_err(c_void);
 unsafe extern "C" {
     pub fn nftnl_nlmsg_build_hdr(
         buf: *mut c_char,
-        cmd: u16,
-        family: u16,
         type_: u16,
+        family: u16,
+        flags: u16,
         seq: u32,
     ) -> *mut nlmsghdr;
 }
@@ -78,13 +79,16 @@ unsafe extern "C" {
     pub fn nftnl_batch_is_supported() -> c_int;
 }
 unsafe extern "C" {
-    pub fn nftnl_batch_begin(buf: *mut c_char, seq: u32);
+    pub fn nftnl_batch_begin(buf: *mut c_char, seq: u32) -> *mut nlmsghdr;
 }
 unsafe extern "C" {
-    pub fn nftnl_batch_end(buf: *mut c_char, seq: u32);
+    pub fn nftnl_batch_end(buf: *mut c_char, seq: u32) -> *mut nlmsghdr;
 }
 #[repr(C)]
 pub struct nftnl_chain(c_void);
+
+#[repr(C)]
+pub struct nftnl_rule(c_void);
 
 unsafe extern "C" {
     pub fn nftnl_chain_alloc() -> *mut nftnl_chain;
@@ -104,7 +108,11 @@ pub const NFTNL_CHAIN_PACKETS: nftnl_chain_attr = 8;
 pub const NFTNL_CHAIN_HANDLE: nftnl_chain_attr = 9;
 pub const NFTNL_CHAIN_TYPE: nftnl_chain_attr = 10;
 pub const NFTNL_CHAIN_DEV: nftnl_chain_attr = 11;
-pub const __NFTNL_CHAIN_MAX: nftnl_chain_attr = 12;
+pub const NFTNL_CHAIN_DEVICES: nftnl_chain_attr = 12;
+pub const NFTNL_CHAIN_FLAGS: nftnl_chain_attr = 13;
+pub const NFTNL_CHAIN_ID: nftnl_chain_attr = 14;
+pub const NFTNL_CHAIN_USERDATA: nftnl_chain_attr = 15;
+pub const __NFTNL_CHAIN_MAX: nftnl_chain_attr = 16;
 pub type nftnl_chain_attr = c_uint;
 unsafe extern "C" {
     pub fn nftnl_chain_is_set(c: *const nftnl_chain, attr: u16) -> bool;
@@ -139,6 +147,10 @@ unsafe extern "C" {
     pub fn nftnl_chain_set_str(t: *mut nftnl_chain, attr: u16, str_: *const c_char) -> c_int;
 }
 unsafe extern "C" {
+    pub fn nftnl_chain_set_array(t: *mut nftnl_chain, attr: u16, data: *mut *const c_char)
+    -> c_int;
+}
+unsafe extern "C" {
     pub fn nftnl_chain_get(c: *const nftnl_chain, attr: u16) -> *const c_void;
 }
 unsafe extern "C" {
@@ -162,6 +174,24 @@ unsafe extern "C" {
 }
 unsafe extern "C" {
     pub fn nftnl_chain_get_u64(c: *const nftnl_chain, attr: u16) -> u64;
+}
+unsafe extern "C" {
+    pub fn nftnl_chain_get_array(c: *const nftnl_chain, attr: u16) -> *const *const c_char;
+}
+unsafe extern "C" {
+    pub fn nftnl_chain_rule_add(rule: *mut nftnl_rule, c: *mut nftnl_chain);
+}
+unsafe extern "C" {
+    pub fn nftnl_chain_rule_del(rule: *mut nftnl_rule);
+}
+unsafe extern "C" {
+    pub fn nftnl_chain_rule_add_tail(rule: *mut nftnl_rule, c: *mut nftnl_chain);
+}
+unsafe extern "C" {
+    pub fn nftnl_chain_rule_insert_at(rule: *mut nftnl_rule, pos: *mut nftnl_rule);
+}
+unsafe extern "C" {
+    pub fn nftnl_chain_rule_append_at(rule: *mut nftnl_rule, pos: *mut nftnl_rule);
 }
 unsafe extern "C" {
     pub fn nftnl_chain_nlmsg_build_payload(nlh: *mut nlmsghdr, t: *const nftnl_chain);
@@ -202,6 +232,28 @@ unsafe extern "C" {
 unsafe extern "C" {
     pub fn nftnl_chain_nlmsg_parse(nlh: *const nlmsghdr, t: *mut nftnl_chain) -> c_int;
 }
+unsafe extern "C" {
+    pub fn nftnl_rule_foreach(
+        c: *mut nftnl_chain,
+        cb: Option<unsafe extern "C" fn(r: *mut nftnl_rule, data: *mut c_void) -> c_int>,
+        data: *mut c_void,
+    ) -> c_int;
+}
+unsafe extern "C" {
+    pub fn nftnl_rule_lookup_byindex(c: *mut nftnl_chain, index: u32) -> *mut nftnl_rule;
+}
+#[repr(C)]
+pub struct nftnl_rule_iter(c_void);
+
+unsafe extern "C" {
+    pub fn nftnl_rule_iter_create(c: *const nftnl_chain) -> *mut nftnl_rule_iter;
+}
+unsafe extern "C" {
+    pub fn nftnl_rule_iter_next(iter: *mut nftnl_rule_iter) -> *mut nftnl_rule;
+}
+unsafe extern "C" {
+    pub fn nftnl_rule_iter_destroy(iter: *mut nftnl_rule_iter);
+}
 #[repr(C)]
 pub struct nftnl_chain_list(c_void);
 
@@ -220,6 +272,12 @@ unsafe extern "C" {
         cb: Option<unsafe extern "C" fn(t: *mut nftnl_chain, data: *mut c_void) -> c_int>,
         data: *mut c_void,
     ) -> c_int;
+}
+unsafe extern "C" {
+    pub fn nftnl_chain_list_lookup_byname(
+        chain_list: *mut nftnl_chain_list,
+        chain: *const c_char,
+    ) -> *mut nftnl_chain;
 }
 unsafe extern "C" {
     pub fn nftnl_chain_list_add(r: *mut nftnl_chain, list: *mut nftnl_chain_list);
@@ -300,12 +358,30 @@ unsafe extern "C" {
     pub fn nftnl_expr_get_str(expr: *const nftnl_expr, type_: u16) -> *const c_char;
 }
 unsafe extern "C" {
-    pub fn nftnl_expr_cmp(e1: *const nftnl_expr, e2: *const nftnl_expr) -> bool;
+    pub fn nftnl_expr_build_payload(nlh: *mut nlmsghdr, expr: *mut nftnl_expr);
+}
+unsafe extern "C" {
+    pub fn nftnl_expr_add_expr(expr: *mut nftnl_expr, type_: u32, e: *mut nftnl_expr);
+}
+unsafe extern "C" {
+    pub fn nftnl_expr_expr_foreach(
+        e: *const nftnl_expr,
+        cb: Option<unsafe extern "C" fn(e: *mut nftnl_expr, data: *mut c_void) -> c_int>,
+        data: *mut c_void,
+    ) -> c_int;
 }
 unsafe extern "C" {
     pub fn nftnl_expr_snprintf(
         buf: *mut c_char,
         buflen: usize,
+        expr: *const nftnl_expr,
+        type_: u32,
+        flags: u32,
+    ) -> c_int;
+}
+unsafe extern "C" {
+    pub fn nftnl_expr_fprintf(
+        fp: *mut FILE,
         expr: *const nftnl_expr,
         type_: u32,
         flags: u32,
@@ -324,6 +400,8 @@ pub const NFTNL_EXPR_NG_DREG: u32 = 1;
 pub const NFTNL_EXPR_NG_MODULUS: u32 = 2;
 pub const NFTNL_EXPR_NG_TYPE: u32 = 3;
 pub const NFTNL_EXPR_NG_OFFSET: u32 = 4;
+pub const NFTNL_EXPR_NG_SET_NAME: u32 = 5;
+pub const NFTNL_EXPR_NG_SET_ID: u32 = 6;
 
 pub const NFTNL_EXPR_META_KEY: u32 = 1;
 pub const NFTNL_EXPR_META_DREG: u32 = 2;
@@ -331,6 +409,13 @@ pub const NFTNL_EXPR_META_SREG: u32 = 3;
 
 pub const NFTNL_EXPR_RT_KEY: u32 = 1;
 pub const NFTNL_EXPR_RT_DREG: u32 = 2;
+
+pub const NFTNL_EXPR_SOCKET_KEY: u32 = 1;
+pub const NFTNL_EXPR_SOCKET_DREG: u32 = 2;
+pub const NFTNL_EXPR_SOCKET_LEVEL: u32 = 3;
+
+pub const NFTNL_EXPR_TUNNEL_KEY: u32 = 1;
+pub const NFTNL_EXPR_TUNNEL_DREG: u32 = 2;
 
 pub const NFTNL_EXPR_CMP_SREG: u32 = 1;
 pub const NFTNL_EXPR_CMP_OP: u32 = 2;
@@ -345,15 +430,21 @@ pub const NFTNL_EXPR_IMM_DREG: u32 = 1;
 pub const NFTNL_EXPR_IMM_DATA: u32 = 2;
 pub const NFTNL_EXPR_IMM_VERDICT: u32 = 3;
 pub const NFTNL_EXPR_IMM_CHAIN: u32 = 4;
+pub const NFTNL_EXPR_IMM_CHAIN_ID: u32 = 5;
 
 pub const NFTNL_EXPR_CTR_PACKETS: u32 = 1;
 pub const NFTNL_EXPR_CTR_BYTES: u32 = 2;
+
+pub const NFTNL_EXPR_CONNLIMIT_COUNT: u32 = 1;
+pub const NFTNL_EXPR_CONNLIMIT_FLAGS: u32 = 2;
 
 pub const NFTNL_EXPR_BITWISE_SREG: u32 = 1;
 pub const NFTNL_EXPR_BITWISE_DREG: u32 = 2;
 pub const NFTNL_EXPR_BITWISE_LEN: u32 = 3;
 pub const NFTNL_EXPR_BITWISE_MASK: u32 = 4;
 pub const NFTNL_EXPR_BITWISE_XOR: u32 = 5;
+pub const NFTNL_EXPR_BITWISE_OP: u32 = 6;
+pub const NFTNL_EXPR_BITWISE_DATA: u32 = 7;
 
 pub const NFTNL_EXPR_TG_NAME: u32 = 1;
 pub const NFTNL_EXPR_TG_REV: u32 = 2;
@@ -371,6 +462,10 @@ pub const NFTNL_EXPR_NAT_REG_PROTO_MIN: u32 = 5;
 pub const NFTNL_EXPR_NAT_REG_PROTO_MAX: u32 = 6;
 pub const NFTNL_EXPR_NAT_FLAGS: u32 = 7;
 
+pub const NFTNL_EXPR_TPROXY_FAMILY: u32 = 1;
+pub const NFTNL_EXPR_TPROXY_REG_ADDR: u32 = 2;
+pub const NFTNL_EXPR_TPROXY_REG_PORT: u32 = 3;
+
 pub const NFTNL_EXPR_LOOKUP_SREG: u32 = 1;
 pub const NFTNL_EXPR_LOOKUP_DREG: u32 = 2;
 pub const NFTNL_EXPR_LOOKUP_SET: u32 = 3;
@@ -384,6 +479,8 @@ pub const NFTNL_EXPR_DYNSET_TIMEOUT: u32 = 4;
 pub const NFTNL_EXPR_DYNSET_SET_NAME: u32 = 5;
 pub const NFTNL_EXPR_DYNSET_SET_ID: u32 = 6;
 pub const NFTNL_EXPR_DYNSET_EXPR: u32 = 7;
+pub const NFTNL_EXPR_DYNSET_EXPRESSIONS: u32 = 8;
+pub const NFTNL_EXPR_DYNSET_FLAGS: u32 = 9;
 
 pub const NFTNL_EXPR_LOG_PREFIX: u32 = 1;
 pub const NFTNL_EXPR_LOG_GROUP: u32 = 2;
@@ -396,6 +493,9 @@ pub const NFTNL_EXPR_EXTHDR_DREG: u32 = 1;
 pub const NFTNL_EXPR_EXTHDR_TYPE: u32 = 2;
 pub const NFTNL_EXPR_EXTHDR_OFFSET: u32 = 3;
 pub const NFTNL_EXPR_EXTHDR_LEN: u32 = 4;
+pub const NFTNL_EXPR_EXTHDR_FLAGS: u32 = 5;
+pub const NFTNL_EXPR_EXTHDR_OP: u32 = 6;
+pub const NFTNL_EXPR_EXTHDR_SREG: u32 = 7;
 
 pub const NFTNL_EXPR_CT_DREG: u32 = 1;
 pub const NFTNL_EXPR_CT_KEY: u32 = 2;
@@ -437,7 +537,11 @@ pub const NFTNL_EXPR_REDIR_FLAGS: u32 = 3;
 pub const NFTNL_EXPR_DUP_SREG_ADDR: u32 = 1;
 pub const NFTNL_EXPR_DUP_SREG_DEV: u32 = 2;
 
+pub const NFTNL_EXPR_FLOW_TABLE_NAME: u32 = 1;
+
 pub const NFTNL_EXPR_FWD_SREG_DEV: u32 = 1;
+pub const NFTNL_EXPR_FWD_SREG_ADDR: u32 = 2;
+pub const NFTNL_EXPR_FWD_NFPROTO: u32 = 3;
 
 pub const NFTNL_EXPR_HASH_SREG: u32 = 1;
 pub const NFTNL_EXPR_HASH_DREG: u32 = 2;
@@ -445,6 +549,9 @@ pub const NFTNL_EXPR_HASH_LEN: u32 = 3;
 pub const NFTNL_EXPR_HASH_MODULUS: u32 = 4;
 pub const NFTNL_EXPR_HASH_SEED: u32 = 5;
 pub const NFTNL_EXPR_HASH_OFFSET: u32 = 6;
+pub const NFTNL_EXPR_HASH_TYPE: u32 = 7;
+pub const NFTNL_EXPR_HASH_SET_NAME: u32 = 8;
+pub const NFTNL_EXPR_HASH_SET_ID: u32 = 9;
 
 pub const NFTNL_EXPR_FIB_DREG: u32 = 1;
 pub const NFTNL_EXPR_FIB_RESULT: u32 = 2;
@@ -455,6 +562,23 @@ pub const NFTNL_EXPR_OBJREF_IMM_NAME: u32 = 2;
 pub const NFTNL_EXPR_OBJREF_SET_SREG: u32 = 3;
 pub const NFTNL_EXPR_OBJREF_SET_NAME: u32 = 4;
 pub const NFTNL_EXPR_OBJREF_SET_ID: u32 = 5;
+
+pub const NFTNL_EXPR_OSF_DREG: u32 = 1;
+pub const NFTNL_EXPR_OSF_TTL: u32 = 2;
+pub const NFTNL_EXPR_OSF_FLAGS: u32 = 3;
+
+pub const NFTNL_EXPR_XFRM_DREG: u32 = 1;
+pub const NFTNL_EXPR_XFRM_SREG: u32 = 2;
+pub const NFTNL_EXPR_XFRM_KEY: u32 = 3;
+pub const NFTNL_EXPR_XFRM_DIR: u32 = 4;
+pub const NFTNL_EXPR_XFRM_SPNUM: u32 = 5;
+
+pub const NFTNL_EXPR_SYNPROXY_MSS: u32 = 1;
+pub const NFTNL_EXPR_SYNPROXY_WSCALE: u32 = 2;
+pub const NFTNL_EXPR_SYNPROXY_FLAGS: u32 = 3;
+
+pub const NFTNL_EXPR_LAST_MSECS: u32 = 1;
+pub const NFTNL_EXPR_LAST_SET: u32 = 2;
 
 #[repr(C)]
 pub struct nftnl_flowtable(c_void);
@@ -679,6 +803,8 @@ pub const NFTNL_OBJ_NAME: u32 = 1;
 pub const NFTNL_OBJ_TYPE: u32 = 2;
 pub const NFTNL_OBJ_FAMILY: u32 = 3;
 pub const NFTNL_OBJ_USE: u32 = 4;
+pub const NFTNL_OBJ_HANDLE: u32 = 5;
+pub const NFTNL_OBJ_USERDATA: u32 = 6;
 pub const NFTNL_OBJ_BASE: u32 = 16;
 pub const __NFTNL_OBJ_MAX: u32 = 17;
 
@@ -688,6 +814,66 @@ pub const NFTNL_OBJ_CTR_BYTES: u32 = 17;
 pub const NFTNL_OBJ_QUOTA_BYTES: u32 = 16;
 pub const NFTNL_OBJ_QUOTA_CONSUMED: u32 = 17;
 pub const NFTNL_OBJ_QUOTA_FLAGS: u32 = 18;
+
+pub const NFTNL_OBJ_CT_HELPER_NAME: u32 = 16;
+pub const NFTNL_OBJ_CT_HELPER_L3PROTO: u32 = 17;
+pub const NFTNL_OBJ_CT_HELPER_L4PROTO: u32 = 18;
+
+pub const NFTNL_CTTIMEOUT_TCP_SYN_SENT: nftnl_cttimeout_array_tcp = 0;
+pub const NFTNL_CTTIMEOUT_TCP_SYN_RECV: nftnl_cttimeout_array_tcp = 1;
+pub const NFTNL_CTTIMEOUT_TCP_ESTABLISHED: nftnl_cttimeout_array_tcp = 2;
+pub const NFTNL_CTTIMEOUT_TCP_FIN_WAIT: nftnl_cttimeout_array_tcp = 3;
+pub const NFTNL_CTTIMEOUT_TCP_CLOSE_WAIT: nftnl_cttimeout_array_tcp = 4;
+pub const NFTNL_CTTIMEOUT_TCP_LAST_ACK: nftnl_cttimeout_array_tcp = 5;
+pub const NFTNL_CTTIMEOUT_TCP_TIME_WAIT: nftnl_cttimeout_array_tcp = 6;
+pub const NFTNL_CTTIMEOUT_TCP_CLOSE: nftnl_cttimeout_array_tcp = 7;
+pub const NFTNL_CTTIMEOUT_TCP_SYN_SENT2: nftnl_cttimeout_array_tcp = 8;
+pub const NFTNL_CTTIMEOUT_TCP_RETRANS: nftnl_cttimeout_array_tcp = 9;
+pub const NFTNL_CTTIMEOUT_TCP_UNACK: nftnl_cttimeout_array_tcp = 10;
+pub const NFTNL_CTTIMEOUT_TCP_MAX: nftnl_cttimeout_array_tcp = 11;
+pub type nftnl_cttimeout_array_tcp = c_uint;
+pub const NFTNL_CTTIMEOUT_UDP_UNREPLIED: nftnl_cttimeout_array_udp = 0;
+pub const NFTNL_CTTIMEOUT_UDP_REPLIED: nftnl_cttimeout_array_udp = 1;
+pub const NFTNL_CTTIMEOUT_UDP_MAX: nftnl_cttimeout_array_udp = 2;
+pub type nftnl_cttimeout_array_udp = c_uint;
+pub const NFTNL_OBJ_CT_TIMEOUT_L3PROTO: u32 = 16;
+pub const NFTNL_OBJ_CT_TIMEOUT_L4PROTO: u32 = 17;
+pub const NFTNL_OBJ_CT_TIMEOUT_ARRAY: u32 = 18;
+
+pub const NFTNL_OBJ_CT_EXPECT_L3PROTO: u32 = 16;
+pub const NFTNL_OBJ_CT_EXPECT_L4PROTO: u32 = 17;
+pub const NFTNL_OBJ_CT_EXPECT_DPORT: u32 = 18;
+pub const NFTNL_OBJ_CT_EXPECT_TIMEOUT: u32 = 19;
+pub const NFTNL_OBJ_CT_EXPECT_SIZE: u32 = 20;
+
+pub const NFTNL_OBJ_LIMIT_RATE: u32 = 16;
+pub const NFTNL_OBJ_LIMIT_UNIT: u32 = 17;
+pub const NFTNL_OBJ_LIMIT_BURST: u32 = 18;
+pub const NFTNL_OBJ_LIMIT_TYPE: u32 = 19;
+pub const NFTNL_OBJ_LIMIT_FLAGS: u32 = 20;
+
+pub const NFTNL_OBJ_SYNPROXY_MSS: u32 = 16;
+pub const NFTNL_OBJ_SYNPROXY_WSCALE: u32 = 17;
+pub const NFTNL_OBJ_SYNPROXY_FLAGS: u32 = 18;
+
+pub const NFTNL_OBJ_TUNNEL_ID: u32 = 16;
+pub const NFTNL_OBJ_TUNNEL_IPV4_SRC: u32 = 17;
+pub const NFTNL_OBJ_TUNNEL_IPV4_DST: u32 = 18;
+pub const NFTNL_OBJ_TUNNEL_IPV6_SRC: u32 = 19;
+pub const NFTNL_OBJ_TUNNEL_IPV6_DST: u32 = 20;
+pub const NFTNL_OBJ_TUNNEL_IPV6_FLOWLABEL: u32 = 21;
+pub const NFTNL_OBJ_TUNNEL_SPORT: u32 = 22;
+pub const NFTNL_OBJ_TUNNEL_DPORT: u32 = 23;
+pub const NFTNL_OBJ_TUNNEL_FLAGS: u32 = 24;
+pub const NFTNL_OBJ_TUNNEL_TOS: u32 = 25;
+pub const NFTNL_OBJ_TUNNEL_TTL: u32 = 26;
+pub const NFTNL_OBJ_TUNNEL_VXLAN_GBP: u32 = 27;
+pub const NFTNL_OBJ_TUNNEL_ERSPAN_VERSION: u32 = 28;
+pub const NFTNL_OBJ_TUNNEL_ERSPAN_V1_INDEX: u32 = 29;
+pub const NFTNL_OBJ_TUNNEL_ERSPAN_V2_HWID: u32 = 30;
+pub const NFTNL_OBJ_TUNNEL_ERSPAN_V2_DIR: u32 = 31;
+
+pub const NFTNL_OBJ_SECMARK_CTX: u32 = 16;
 
 #[repr(C)]
 pub struct nftnl_obj(c_void);
@@ -711,6 +897,12 @@ unsafe extern "C" {
     pub fn nftnl_obj_set(ne: *mut nftnl_obj, attr: u16, data: *const c_void);
 }
 unsafe extern "C" {
+    pub fn nftnl_obj_set_u8(ne: *mut nftnl_obj, attr: u16, val: u8);
+}
+unsafe extern "C" {
+    pub fn nftnl_obj_set_u16(ne: *mut nftnl_obj, attr: u16, val: u16);
+}
+unsafe extern "C" {
     pub fn nftnl_obj_set_u32(ne: *mut nftnl_obj, attr: u16, val: u32);
 }
 unsafe extern "C" {
@@ -724,6 +916,12 @@ unsafe extern "C" {
 }
 unsafe extern "C" {
     pub fn nftnl_obj_get(ne: *mut nftnl_obj, attr: u16) -> *const c_void;
+}
+unsafe extern "C" {
+    pub fn nftnl_obj_get_u8(ne: *mut nftnl_obj, attr: u16) -> u8;
+}
+unsafe extern "C" {
+    pub fn nftnl_obj_get_u16(obj: *mut nftnl_obj, attr: u16) -> u16;
 }
 unsafe extern "C" {
     pub fn nftnl_obj_get_u32(ne: *mut nftnl_obj, attr: u16) -> u32;
@@ -808,9 +1006,6 @@ unsafe extern "C" {
 unsafe extern "C" {
     pub fn nftnl_obj_list_iter_destroy(iter: *mut nftnl_obj_list_iter);
 }
-#[repr(C)]
-pub struct nftnl_rule(c_void);
-
 unsafe extern "C" {
     pub fn nftnl_rule_alloc() -> *mut nftnl_rule;
 }
@@ -825,7 +1020,9 @@ pub const NFTNL_RULE_COMPAT_PROTO: nftnl_rule_attr = 4;
 pub const NFTNL_RULE_COMPAT_FLAGS: nftnl_rule_attr = 5;
 pub const NFTNL_RULE_POSITION: nftnl_rule_attr = 6;
 pub const NFTNL_RULE_USERDATA: nftnl_rule_attr = 7;
-pub const __NFTNL_RULE_MAX: nftnl_rule_attr = 8;
+pub const NFTNL_RULE_ID: nftnl_rule_attr = 8;
+pub const NFTNL_RULE_POSITION_ID: nftnl_rule_attr = 9;
+pub const __NFTNL_RULE_MAX: nftnl_rule_attr = 10;
 pub type nftnl_rule_attr = c_uint;
 unsafe extern "C" {
     pub fn nftnl_rule_unset(r: *mut nftnl_rule, attr: u16);
@@ -879,7 +1076,7 @@ unsafe extern "C" {
     pub fn nftnl_rule_add_expr(r: *mut nftnl_rule, expr: *mut nftnl_expr);
 }
 unsafe extern "C" {
-    pub fn nftnl_rule_cmp(r1: *const nftnl_rule, r2: *const nftnl_rule) -> bool;
+    pub fn nftnl_rule_del_expr(expr: *mut nftnl_expr);
 }
 unsafe extern "C" {
     pub fn nftnl_rule_nlmsg_build_payload(nlh: *mut nlmsghdr, t: *mut nftnl_rule);
@@ -952,6 +1149,9 @@ unsafe extern "C" {
 }
 unsafe extern "C" {
     pub fn nftnl_rule_list_add_tail(r: *mut nftnl_rule, list: *mut nftnl_rule_list);
+}
+unsafe extern "C" {
+    pub fn nftnl_rule_list_insert_at(r: *mut nftnl_rule, pos: *mut nftnl_rule);
 }
 unsafe extern "C" {
     pub fn nftnl_rule_list_del(r: *mut nftnl_rule);
@@ -1101,7 +1301,11 @@ pub const NFTNL_SET_TIMEOUT: nftnl_set_attr = 11;
 pub const NFTNL_SET_GC_INTERVAL: nftnl_set_attr = 12;
 pub const NFTNL_SET_USERDATA: nftnl_set_attr = 13;
 pub const NFTNL_SET_OBJ_TYPE: nftnl_set_attr = 14;
-pub const __NFTNL_SET_MAX: nftnl_set_attr = 15;
+pub const NFTNL_SET_HANDLE: nftnl_set_attr = 15;
+pub const NFTNL_SET_DESC_CONCAT: nftnl_set_attr = 16;
+pub const NFTNL_SET_EXPR: nftnl_set_attr = 17;
+pub const NFTNL_SET_EXPRESSIONS: nftnl_set_attr = 18;
+pub const __NFTNL_SET_MAX: nftnl_set_attr = 19;
 pub type nftnl_set_attr = c_uint;
 #[repr(C)]
 pub struct nftnl_set(c_void);
@@ -1205,6 +1409,22 @@ unsafe extern "C" {
         data: *mut c_void,
     ) -> c_int;
 }
+unsafe extern "C" {
+    pub fn nftnl_set_list_lookup_byname(
+        set_list: *mut nftnl_set_list,
+        set: *const c_char,
+    ) -> *mut nftnl_set;
+}
+unsafe extern "C" {
+    pub fn nftnl_set_add_expr(s: *mut nftnl_set, expr: *mut nftnl_expr);
+}
+unsafe extern "C" {
+    pub fn nftnl_set_expr_foreach(
+        s: *const nftnl_set,
+        cb: Option<unsafe extern "C" fn(e: *mut nftnl_expr, data: *mut c_void) -> c_int>,
+        data: *mut c_void,
+    ) -> c_int;
+}
 #[repr(C)]
 pub struct nftnl_set_list_iter(c_void);
 
@@ -1246,6 +1466,9 @@ pub const NFTNL_SET_ELEM_EXPIRATION: u32 = 6;
 pub const NFTNL_SET_ELEM_USERDATA: u32 = 7;
 pub const NFTNL_SET_ELEM_EXPR: u32 = 8;
 pub const NFTNL_SET_ELEM_OBJREF: u32 = 9;
+pub const NFTNL_SET_ELEM_KEY_END: u32 = 10;
+pub const NFTNL_SET_ELEM_EXPRESSIONS: u32 = 11;
+pub const __NFTNL_SET_ELEM_MAX: u32 = 12;
 
 #[repr(C)]
 pub struct nftnl_set_elem(c_void);
@@ -1307,6 +1530,16 @@ unsafe extern "C" {
 unsafe extern "C" {
     pub fn nftnl_set_elem_nlmsg_build_payload(nlh: *mut nlmsghdr, e: *mut nftnl_set_elem);
 }
+#[repr(C)]
+pub struct nlattr(c_void);
+
+unsafe extern "C" {
+    pub fn nftnl_set_elem_nlmsg_build(
+        nlh: *mut nlmsghdr,
+        elem: *mut nftnl_set_elem,
+        i: c_int,
+    ) -> *mut nlattr;
+}
 unsafe extern "C" {
     pub fn nftnl_set_elem_parse(
         e: *mut nftnl_set_elem,
@@ -1335,9 +1568,19 @@ unsafe extern "C" {
 unsafe extern "C" {
     pub fn nftnl_set_elem_fprintf(
         fp: *mut FILE,
-        se: *mut nftnl_set_elem,
+        se: *const nftnl_set_elem,
         type_: u32,
         flags: u32,
+    ) -> c_int;
+}
+unsafe extern "C" {
+    pub fn nftnl_set_elem_add_expr(e: *mut nftnl_set_elem, expr: *mut nftnl_expr);
+}
+unsafe extern "C" {
+    pub fn nftnl_set_elem_expr_foreach(
+        e: *mut nftnl_set_elem,
+        cb: Option<unsafe extern "C" fn(e: *mut nftnl_expr, data: *mut c_void) -> c_int>,
+        data: *mut c_void,
     ) -> c_int;
 }
 unsafe extern "C" {
@@ -1381,7 +1624,10 @@ pub const NFTNL_TABLE_NAME: nftnl_table_attr = 0;
 pub const NFTNL_TABLE_FAMILY: nftnl_table_attr = 1;
 pub const NFTNL_TABLE_FLAGS: nftnl_table_attr = 2;
 pub const NFTNL_TABLE_USE: nftnl_table_attr = 3;
-pub const __NFTNL_TABLE_MAX: nftnl_table_attr = 4;
+pub const NFTNL_TABLE_HANDLE: nftnl_table_attr = 4;
+pub const NFTNL_TABLE_USERDATA: nftnl_table_attr = 5;
+pub const NFTNL_TABLE_OWNER: nftnl_table_attr = 6;
+pub const __NFTNL_TABLE_MAX: nftnl_table_attr = 7;
 pub type nftnl_table_attr = c_uint;
 unsafe extern "C" {
     pub fn nftnl_table_is_set(t: *const nftnl_table, attr: u16) -> bool;
@@ -1417,6 +1663,9 @@ unsafe extern "C" {
     pub fn nftnl_table_set_u32(t: *mut nftnl_table, attr: u16, data: u32);
 }
 unsafe extern "C" {
+    pub fn nftnl_table_set_u64(t: *mut nftnl_table, attr: u16, data: u64);
+}
+unsafe extern "C" {
     pub fn nftnl_table_set_str(t: *mut nftnl_table, attr: u16, str_: *const c_char) -> c_int;
 }
 unsafe extern "C" {
@@ -1424,6 +1673,9 @@ unsafe extern "C" {
 }
 unsafe extern "C" {
     pub fn nftnl_table_get_u32(t: *const nftnl_table, attr: u16) -> u32;
+}
+unsafe extern "C" {
+    pub fn nftnl_table_get_u64(t: *const nftnl_table, attr: u16) -> u64;
 }
 unsafe extern "C" {
     pub fn nftnl_table_get_str(t: *const nftnl_table, attr: u16) -> *const c_char;
@@ -1561,6 +1813,39 @@ unsafe extern "C" {
 unsafe extern "C" {
     pub fn nftnl_trace_nlmsg_parse(nlh: *const nlmsghdr, t: *mut nftnl_trace) -> c_int;
 }
+pub const NFTNL_UDATA_TABLE_COMMENT: nftnl_udata_table_types = 0;
+pub const __NFTNL_UDATA_TABLE_MAX: nftnl_udata_table_types = 1;
+pub type nftnl_udata_table_types = c_uint;
+pub const NFTNL_UDATA_CHAIN_COMMENT: nftnl_udata_chain_types = 0;
+pub const __NFTNL_UDATA_CHAIN_MAX: nftnl_udata_chain_types = 1;
+pub type nftnl_udata_chain_types = c_uint;
+pub const NFTNL_UDATA_RULE_COMMENT: nftnl_udata_rule_types = 0;
+pub const NFTNL_UDATA_RULE_EBTABLES_POLICY: nftnl_udata_rule_types = 1;
+pub const __NFTNL_UDATA_RULE_MAX: nftnl_udata_rule_types = 2;
+pub type nftnl_udata_rule_types = c_uint;
+pub const NFTNL_UDATA_OBJ_COMMENT: nftnl_udata_obj_types = 0;
+pub const __NFTNL_UDATA_OBJ_MAX: nftnl_udata_obj_types = 1;
+pub type nftnl_udata_obj_types = c_uint;
+pub const NFTNL_UDATA_SET_KEYBYTEORDER: nftnl_udata_set_types = 0;
+pub const NFTNL_UDATA_SET_DATABYTEORDER: nftnl_udata_set_types = 1;
+pub const NFTNL_UDATA_SET_MERGE_ELEMENTS: nftnl_udata_set_types = 2;
+pub const NFTNL_UDATA_SET_KEY_TYPEOF: nftnl_udata_set_types = 3;
+pub const NFTNL_UDATA_SET_DATA_TYPEOF: nftnl_udata_set_types = 4;
+pub const NFTNL_UDATA_SET_EXPR: nftnl_udata_set_types = 5;
+pub const NFTNL_UDATA_SET_DATA_INTERVAL: nftnl_udata_set_types = 6;
+pub const NFTNL_UDATA_SET_COMMENT: nftnl_udata_set_types = 7;
+pub const __NFTNL_UDATA_SET_MAX: nftnl_udata_set_types = 8;
+pub type nftnl_udata_set_types = c_uint;
+pub const NFTNL_UDATA_SET_TYPEOF_EXPR: u32 = 0;
+pub const NFTNL_UDATA_SET_TYPEOF_DATA: u32 = 1;
+pub const __NFTNL_UDATA_SET_TYPEOF_MAX: u32 = 2;
+
+pub const NFTNL_UDATA_SET_ELEM_COMMENT: nftnl_udata_set_elem_types = 0;
+pub const NFTNL_UDATA_SET_ELEM_FLAGS: nftnl_udata_set_elem_types = 1;
+pub const __NFTNL_UDATA_SET_ELEM_MAX: nftnl_udata_set_elem_types = 2;
+pub type nftnl_udata_set_elem_types = c_uint;
+pub const NFTNL_SET_ELEM_F_INTERVAL_OPEN: nftnl_udata_set_elem_flags = 1;
+pub type nftnl_udata_set_elem_flags = c_uint;
 #[repr(C)]
 pub struct nftnl_udata(c_void);
 
@@ -1597,7 +1882,16 @@ unsafe extern "C" {
     ) -> bool;
 }
 unsafe extern "C" {
+    pub fn nftnl_udata_put_u32(buf: *mut nftnl_udata_buf, type_: u8, data: u32) -> bool;
+}
+unsafe extern "C" {
     pub fn nftnl_udata_put_strz(buf: *mut nftnl_udata_buf, type_: u8, strz: *const c_char) -> bool;
+}
+unsafe extern "C" {
+    pub fn nftnl_udata_nest_start(buf: *mut nftnl_udata_buf, type_: u8) -> *mut nftnl_udata;
+}
+unsafe extern "C" {
+    pub fn nftnl_udata_nest_end(buf: *mut nftnl_udata_buf, ud: *mut nftnl_udata);
 }
 unsafe extern "C" {
     pub fn nftnl_udata_type(attr: *const nftnl_udata) -> u8;
@@ -1607,6 +1901,9 @@ unsafe extern "C" {
 }
 unsafe extern "C" {
     pub fn nftnl_udata_get(attr: *const nftnl_udata) -> *mut c_void;
+}
+unsafe extern "C" {
+    pub fn nftnl_udata_get_u32(attr: *const nftnl_udata) -> u32;
 }
 unsafe extern "C" {
     pub fn nftnl_udata_next(attr: *const nftnl_udata) -> *mut nftnl_udata;

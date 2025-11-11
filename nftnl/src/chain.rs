@@ -1,7 +1,7 @@
 use crate::{MsgType, Table};
 use nftnl_sys::{self as sys, libc};
 use std::{
-    ffi::{c_void, CStr},
+    ffi::{CStr, c_void},
     fmt,
     os::raw::c_char,
 };
@@ -52,11 +52,11 @@ pub enum ChainType {
 }
 
 impl ChainType {
-    fn as_c_str(&self) -> &'static [u8] {
+    fn as_c_str(&self) -> &'static CStr {
         match *self {
-            ChainType::Filter => b"filter\0",
-            ChainType::Route => b"route\0",
-            ChainType::Nat => b"nat\0",
+            ChainType::Filter => c"filter",
+            ChainType::Route => c"route",
+            ChainType::Nat => c"nat",
         }
     }
 }
@@ -122,7 +122,7 @@ impl<'a> Chain<'a> {
             sys::nftnl_chain_set_str(
                 self.chain,
                 sys::NFTNL_CHAIN_TYPE as u16,
-                chain_type.as_c_str().as_ptr() as *const c_char,
+                chain_type.as_c_str().as_ptr(),
             );
         }
     }
@@ -168,7 +168,7 @@ impl fmt::Debug for Chain<'_> {
         let mut buffer: [u8; 4096] = [0; 4096];
         unsafe {
             sys::nftnl_chain_snprintf(
-                buffer.as_mut_ptr() as *mut c_char,
+                buffer.as_mut_ptr().cast::<c_char>(),
                 buffer.len(),
                 self.chain,
                 sys::NFTNL_OUTPUT_DEFAULT,
@@ -190,14 +190,16 @@ unsafe impl crate::NlMsg for Chain<'_> {
             MsgType::Add => (libc::NLM_F_ACK | libc::NLM_F_CREATE) as u16,
             MsgType::Del => libc::NLM_F_ACK as u16,
         };
-        let header = sys::nftnl_nlmsg_build_hdr(
-            buf as *mut c_char,
-            raw_msg_type as u16,
-            self.table.get_family() as u16,
-            flags,
-            seq,
-        );
-        sys::nftnl_chain_nlmsg_build_payload(header, self.chain);
+        let header = unsafe {
+            sys::nftnl_nlmsg_build_hdr(
+                buf.cast::<c_char>(),
+                raw_msg_type as u16,
+                self.table.get_family() as u16,
+                flags,
+                seq,
+            )
+        };
+        unsafe { sys::nftnl_chain_nlmsg_build_payload(header, self.chain) };
     }
 }
 
