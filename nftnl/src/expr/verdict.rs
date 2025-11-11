@@ -1,9 +1,6 @@
 use super::{Expression, Rule};
 use crate::ProtoFamily;
-use nftnl_sys::{
-    self as sys,
-    libc::{self, c_char},
-};
+use nftnl_sys::{self as sys, libc};
 use std::ffi::{CStr, CString};
 
 /// A verdict expression. In the background, this is usually an "Immediate" expression in nftnl
@@ -63,9 +60,7 @@ pub enum IcmpCode {
 
 impl Verdict {
     unsafe fn to_immediate_expr(&self, immediate_const: i32) -> *mut sys::nftnl_expr {
-        let expr = try_alloc!(unsafe {
-            sys::nftnl_expr_alloc(b"immediate\0" as *const _ as *const c_char)
-        });
+        let expr = try_alloc!(unsafe { sys::nftnl_expr_alloc(c"immediate".as_ptr()) });
 
         unsafe {
             sys::nftnl_expr_set_u32(

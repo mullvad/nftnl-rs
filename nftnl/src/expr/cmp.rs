@@ -4,7 +4,6 @@ use std::{
     borrow::Cow,
     ffi::{CString, c_void},
     net::{IpAddr, Ipv4Addr, Ipv6Addr},
-    os::raw::c_char,
     slice,
 };
 
@@ -57,7 +56,7 @@ impl<T: ToSlice> Cmp<T> {
 impl<T: ToSlice> Expression for Cmp<T> {
     fn to_expr(&self, _rule: &Rule) -> *mut sys::nftnl_expr {
         unsafe {
-            let expr = try_alloc!(sys::nftnl_expr_alloc(b"cmp\0" as *const _ as *const c_char));
+            let expr = try_alloc!(sys::nftnl_expr_alloc(c"cmp".as_ptr()));
 
             let data = self.data.to_slice();
             trace!("Creating a cmp expr comparing with data {:?}", data);

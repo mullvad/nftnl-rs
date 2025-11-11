@@ -1,7 +1,6 @@
 use super::{Expression, Register, Rule};
 use crate::ProtoFamily;
 use nftnl_sys::{self as sys, libc};
-use std::os::raw::c_char;
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 #[repr(i32)]
@@ -23,8 +22,7 @@ pub struct Nat {
 
 impl Expression for Nat {
     fn to_expr(&self, _rule: &Rule) -> *mut sys::nftnl_expr {
-        let expr =
-            try_alloc!(unsafe { sys::nftnl_expr_alloc(b"nat\0" as *const _ as *const c_char) });
+        let expr = try_alloc!(unsafe { sys::nftnl_expr_alloc(c"nat".as_ptr()) });
 
         unsafe {
             sys::nftnl_expr_set_u32(expr, sys::NFTNL_EXPR_NAT_TYPE as u16, self.nat_type as u32);
