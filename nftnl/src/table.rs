@@ -22,7 +22,7 @@ unsafe impl Sync for Table {}
 
 impl Table {
     /// Creates a new table instance with the given name and protocol family.
-    pub fn new<T: AsRef<CStr>>(name: &T, family: ProtoFamily) -> Table {
+    pub fn new<T: AsRef<CStr>>(name: T, family: ProtoFamily) -> Table {
         unsafe {
             let table = try_alloc!(sys::nftnl_table_alloc());
 
