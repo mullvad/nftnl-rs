@@ -3,6 +3,7 @@ use core::fmt;
 use nftnl_sys::libc::NLM_F_ACK;
 use nftnl_sys::{self as sys, libc};
 use std::ffi::c_void;
+use std::ops::Range;
 use std::os::raw::c_char;
 use std::ptr;
 
@@ -31,7 +32,9 @@ pub fn batch_is_supported() -> std::result::Result<bool, NetlinkError> {
 /// `nftnl_batch` in libnftnl.
 pub struct Batch {
     batch: *mut sys::nftnl_batch,
-    seq: u32,
+
+    /// The range of sequence numbers assigned to the messages in this batch.
+    seqs: Range<u32>,
 }
 
 // Safety: It should be safe to pass this around and *read* from it
@@ -65,15 +68,15 @@ impl Batch {
         let batch = try_alloc!(unsafe {
             sys::nftnl_batch_alloc(batch_page_size, crate::nft_nlmsg_maxsize())
         });
-        let mut this = Batch { batch, seq: 1 };
+        let mut this = Batch { batch, seqs: 1..1 };
         this.write_begin_msg();
         this
     }
 
     /// Adds the given message to this batch.
     pub fn add<T: NlMsg>(&mut self, msg: &T, msg_type: MsgType) {
-        trace!("Writing NlMsg with seq {} to batch", self.seq);
-        unsafe { msg.write(self.current(), self.seq, msg_type) };
+        trace!("Writing NlMsg with seq {} to batch", self.seqs.end);
+        unsafe { msg.write(self.current(), self.seqs.end, msg_type) };
         self.next()
     }
 
@@ -108,12 +111,12 @@ impl Batch {
             // See try_alloc definition.
             std::process::abort();
         }
-        self.seq += 1;
+        self.seqs.end += 1;
     }
 
     fn write_begin_msg(&mut self) {
         let buf_ptr = self.current().cast::<c_char>();
-        let nlmsghdr = unsafe { sys::nftnl_batch_begin(buf_ptr, self.seq) };
+        let nlmsghdr = unsafe { sys::nftnl_batch_begin(buf_ptr, self.seqs.end) };
         let mut nlmsghdr = ptr::NonNull::new(nlmsghdr).expect("nlmsg_build_hdr never returns null");
         unsafe { nlmsghdr.as_mut() }.nlmsg_flags |= NLM_F_ACK as u16; // all messages should set F_ACK
         self.next();
@@ -121,7 +124,7 @@ impl Batch {
 
     fn write_end_msg(&mut self) {
         let buf_ptr = self.current().cast::<c_char>();
-        let nlmsghdr = unsafe { sys::nftnl_batch_end(buf_ptr, self.seq) };
+        let nlmsghdr = unsafe { sys::nftnl_batch_end(buf_ptr, self.seqs.end) };
         let mut nlmsghdr = ptr::NonNull::new(nlmsghdr).expect("nlmsg_build_hdr never returns null");
         unsafe { nlmsghdr.as_mut() }.nlmsg_flags |= NLM_F_ACK as u16; // all messages should set F_ACK
         self.next();
@@ -169,6 +172,11 @@ impl FinalizedBatch {
             iovecs: iovecs.into_iter(),
             _marker: ::std::marker::PhantomData,
         }
+    }
+
+    /// The range of sequence numbers assigned to the messages in this batch.
+    pub fn sequence_numbers(&self) -> Range<u32> {
+        self.batch.seqs.clone()
     }
 }
 
