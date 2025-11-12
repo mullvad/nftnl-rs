@@ -38,11 +38,11 @@
 
 use ipnetwork::{IpNetwork, Ipv4Network};
 use nftnl::{Batch, Chain, FinalizedBatch, ProtoFamily, Rule, Table, nft_expr, nftnl_sys::libc};
-use std::{ffi::CString, io, net::Ipv4Addr};
+use std::{ffi::CStr, io, net::Ipv4Addr};
 
-const TABLE_NAME: &str = "example-table";
-const OUT_CHAIN_NAME: &str = "chain-for-outgoing-packets";
-const IN_CHAIN_NAME: &str = "chain-for-incoming-packets";
+const TABLE_NAME: &CStr = c"example-table";
+const OUT_CHAIN_NAME: &CStr = c"chain-for-outgoing-packets";
+const IN_CHAIN_NAME: &CStr = c"chain-for-incoming-packets";
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Create a batch. This is used to store all the netlink messages we will later send.
@@ -51,14 +51,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut batch = Batch::new();
 
     // Create a netfilter table operating on both IPv4 and IPv6 (ProtoFamily::Inet)
-    let table = Table::new(&CString::new(TABLE_NAME).unwrap(), ProtoFamily::Inet);
+    let table = Table::new(TABLE_NAME, ProtoFamily::Inet);
     // Add the table to the batch with the `MsgType::Add` type, thus instructing netfilter to add
     // this table under its `ProtoFamily::Inet` ruleset.
     batch.add(&table, nftnl::MsgType::Add);
 
     // Create input and output chains under the table we created above.
-    let mut out_chain = Chain::new(&CString::new(OUT_CHAIN_NAME).unwrap(), &table);
-    let mut in_chain = Chain::new(&CString::new(IN_CHAIN_NAME).unwrap(), &table);
+    let mut out_chain = Chain::new(OUT_CHAIN_NAME, &table);
+    let mut in_chain = Chain::new(IN_CHAIN_NAME, &table);
 
     // Hook the chains to the input and output event hooks, with highest priority (priority zero).
     // See the `Chain::set_hook` documentation for details.
@@ -80,7 +80,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Create a new rule object under the input chain.
     let mut allow_loopback_in_rule = Rule::new(&in_chain);
     // Lookup the interface index of the loopback interface.
-    let lo_iface_index = iface_index("lo")?;
+    let lo_iface_index = iface_index(c"lo")?;
 
     // First expression to be evaluated in this rule is load the meta information "iif"
     // (incoming interface index) into the comparison register of netfilter.
@@ -175,9 +175,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 // Look up the interface index for a given interface name.
-fn iface_index(name: &str) -> io::Result<libc::c_uint> {
-    let c_name = CString::new(name).unwrap();
-    let index = unsafe { libc::if_nametoindex(c_name.as_ptr()) };
+fn iface_index(name: &CStr) -> io::Result<libc::c_uint> {
+    let index = unsafe { libc::if_nametoindex(name.as_ptr()) };
     if index == 0 {
         Err(io::Error::last_os_error())
     } else {

@@ -2,7 +2,7 @@ use super::{Expression, Rule};
 use nftnl_sys::{self as sys, libc};
 use std::{
     borrow::Cow,
-    ffi::{CString, c_void},
+    ffi::{CStr, CString, c_void},
     net::{IpAddr, Ipv4Addr, Ipv6Addr},
     slice,
 };
@@ -188,6 +188,12 @@ impl ToSlice for i32 {
 impl ToSlice for &'_ str {
     fn to_slice(&self) -> Cow<'_, [u8]> {
         Cow::from(self.as_bytes())
+    }
+}
+
+impl ToSlice for &'_ CStr {
+    fn to_slice(&self) -> Cow<'_, [u8]> {
+        Cow::from(self.to_bytes_with_nul())
     }
 }
 

@@ -83,7 +83,7 @@ impl<'a> Chain<'a> {
     /// Creates a new chain instance inside the given [`Table`] and with the given name.
     ///
     /// [`Table`]: struct.Table.html
-    pub fn new<T: AsRef<CStr>>(name: &T, table: &'a Table) -> Chain<'a> {
+    pub fn new<T: AsRef<CStr>>(name: T, table: &'a Table) -> Chain<'a> {
         unsafe {
             let chain = try_alloc!(sys::nftnl_chain_alloc());
             sys::nftnl_chain_set_u32(
@@ -136,7 +136,7 @@ impl<'a> Chain<'a> {
     }
 
     /// Sets the device for this chain. This only applies if the chain has been registered with an `ingress` hook by calling `set_hook`.
-    pub fn set_device<T: AsRef<CStr>>(&mut self, device: &T) {
+    pub fn set_device<T: AsRef<CStr>>(&mut self, device: T) {
         unsafe {
             sys::nftnl_chain_set_str(
                 self.chain,
