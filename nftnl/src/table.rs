@@ -81,7 +81,7 @@ pub fn get_tables_nlmsg(seq: u32) -> Vec<u8> {
             buffer.as_mut_ptr().cast::<c_char>(),
             libc::NFT_MSG_GETTABLE as u16,
             ProtoFamily::Unspec as u16,
-            (libc::NLM_F_ROOT | libc::NLM_F_MATCH) as u16,
+            (libc::NLM_F_ROOT | libc::NLM_F_MATCH | libc::NLM_F_ACK) as u16,
             seq,
         )
     };
