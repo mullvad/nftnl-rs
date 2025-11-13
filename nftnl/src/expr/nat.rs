@@ -1,3 +1,5 @@
+use std::ptr;
+
 use super::{Expression, Register, Rule};
 use crate::ProtoFamily;
 use nftnl_sys::{self as sys, libc};
@@ -21,20 +23,28 @@ pub struct Nat {
 }
 
 impl Expression for Nat {
-    fn to_expr(&self, _rule: &Rule) -> *mut sys::nftnl_expr {
+    fn to_expr(&self, _rule: &Rule) -> ptr::NonNull<sys::nftnl_expr> {
         let expr = try_alloc!(unsafe { sys::nftnl_expr_alloc(c"nat".as_ptr()) });
 
         unsafe {
-            sys::nftnl_expr_set_u32(expr, sys::NFTNL_EXPR_NAT_TYPE as u16, self.nat_type as u32);
-            sys::nftnl_expr_set_u32(expr, sys::NFTNL_EXPR_NAT_FAMILY as u16, self.family as u32);
             sys::nftnl_expr_set_u32(
-                expr,
+                expr.as_ptr(),
+                sys::NFTNL_EXPR_NAT_TYPE as u16,
+                self.nat_type as u32,
+            );
+            sys::nftnl_expr_set_u32(
+                expr.as_ptr(),
+                sys::NFTNL_EXPR_NAT_FAMILY as u16,
+                self.family as u32,
+            );
+            sys::nftnl_expr_set_u32(
+                expr.as_ptr(),
                 sys::NFTNL_EXPR_NAT_REG_ADDR_MIN as u16,
                 self.ip_register.to_raw(),
             );
             if let Some(port_register) = self.port_register {
                 sys::nftnl_expr_set_u32(
-                    expr,
+                    expr.as_ptr(),
                     sys::NFTNL_EXPR_NAT_REG_PROTO_MIN as u16,
                     port_register.to_raw(),
                 );

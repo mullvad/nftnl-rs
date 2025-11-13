@@ -43,12 +43,12 @@ use std::ffi::c_void;
 
 macro_rules! try_alloc {
     ($e:expr) => {{
-        let ptr = $e;
-        if ptr.is_null() {
+        let ptr: *mut _ = $e;
+        let Some(ptr) = ::std::ptr::NonNull::new(ptr) else {
             // OOM, and the tried allocation was likely very small,
             // so we are in a very tight situation. We do what libstd does, aborts.
-            std::process::abort();
-        }
+            ::std::process::abort();
+        };
         ptr
     }};
 }

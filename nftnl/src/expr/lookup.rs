@@ -1,7 +1,7 @@
 use super::{Expression, Rule};
 use crate::set::Set;
 use nftnl_sys::{self as sys, libc};
-use std::ffi::CString;
+use std::{ffi::CString, ptr};
 
 pub struct Lookup {
     set_name: CString,
@@ -18,21 +18,25 @@ impl Lookup {
 }
 
 impl Expression for Lookup {
-    fn to_expr(&self, _rule: &Rule) -> *mut sys::nftnl_expr {
+    fn to_expr(&self, _rule: &Rule) -> ptr::NonNull<sys::nftnl_expr> {
         unsafe {
             let expr = try_alloc!(sys::nftnl_expr_alloc(c"lookup".as_ptr()));
 
             sys::nftnl_expr_set_u32(
-                expr,
+                expr.as_ptr(),
                 sys::NFTNL_EXPR_LOOKUP_SREG as u16,
                 libc::NFT_REG_1 as u32,
             );
             sys::nftnl_expr_set_str(
-                expr,
+                expr.as_ptr(),
                 sys::NFTNL_EXPR_LOOKUP_SET as u16,
                 self.set_name.as_ptr(),
             );
-            sys::nftnl_expr_set_u32(expr, sys::NFTNL_EXPR_LOOKUP_SET_ID as u16, self.set_id);
+            sys::nftnl_expr_set_u32(
+                expr.as_ptr(),
+                sys::NFTNL_EXPR_LOOKUP_SET_ID as u16,
+                self.set_id,
+            );
 
             // This code is left here since it's quite likely we need it again when we get further
             // if self.reverse {

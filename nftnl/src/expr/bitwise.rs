@@ -1,7 +1,7 @@
 use super::{Expression, Rule};
 use crate::expr::cmp::ToSlice;
 use nftnl_sys::{self as sys, libc};
-use std::ffi::c_void;
+use std::{ffi::c_void, ptr};
 
 /// Expression for performing bitwise masking and XOR on the data in a register.
 pub struct Bitwise<M: ToSlice, X: ToSlice> {
@@ -18,7 +18,7 @@ impl<M: ToSlice, X: ToSlice> Bitwise<M, X> {
 }
 
 impl<M: ToSlice, X: ToSlice> Expression for Bitwise<M, X> {
-    fn to_expr(&self, _rule: &Rule) -> *mut sys::nftnl_expr {
+    fn to_expr(&self, _rule: &Rule) -> ptr::NonNull<sys::nftnl_expr> {
         unsafe {
             let expr = try_alloc!(sys::nftnl_expr_alloc(c"bitwise".as_ptr()));
 
@@ -28,25 +28,25 @@ impl<M: ToSlice, X: ToSlice> Expression for Bitwise<M, X> {
             let len = mask.len() as u32;
 
             sys::nftnl_expr_set_u32(
-                expr,
+                expr.as_ptr(),
                 sys::NFTNL_EXPR_BITWISE_SREG as u16,
                 libc::NFT_REG_1 as u32,
             );
             sys::nftnl_expr_set_u32(
-                expr,
+                expr.as_ptr(),
                 sys::NFTNL_EXPR_BITWISE_DREG as u16,
                 libc::NFT_REG_1 as u32,
             );
-            sys::nftnl_expr_set_u32(expr, sys::NFTNL_EXPR_BITWISE_LEN as u16, len);
+            sys::nftnl_expr_set_u32(expr.as_ptr(), sys::NFTNL_EXPR_BITWISE_LEN as u16, len);
 
             sys::nftnl_expr_set(
-                expr,
+                expr.as_ptr(),
                 sys::NFTNL_EXPR_BITWISE_MASK as u16,
                 mask.as_ref() as *const _ as *const c_void,
                 len,
             );
             sys::nftnl_expr_set(
-                expr,
+                expr.as_ptr(),
                 sys::NFTNL_EXPR_BITWISE_XOR as u16,
                 xor.as_ref() as *const _ as *const c_void,
                 len,
