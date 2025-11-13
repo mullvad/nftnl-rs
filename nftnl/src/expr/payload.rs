@@ -1,3 +1,5 @@
+use std::ptr;
+
 use super::{Expression, Rule};
 use nftnl_sys::{self as sys, libc};
 
@@ -45,10 +47,11 @@ impl HeaderField for Payload {
 }
 
 impl Expression for Payload {
-    fn to_expr(&self, _rule: &Rule) -> *mut sys::nftnl_expr {
-        unsafe {
-            let expr = try_alloc!(sys::nftnl_expr_alloc(c"payload".as_ptr()));
+    fn to_expr(&self, _rule: &Rule) -> ptr::NonNull<sys::nftnl_expr> {
+        let expr = unsafe { try_alloc!(sys::nftnl_expr_alloc(c"payload".as_ptr())) };
 
+        unsafe {
+            let expr = expr.as_ptr();
             sys::nftnl_expr_set_u32(expr, sys::NFTNL_EXPR_PAYLOAD_BASE as u16, self.base());
             sys::nftnl_expr_set_u32(expr, sys::NFTNL_EXPR_PAYLOAD_OFFSET as u16, self.offset());
             sys::nftnl_expr_set_u32(expr, sys::NFTNL_EXPR_PAYLOAD_LEN as u16, self.len());
@@ -57,9 +60,8 @@ impl Expression for Payload {
                 sys::NFTNL_EXPR_PAYLOAD_DREG as u16,
                 libc::NFT_REG_1 as u32,
             );
-
-            expr
         }
+        expr
     }
 }
 
