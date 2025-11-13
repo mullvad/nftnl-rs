@@ -5,6 +5,7 @@ use std::{
     ffi::{CStr, c_void},
     net::{Ipv4Addr, Ipv6Addr},
     os::raw::c_char,
+    ptr,
     rc::Rc,
 };
 
@@ -26,7 +27,7 @@ macro_rules! nft_set {
 }
 
 pub struct Set<'a, K> {
-    set: *mut sys::nftnl_set,
+    set: ptr::NonNull<sys::nftnl_set>,
     table: &'a Table,
     family: ProtoFamily,
     _marker: ::std::marker::PhantomData<K>,
@@ -37,9 +38,10 @@ impl<'a, K> Set<'a, K> {
     where
         K: SetKey,
     {
-        unsafe {
-            let set = try_alloc!(sys::nftnl_set_alloc());
+        let set = try_alloc!(unsafe { sys::nftnl_set_alloc() });
 
+        unsafe {
+            let set = set.as_ptr();
             sys::nftnl_set_set_u32(set, sys::NFTNL_SET_FAMILY as u16, family as u32);
             sys::nftnl_set_set_str(set, sys::NFTNL_SET_TABLE as u16, table.get_name().as_ptr());
             sys::nftnl_set_set_str(set, sys::NFTNL_SET_NAME as u16, name.as_ptr());
@@ -52,13 +54,13 @@ impl<'a, K> Set<'a, K> {
             );
             sys::nftnl_set_set_u32(set, sys::NFTNL_SET_KEY_TYPE as u16, K::TYPE);
             sys::nftnl_set_set_u32(set, sys::NFTNL_SET_KEY_LEN as u16, K::LEN);
+        }
 
-            Set {
-                set,
-                table,
-                family,
-                _marker: ::std::marker::PhantomData,
-            }
+        Set {
+            set,
+            table,
+            family,
+            _marker: ::std::marker::PhantomData,
         }
     }
 
@@ -73,12 +75,12 @@ impl<'a, K> Set<'a, K> {
             let data_len = data.len() as u32;
             trace!("Adding key {:?} with len {}", data, data_len);
             sys::nftnl_set_elem_set(
-                elem,
+                elem.as_ptr(),
                 sys::NFTNL_SET_ELEM_KEY as u16,
                 data.as_ref() as *const _ as *const c_void,
                 data_len,
             );
-            sys::nftnl_set_elem_add(self.set, elem);
+            sys::nftnl_set_elem_add(self.set.as_ptr(), elem.as_ptr());
         }
     }
 
@@ -86,7 +88,7 @@ impl<'a, K> Set<'a, K> {
         SetElemsIter::new(self)
     }
 
-    pub fn as_ptr(&self) -> *mut sys::nftnl_set {
+    pub fn as_ptr(&self) -> ptr::NonNull<sys::nftnl_set> {
         self.set
     }
 
@@ -96,13 +98,13 @@ impl<'a, K> Set<'a, K> {
 
     pub fn get_name(&self) -> &CStr {
         unsafe {
-            let ptr = sys::nftnl_set_get_str(self.set, sys::NFTNL_SET_NAME as u16);
+            let ptr = sys::nftnl_set_get_str(self.set.as_ptr(), sys::NFTNL_SET_NAME as u16);
             CStr::from_ptr(ptr)
         }
     }
 
     pub fn get_id(&self) -> u32 {
-        unsafe { sys::nftnl_set_get_u32(self.set, sys::NFTNL_SET_ID as u16) }
+        unsafe { sys::nftnl_set_get_u32(self.set.as_ptr(), sys::NFTNL_SET_ID as u16) }
     }
 }
 
@@ -121,25 +123,25 @@ unsafe impl<K> crate::NlMsg for Set<'_, K> {
                 seq,
             )
         };
-        unsafe { sys::nftnl_set_nlmsg_build_payload(header, self.set) };
+        unsafe { sys::nftnl_set_nlmsg_build_payload(header, self.set.as_ptr()) };
     }
 }
 
 impl<K> Drop for Set<'_, K> {
     fn drop(&mut self) {
-        unsafe { sys::nftnl_set_free(self.set) };
+        unsafe { sys::nftnl_set_free(self.set.as_ptr()) };
     }
 }
 
 pub struct SetElemsIter<'a, K> {
     set: &'a Set<'a, K>,
-    iter: *mut sys::nftnl_set_elems_iter,
+    iter: ptr::NonNull<sys::nftnl_set_elems_iter>,
     ret: Rc<Cell<i32>>,
 }
 
 impl<'a, K> SetElemsIter<'a, K> {
     fn new(set: &'a Set<'a, K>) -> Self {
-        let iter = try_alloc!(unsafe { sys::nftnl_set_elems_iter_create(set.as_ptr()) });
+        let iter = try_alloc!(unsafe { sys::nftnl_set_elems_iter_create(set.set.as_ptr()) });
         SetElemsIter {
             set,
             iter,
@@ -152,14 +154,16 @@ impl<'a, K: 'a> Iterator for SetElemsIter<'a, K> {
     type Item = SetElemsMsg<'a, K>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.ret.get() <= 0 || unsafe { sys::nftnl_set_elems_iter_cur(self.iter).is_null() } {
+        if self.ret.get() <= 0
+            || unsafe { sys::nftnl_set_elems_iter_cur(self.iter.as_ptr()).is_null() }
+        {
             trace!("SetElemsIter iterator ending");
             None
         } else {
             trace!("SetElemsIter returning new SetElemsMsg");
             Some(SetElemsMsg {
                 set: self.set,
-                iter: self.iter,
+                iter: self.iter.as_ptr(),
                 ret: self.ret.clone(),
             })
         }
@@ -168,7 +172,7 @@ impl<'a, K: 'a> Iterator for SetElemsIter<'a, K> {
 
 impl<K> Drop for SetElemsIter<'_, K> {
     fn drop(&mut self) {
-        unsafe { sys::nftnl_set_elems_iter_destroy(self.iter) };
+        unsafe { sys::nftnl_set_elems_iter_destroy(self.iter.as_ptr()) };
     }
 }
 

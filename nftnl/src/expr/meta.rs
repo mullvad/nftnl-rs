@@ -1,3 +1,5 @@
+use std::ptr;
+
 use super::{Expression, Rule};
 use nftnl_sys::{self as sys, libc};
 
@@ -58,26 +60,34 @@ impl Meta {
 }
 
 impl Expression for Meta {
-    fn to_expr(&self, _rule: &Rule) -> *mut sys::nftnl_expr {
-        unsafe {
-            let expr = try_alloc!(sys::nftnl_expr_alloc(c"meta".as_ptr()));
+    fn to_expr(&self, _rule: &Rule) -> ptr::NonNull<sys::nftnl_expr> {
+        let expr = try_alloc!(unsafe { sys::nftnl_expr_alloc(c"meta".as_ptr()) });
 
-            if let Meta::Mark { set: true } = self {
+        if let Meta::Mark { set: true } = self {
+            unsafe {
                 sys::nftnl_expr_set_u32(
-                    expr,
+                    expr.as_ptr(),
                     sys::NFTNL_EXPR_META_SREG as u16,
                     libc::NFT_REG_1 as u32,
                 );
-            } else {
+            }
+        } else {
+            unsafe {
                 sys::nftnl_expr_set_u32(
-                    expr,
+                    expr.as_ptr(),
                     sys::NFTNL_EXPR_META_DREG as u16,
                     libc::NFT_REG_1 as u32,
                 );
             }
-            sys::nftnl_expr_set_u32(expr, sys::NFTNL_EXPR_META_KEY as u16, self.to_raw_key());
-            expr
         }
+        unsafe {
+            sys::nftnl_expr_set_u32(
+                expr.as_ptr(),
+                sys::NFTNL_EXPR_META_KEY as u16,
+                self.to_raw_key(),
+            );
+        }
+        expr
     }
 }
 

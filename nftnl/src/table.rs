@@ -4,6 +4,7 @@ use std::{
     collections::HashSet,
     ffi::{CStr, CString, c_void},
     os::raw::c_char,
+    ptr,
 };
 
 /// Abstraction of `nftnl_table`. The top level container in netfilter. A table has a protocol
@@ -11,7 +12,7 @@ use std::{
 ///
 /// [`Chain`]: struct.Chain.html
 pub struct Table {
-    table: *mut sys::nftnl_table,
+    table: ptr::NonNull<sys::nftnl_table>,
     family: ProtoFamily,
 }
 
@@ -23,20 +24,22 @@ unsafe impl Sync for Table {}
 impl Table {
     /// Creates a new table instance with the given name and protocol family.
     pub fn new<T: AsRef<CStr>>(name: T, family: ProtoFamily) -> Table {
-        unsafe {
-            let table = try_alloc!(sys::nftnl_table_alloc());
+        let table = try_alloc!(unsafe { sys::nftnl_table_alloc() });
 
+        unsafe {
+            let table = table.as_ptr();
             sys::nftnl_table_set_u32(table, sys::NFTNL_TABLE_FAMILY as u16, family as u32);
             sys::nftnl_table_set_str(table, sys::NFTNL_TABLE_NAME as u16, name.as_ref().as_ptr());
             sys::nftnl_table_set_u32(table, sys::NFTNL_TABLE_FLAGS as u16, 0u32);
-            Table { table, family }
         }
+
+        Table { table, family }
     }
 
     /// Returns the name of this table.
     pub fn get_name(&self) -> &CStr {
         unsafe {
-            let ptr = sys::nftnl_table_get_str(self.table, sys::NFTNL_TABLE_NAME as u16);
+            let ptr = sys::nftnl_table_get_str(self.table.as_ptr(), sys::NFTNL_TABLE_NAME as u16);
             CStr::from_ptr(ptr)
         }
     }
@@ -62,13 +65,13 @@ unsafe impl crate::NlMsg for Table {
                 seq,
             )
         };
-        unsafe { sys::nftnl_table_nlmsg_build_payload(header, self.table) };
+        unsafe { sys::nftnl_table_nlmsg_build_payload(header, self.table.as_ptr()) };
     }
 }
 
 impl Drop for Table {
     fn drop(&mut self) {
-        unsafe { sys::nftnl_table_free(self.table) };
+        unsafe { sys::nftnl_table_free(self.table.as_ptr()) };
     }
 }
 

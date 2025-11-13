@@ -31,7 +31,7 @@ pub fn batch_is_supported() -> std::result::Result<bool, NetlinkError> {
 /// A batch of netfilter messages to be performed in one atomic operation. Corresponds to
 /// `nftnl_batch` in libnftnl.
 pub struct Batch {
-    batch: *mut sys::nftnl_batch,
+    batch: ptr::NonNull<sys::nftnl_batch>,
 
     /// The range of sequence numbers assigned to the messages in this batch.
     seqs: Range<u32>,
@@ -103,11 +103,11 @@ impl Batch {
     }
 
     fn current(&self) -> *mut c_void {
-        unsafe { sys::nftnl_batch_buffer(self.batch) }
+        unsafe { sys::nftnl_batch_buffer(self.batch.as_ptr()) }
     }
 
     fn next(&mut self) {
-        if unsafe { sys::nftnl_batch_update(self.batch) } < 0 {
+        if unsafe { sys::nftnl_batch_update(self.batch.as_ptr()) } < 0 {
             // See try_alloc definition.
             std::process::abort();
         }
@@ -131,14 +131,14 @@ impl Batch {
     }
 
     /// Returns the underlying `nftnl_batch` instance.
-    pub fn as_raw_batch(&self) -> *mut sys::nftnl_batch {
+    pub fn as_raw_batch(&self) -> ptr::NonNull<sys::nftnl_batch> {
         self.batch
     }
 }
 
 impl Drop for Batch {
     fn drop(&mut self) {
-        unsafe { sys::nftnl_batch_free(self.batch) };
+        unsafe { sys::nftnl_batch_free(self.batch.as_ptr()) };
     }
 }
 
@@ -156,7 +156,7 @@ pub struct FinalizedBatch {
 impl FinalizedBatch {
     /// Returns the iterator over byte buffers to send to netlink.
     pub fn iter(&self) -> Iter<'_> {
-        let num_pages = unsafe { sys::nftnl_batch_iovec_len(self.batch.as_raw_batch()) as usize };
+        let num_pages = unsafe { sys::nftnl_batch_iovec_len(self.batch.batch.as_ptr()) as usize };
         let mut iovecs = vec![
             libc::iovec {
                 iov_base: ptr::null_mut(),
@@ -166,7 +166,7 @@ impl FinalizedBatch {
         ];
         let iovecs_ptr = iovecs.as_mut_ptr();
         unsafe {
-            sys::nftnl_batch_iovec(self.batch.as_raw_batch(), iovecs_ptr, num_pages as u32);
+            sys::nftnl_batch_iovec(self.batch.batch.as_ptr(), iovecs_ptr, num_pages as u32);
         }
         Iter {
             iovecs: iovecs.into_iter(),
