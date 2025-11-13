@@ -189,12 +189,6 @@ impl ToSlice for i32 {
     }
 }
 
-impl ToSlice for &'_ str {
-    fn to_slice(&self) -> Cow<'_, [u8]> {
-        Cow::from(self.as_bytes())
-    }
-}
-
 impl ToSlice for &'_ CStr {
     fn to_slice(&self) -> Cow<'_, [u8]> {
         Cow::from(self.to_bytes_with_nul())
