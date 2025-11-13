@@ -2,6 +2,7 @@ use super::{Expression, Register, Rule};
 use nftnl_sys as sys;
 use std::ffi::c_void;
 use std::mem::size_of_val;
+use std::ptr;
 
 /// An immediate expression. Used to set immediate data.
 /// Verdicts are handled separately by [Verdict](super::Verdict).
@@ -18,18 +19,18 @@ impl<T> Immediate<T> {
 }
 
 impl<T> Expression for Immediate<T> {
-    fn to_expr(&self, _rule: &Rule) -> *mut sys::nftnl_expr {
+    fn to_expr(&self, _rule: &Rule) -> ptr::NonNull<sys::nftnl_expr> {
         unsafe {
             let expr = try_alloc!(sys::nftnl_expr_alloc(c"immediate".as_ptr()));
 
             sys::nftnl_expr_set_u32(
-                expr,
+                expr.as_ptr(),
                 sys::NFTNL_EXPR_IMM_DREG as u16,
                 self.register.to_raw(),
             );
 
             sys::nftnl_expr_set(
-                expr,
+                expr.as_ptr(),
                 sys::NFTNL_EXPR_IMM_DATA as u16,
                 &self.data as *const _ as *const c_void,
                 size_of_val(&self.data) as u32,
