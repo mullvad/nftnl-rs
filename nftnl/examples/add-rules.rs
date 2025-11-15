@@ -187,29 +187,23 @@ fn iface_index(name: &CStr) -> io::Result<libc::c_uint> {
 fn send_and_process(batch: &FinalizedBatch) -> io::Result<()> {
     // Create a netlink socket to netfilter.
     let socket = mnl::Socket::new(mnl::Bus::Netfilter)?;
+    let portid = socket.portid();
+
     // Send all the bytes in the batch.
     socket.send_all(batch)?;
 
-    // Try to parse the messages coming back from netfilter. This part is still very unclear.
-    let portid = socket.portid();
+    // TODO: this buffer must be aligned to nlmsghdr
     let mut buffer = vec![0; nftnl::nft_nlmsg_maxsize() as usize];
-    let very_unclear_what_this_is_for = 2;
-    while let Some(message) = socket_recv(&socket, &mut buffer[..])? {
-        match mnl::cb_run(message, very_unclear_what_this_is_for, portid)? {
-            mnl::CbResult::Stop => {
-                break;
-            }
-            mnl::CbResult::Ok => (),
+    let mut expected_seqs = batch.sequence_numbers().into_iter();
+
+    // Process acknowledgment messages from netfilter.
+    while !expected_seqs.is_empty() {
+        for message in socket.recv(&mut buffer[..])? {
+            let message = message?;
+            let expected_seq = expected_seqs.next().expect("Unexpected ACK");
+            // Validate sequence number and check for error messages
+            mnl::cb_run(message, expected_seq, portid)?;
         }
     }
     Ok(())
-}
-
-fn socket_recv<'a>(socket: &mnl::Socket, buf: &'a mut [u8]) -> io::Result<Option<&'a [u8]>> {
-    let ret = socket.recv(buf)?;
-    if ret > 0 {
-        Ok(Some(&buf[..ret]))
-    } else {
-        Ok(None)
-    }
 }
