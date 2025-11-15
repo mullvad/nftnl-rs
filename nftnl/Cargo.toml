@@ -44,4 +44,4 @@ nftnl-sys = { path = "../nftnl-sys", version = "0.6.2" }
 
 [dev-dependencies]
 ipnetwork = "0.20.0"
-mnl = "0.2.2"
+mnl = "0.3.0"
