@@ -1,7 +1,10 @@
 use super::{Expression, Rule};
 use crate::ProtoFamily;
 use nftnl_sys::{self as sys, libc};
-use std::ffi::{CStr, CString};
+use std::{
+    ffi::{CStr, CString},
+    ptr,
+};
 
 /// A verdict expression. In the background, this is usually an "Immediate" expression in nftnl
 /// terms, but here it is simplified to only represent a verdict.
@@ -59,12 +62,12 @@ pub enum IcmpCode {
 }
 
 impl Verdict {
-    unsafe fn to_immediate_expr(&self, immediate_const: i32) -> *mut sys::nftnl_expr {
+    unsafe fn to_immediate_expr(&self, immediate_const: i32) -> ptr::NonNull<sys::nftnl_expr> {
         let expr = try_alloc!(unsafe { sys::nftnl_expr_alloc(c"immediate".as_ptr()) });
 
         unsafe {
             sys::nftnl_expr_set_u32(
-                expr,
+                expr.as_ptr(),
                 sys::NFTNL_EXPR_IMM_DREG as u16,
                 libc::NFT_REG_VERDICT as u32,
             )
@@ -72,12 +75,16 @@ impl Verdict {
 
         if let Some(chain) = self.chain() {
             unsafe {
-                sys::nftnl_expr_set_str(expr, sys::NFTNL_EXPR_IMM_CHAIN as u16, chain.as_ptr())
+                sys::nftnl_expr_set_str(
+                    expr.as_ptr(),
+                    sys::NFTNL_EXPR_IMM_CHAIN as u16,
+                    chain.as_ptr(),
+                )
             };
         }
         unsafe {
             sys::nftnl_expr_set_u32(
-                expr,
+                expr.as_ptr(),
                 sys::NFTNL_EXPR_IMM_VERDICT as u16,
                 immediate_const as u32,
             )
@@ -90,12 +97,12 @@ impl Verdict {
         &self,
         reject_type: RejectionType,
         family: ProtoFamily,
-    ) -> *mut sys::nftnl_expr {
+    ) -> ptr::NonNull<sys::nftnl_expr> {
         let expr = try_alloc!(unsafe { sys::nftnl_expr_alloc(c"reject".as_ptr()) });
 
         unsafe {
             sys::nftnl_expr_set_u32(
-                expr,
+                expr.as_ptr(),
                 sys::NFTNL_EXPR_REJECT_TYPE as u16,
                 reject_type.to_raw(family),
             )
@@ -106,7 +113,13 @@ impl Verdict {
             RejectionType::TcpRst => 0,
         };
 
-        unsafe { sys::nftnl_expr_set_u8(expr, sys::NFTNL_EXPR_REJECT_CODE as u16, reject_code) };
+        unsafe {
+            sys::nftnl_expr_set_u8(
+                expr.as_ptr(),
+                sys::NFTNL_EXPR_REJECT_CODE as u16,
+                reject_code,
+            )
+        };
 
         expr
     }
@@ -121,7 +134,7 @@ impl Verdict {
 }
 
 impl Expression for Verdict {
-    fn to_expr(&self, rule: &Rule) -> *mut sys::nftnl_expr {
+    fn to_expr(&self, rule: &Rule) -> ptr::NonNull<sys::nftnl_expr> {
         let immediate_const = match *self {
             Verdict::Drop => libc::NF_DROP,
             Verdict::Accept => libc::NF_ACCEPT,

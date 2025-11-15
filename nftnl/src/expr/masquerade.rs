@@ -1,3 +1,5 @@
+use std::ptr;
+
 use super::{Expression, Rule};
 use nftnl_sys as sys;
 
@@ -5,7 +7,7 @@ use nftnl_sys as sys;
 pub struct Masquerade;
 
 impl Expression for Masquerade {
-    fn to_expr(&self, _rule: &Rule) -> *mut sys::nftnl_expr {
+    fn to_expr(&self, _rule: &Rule) -> ptr::NonNull<sys::nftnl_expr> {
         try_alloc!(unsafe { sys::nftnl_expr_alloc(c"masq".as_ptr()) })
     }
 }

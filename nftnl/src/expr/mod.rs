@@ -3,6 +3,8 @@
 //!
 //! [`Rule`]: struct.Rule.html
 
+use std::ptr;
+
 use super::rule::Rule;
 use nftnl_sys::{self as sys, libc};
 
@@ -10,7 +12,7 @@ use nftnl_sys::{self as sys, libc};
 pub trait Expression {
     /// Allocates and returns the low level `nftnl_expr` representation of this expression.
     /// The caller to this method is responsible for freeing the expression.
-    fn to_expr(&self, rule: &Rule) -> *mut sys::nftnl_expr;
+    fn to_expr(&self, rule: &Rule) -> ptr::NonNull<sys::nftnl_expr>;
 }
 
 /// A netfilter data register. The expressions store and read data to and from these

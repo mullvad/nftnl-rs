@@ -1,3 +1,7 @@
 [workspace]
 resolver = "2"
 members = ["nftnl-sys", "nftnl"]
+
+[patch.crates-io]
+mnl = { path = "../mnl-rs/mnl" }
+mnl-sys = { path = "../mnl-rs/mnl-sys" }
