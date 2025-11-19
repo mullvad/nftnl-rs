@@ -4,6 +4,7 @@ use std::{
     ffi::{CStr, c_void},
     fmt,
     os::raw::c_char,
+    ptr,
 };
 
 pub type Priority = i32;
@@ -70,7 +71,7 @@ impl ChainType {
 /// [`Rule`]: struct.Rule.html
 /// [`set_hook`]: #method.set_hook
 pub struct Chain<'a> {
-    chain: *mut sys::nftnl_chain,
+    chain: ptr::NonNull<sys::nftnl_chain>,
     table: &'a Table,
 }
 
@@ -83,20 +84,24 @@ impl<'a> Chain<'a> {
     /// Creates a new chain instance inside the given [`Table`] and with the given name.
     ///
     /// [`Table`]: struct.Table.html
-    pub fn new<T: AsRef<CStr>>(name: &T, table: &'a Table) -> Chain<'a> {
+    pub fn new<T: AsRef<CStr>>(name: T, table: &'a Table) -> Chain<'a> {
         unsafe {
             let chain = try_alloc!(sys::nftnl_chain_alloc());
             sys::nftnl_chain_set_u32(
-                chain,
+                chain.as_ptr(),
                 sys::NFTNL_CHAIN_FAMILY as u16,
                 table.get_family() as u32,
             );
             sys::nftnl_chain_set_str(
-                chain,
+                chain.as_ptr(),
                 sys::NFTNL_CHAIN_TABLE as u16,
                 table.get_name().as_ptr(),
             );
-            sys::nftnl_chain_set_str(chain, sys::NFTNL_CHAIN_NAME as u16, name.as_ref().as_ptr());
+            sys::nftnl_chain_set_str(
+                chain.as_ptr(),
+                sys::NFTNL_CHAIN_NAME as u16,
+                name.as_ref().as_ptr(),
+            );
             Chain { chain, table }
         }
     }
@@ -109,9 +114,10 @@ impl<'a> Chain<'a> {
     /// hook and is thus a "base chain". A "base chain" is an entry point for packets from the
     /// networking stack.
     pub fn set_hook(&mut self, hook: Hook, priority: Priority) {
+        let chain = self.chain.as_ptr();
         unsafe {
-            sys::nftnl_chain_set_u32(self.chain, sys::NFTNL_CHAIN_HOOKNUM as u16, hook as u32);
-            sys::nftnl_chain_set_s32(self.chain, sys::NFTNL_CHAIN_PRIO as u16, priority);
+            sys::nftnl_chain_set_u32(chain, sys::NFTNL_CHAIN_HOOKNUM as u16, hook as u32);
+            sys::nftnl_chain_set_s32(chain, sys::NFTNL_CHAIN_PRIO as u16, priority);
         }
     }
 
@@ -120,7 +126,7 @@ impl<'a> Chain<'a> {
     pub fn set_type(&mut self, chain_type: ChainType) {
         unsafe {
             sys::nftnl_chain_set_str(
-                self.chain,
+                self.chain.as_ptr(),
                 sys::NFTNL_CHAIN_TYPE as u16,
                 chain_type.as_c_str().as_ptr(),
             );
@@ -131,15 +137,19 @@ impl<'a> Chain<'a> {
     /// packets processed by this chain, but that did not match any rules in it.
     pub fn set_policy(&mut self, policy: Policy) {
         unsafe {
-            sys::nftnl_chain_set_u32(self.chain, sys::NFTNL_CHAIN_POLICY as u16, policy as u32);
+            sys::nftnl_chain_set_u32(
+                self.chain.as_ptr(),
+                sys::NFTNL_CHAIN_POLICY as u16,
+                policy as u32,
+            );
         }
     }
 
     /// Sets the device for this chain. This only applies if the chain has been registered with an `ingress` hook by calling `set_hook`.
-    pub fn set_device<T: AsRef<CStr>>(&mut self, device: &T) {
+    pub fn set_device<T: AsRef<CStr>>(&mut self, device: T) {
         unsafe {
             sys::nftnl_chain_set_str(
-                self.chain,
+                self.chain.as_ptr(),
                 sys::NFTNL_CHAIN_DEV as u16,
                 device.as_ref().as_ptr(),
             );
@@ -149,7 +159,7 @@ impl<'a> Chain<'a> {
     /// Returns the name of this chain.
     pub fn get_name(&self) -> &CStr {
         unsafe {
-            let ptr = sys::nftnl_chain_get_str(self.chain, sys::NFTNL_CHAIN_NAME as u16);
+            let ptr = sys::nftnl_chain_get_str(self.chain.as_ptr(), sys::NFTNL_CHAIN_NAME as u16);
             CStr::from_ptr(ptr)
         }
     }
@@ -170,7 +180,7 @@ impl fmt::Debug for Chain<'_> {
             sys::nftnl_chain_snprintf(
                 buffer.as_mut_ptr().cast::<c_char>(),
                 buffer.len(),
-                self.chain,
+                self.chain.as_ptr(),
                 sys::NFTNL_OUTPUT_DEFAULT,
                 0,
             );
@@ -199,12 +209,12 @@ unsafe impl crate::NlMsg for Chain<'_> {
                 seq,
             )
         };
-        unsafe { sys::nftnl_chain_nlmsg_build_payload(header, self.chain) };
+        unsafe { sys::nftnl_chain_nlmsg_build_payload(header, self.chain.as_ptr()) };
     }
 }
 
 impl Drop for Chain<'_> {
     fn drop(&mut self) {
-        unsafe { sys::nftnl_chain_free(self.chain) };
+        unsafe { sys::nftnl_chain_free(self.chain.as_ptr()) };
     }
 }

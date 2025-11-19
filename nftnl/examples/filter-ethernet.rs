@@ -23,10 +23,10 @@
 //! ```
 
 use nftnl::{Batch, Chain, FinalizedBatch, ProtoFamily, Rule, Table, nft_expr, nftnl_sys::libc};
-use std::{ffi::CString, io};
+use std::{ffi::CStr, io};
 
-const TABLE_NAME: &str = "example-filter-ethernet";
-const OUT_CHAIN_NAME: &str = "chain-for-outgoing-packets";
+const TABLE_NAME: &CStr = c"example-filter-ethernet";
+const OUT_CHAIN_NAME: &CStr = c"chain-for-outgoing-packets";
 
 const BLOCK_THIS_MAC: &[u8] = &[0, 0, 0, 0, 0, 0];
 
@@ -34,10 +34,10 @@ fn main() -> io::Result<()> {
     // For verbose explanations of what all these lines up until the rule creation does, see the
     // `add-rules` example.
     let mut batch = Batch::new();
-    let table = Table::new(&CString::new(TABLE_NAME).unwrap(), ProtoFamily::Inet);
+    let table = Table::new(TABLE_NAME, ProtoFamily::Inet);
     batch.add(&table, nftnl::MsgType::Add);
 
-    let mut out_chain = Chain::new(&CString::new(OUT_CHAIN_NAME).unwrap(), &table);
+    let mut out_chain = Chain::new(OUT_CHAIN_NAME, &table);
     out_chain.set_hook(nftnl::Hook::Out, 3);
     out_chain.set_policy(nftnl::Policy::Accept);
     batch.add(&out_chain, nftnl::MsgType::Add);
@@ -91,29 +91,23 @@ fn main() -> io::Result<()> {
 fn send_and_process(batch: &FinalizedBatch) -> io::Result<()> {
     // Create a netlink socket to netfilter.
     let socket = mnl::Socket::new(mnl::Bus::Netfilter)?;
+    let portid = socket.portid();
+
     // Send all the bytes in the batch.
     socket.send_all(batch)?;
 
-    // Try to parse the messages coming back from netfilter. This part is still very unclear.
-    let portid = socket.portid();
+    // TODO: this buffer must be aligned to nlmsghdr
     let mut buffer = vec![0; nftnl::nft_nlmsg_maxsize() as usize];
-    let very_unclear_what_this_is_for = 2;
-    while let Some(message) = socket_recv(&socket, &mut buffer[..])? {
-        match mnl::cb_run(message, very_unclear_what_this_is_for, portid)? {
-            mnl::CbResult::Stop => {
-                break;
-            }
-            mnl::CbResult::Ok => (),
+    let mut expected_seqs = batch.sequence_numbers();
+
+    // Process acknowledgment messages from netfilter.
+    while !expected_seqs.is_empty() {
+        for message in socket.recv(&mut buffer[..])? {
+            let message = message?;
+            let expected_seq = expected_seqs.next().expect("Unexpected ACK");
+            // Validate sequence number and check for error messages
+            mnl::cb_run(message, expected_seq, portid)?;
         }
     }
     Ok(())
-}
-
-fn socket_recv<'a>(socket: &mnl::Socket, buf: &'a mut [u8]) -> io::Result<Option<&'a [u8]>> {
-    let ret = socket.recv(buf)?;
-    if ret > 0 {
-        Ok(Some(&buf[..ret]))
-    } else {
-        Ok(None)
-    }
 }

@@ -2,9 +2,9 @@ use super::{Expression, Rule};
 use nftnl_sys::{self as sys, libc};
 use std::{
     borrow::Cow,
-    ffi::{CString, c_void},
+    ffi::{CStr, CString, c_void},
     net::{IpAddr, Ipv4Addr, Ipv6Addr},
-    slice,
+    ptr, slice,
 };
 
 /// Comparison operator.
@@ -54,28 +54,32 @@ impl<T: ToSlice> Cmp<T> {
 }
 
 impl<T: ToSlice> Expression for Cmp<T> {
-    fn to_expr(&self, _rule: &Rule) -> *mut sys::nftnl_expr {
+    fn to_expr(&self, _rule: &Rule) -> ptr::NonNull<sys::nftnl_expr> {
+        let expr = try_alloc!(unsafe { sys::nftnl_expr_alloc(c"cmp".as_ptr()) });
+
+        let data = self.data.to_slice();
+        trace!("Creating a cmp expr comparing with data {:?}", data);
+
         unsafe {
-            let expr = try_alloc!(sys::nftnl_expr_alloc(c"cmp".as_ptr()));
-
-            let data = self.data.to_slice();
-            trace!("Creating a cmp expr comparing with data {:?}", data);
-
             sys::nftnl_expr_set_u32(
-                expr,
+                expr.as_ptr(),
                 sys::NFTNL_EXPR_CMP_SREG as u16,
                 libc::NFT_REG_1 as u32,
             );
-            sys::nftnl_expr_set_u32(expr, sys::NFTNL_EXPR_CMP_OP as u16, self.op.to_raw());
+            sys::nftnl_expr_set_u32(
+                expr.as_ptr(),
+                sys::NFTNL_EXPR_CMP_OP as u16,
+                self.op.to_raw(),
+            );
             sys::nftnl_expr_set(
-                expr,
+                expr.as_ptr(),
                 sys::NFTNL_EXPR_CMP_DATA as u16,
                 data.as_ref() as *const _ as *const c_void,
                 data.len() as u32,
             );
-
-            expr
         }
+
+        expr
     }
 }
 
@@ -185,9 +189,9 @@ impl ToSlice for i32 {
     }
 }
 
-impl ToSlice for &'_ str {
+impl ToSlice for &'_ CStr {
     fn to_slice(&self) -> Cow<'_, [u8]> {
-        Cow::from(self.as_bytes())
+        Cow::from(self.to_bytes_with_nul())
     }
 }
 

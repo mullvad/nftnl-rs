@@ -1,3 +1,5 @@
+use std::ptr;
+
 use super::{Expression, Rule};
 use nftnl_sys::{self as sys, libc};
 
@@ -51,27 +53,32 @@ impl Conntrack {
 }
 
 impl Expression for Conntrack {
-    fn to_expr(&self, _rule: &Rule) -> *mut sys::nftnl_expr {
-        unsafe {
-            let expr = try_alloc!(sys::nftnl_expr_alloc(c"ct".as_ptr()));
+    fn to_expr(&self, _rule: &Rule) -> ptr::NonNull<sys::nftnl_expr> {
+        let expr = try_alloc!(unsafe { sys::nftnl_expr_alloc(c"ct".as_ptr()) });
 
-            if let Conntrack::Mark { set: true } = self {
+        if let Conntrack::Mark { set: true } = self {
+            unsafe {
                 sys::nftnl_expr_set_u32(
-                    expr,
+                    expr.as_ptr(),
                     sys::NFTNL_EXPR_CT_SREG as u16,
                     libc::NFT_REG_1 as u32,
-                );
-            } else {
+                )
+            };
+        } else {
+            unsafe {
                 sys::nftnl_expr_set_u32(
-                    expr,
+                    expr.as_ptr(),
                     sys::NFTNL_EXPR_CT_DREG as u16,
                     libc::NFT_REG_1 as u32,
-                );
-            }
-            sys::nftnl_expr_set_u32(expr, sys::NFTNL_EXPR_CT_KEY as u16, self.raw_key());
-
-            expr
+                )
+            };
         }
+
+        unsafe {
+            sys::nftnl_expr_set_u32(expr.as_ptr(), sys::NFTNL_EXPR_CT_KEY as u16, self.raw_key());
+        }
+
+        expr
     }
 }
 

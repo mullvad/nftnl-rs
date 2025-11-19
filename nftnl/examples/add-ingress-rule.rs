@@ -35,10 +35,10 @@ use nftnl::{
     Batch, Chain, ChainType, FinalizedBatch, Policy, ProtoFamily, Rule, Table, nft_expr,
     nftnl_sys::libc,
 };
-use std::{ffi::CString, io, net::Ipv4Addr};
+use std::{ffi::CStr, io, net::Ipv4Addr};
 
-const TABLE_NAME: &str = "example-table";
-const CHAIN_NAME: &str = "chain-for-ingress";
+const TABLE_NAME: &CStr = c"example-table";
+const CHAIN_NAME: &CStr = c"chain-for-ingress";
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Create a batch. This is used to store all the netlink messages we will later send.
@@ -47,13 +47,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut batch = Batch::new();
 
     // Create a netfilter table operating on both IPv4 and IPv6 (ProtoFamily::Inet)
-    let table = Table::new(&CString::new(TABLE_NAME).unwrap(), ProtoFamily::Inet);
+    let table = Table::new(TABLE_NAME, ProtoFamily::Inet);
     // Add the table to the batch with the `MsgType::Add` type, thus instructing netfilter to add
     // this table under its `ProtoFamily::Inet` ruleset.
     batch.add(&table, nftnl::MsgType::Add);
 
     // Create input and output chains under the table we created above.
-    let mut chain = Chain::new(&CString::new(CHAIN_NAME).unwrap(), &table);
+    let mut chain = Chain::new(CHAIN_NAME, &table);
 
     // Hook the chain to the input and output event hooks, with highest priority (priority zero).
     // See the `Chain::set_hook` documentation for details.
@@ -63,7 +63,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     chain.set_type(ChainType::Filter);
 
     // Ingress hooks need a device to bind to.
-    chain.set_device(&CString::new("lo").unwrap());
+    chain.set_device(c"lo");
 
     // Set the default policies on the chains. If no rule matches a packet processed by the
     // `out_chain` or the `in_chain` it will accept the packet.
@@ -121,29 +121,23 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 fn send_and_process(batch: &FinalizedBatch) -> io::Result<()> {
     // Create a netlink socket to netfilter.
     let socket = mnl::Socket::new(mnl::Bus::Netfilter)?;
+    let portid = socket.portid();
+
     // Send all the bytes in the batch.
     socket.send_all(batch)?;
 
-    // Try to parse the messages coming back from netfilter. This part is still very unclear.
-    let portid = socket.portid();
+    // TODO: this buffer must be aligned to nlmsghdr
     let mut buffer = vec![0; nftnl::nft_nlmsg_maxsize() as usize];
-    let very_unclear_what_this_is_for = 2;
-    while let Some(message) = socket_recv(&socket, &mut buffer[..])? {
-        match mnl::cb_run(message, very_unclear_what_this_is_for, portid)? {
-            mnl::CbResult::Stop => {
-                break;
-            }
-            mnl::CbResult::Ok => (),
+    let mut expected_seqs = batch.sequence_numbers();
+
+    // Process acknowledgment messages from netfilter.
+    while !expected_seqs.is_empty() {
+        for message in socket.recv(&mut buffer[..])? {
+            let message = message?;
+            let expected_seq = expected_seqs.next().expect("Unexpected ACK");
+            // Validate sequence number and check for error messages
+            mnl::cb_run(message, expected_seq, portid)?;
         }
     }
     Ok(())
-}
-
-fn socket_recv<'a>(socket: &mnl::Socket, buf: &'a mut [u8]) -> io::Result<Option<&'a [u8]>> {
-    let ret = socket.recv(buf)?;
-    if ret > 0 {
-        Ok(Some(&buf[..ret]))
-    } else {
-        Ok(None)
-    }
 }
