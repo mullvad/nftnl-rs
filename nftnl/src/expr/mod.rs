@@ -65,10 +65,41 @@ pub use self::payload::*;
 mod verdict;
 pub use self::verdict::*;
 
+mod socket;
+pub use self::socket::*;
+
+// CURRENT OBJECTIVE
+// add support for the following nft selector
+//   socket cgroupv2 level <integer> <string>
+//   socket cgroupv2 level 1 "mullvad-exclusions"
+//
+// ```
+// table inet cgroups-nullvad {
+//	chain blaha {
+//		type route hook output priority filter; policy accept;
+//		socket cgroupv2 level 1 "mullvad-exclusions"        ct mark set 0x00000f41 meta mark set 0x6d6f6c65 counter packets 20 bytes 1952
+//	}
+// }
+//
+//
+//
+// ```
+//
+// // is this it???
+//   nft_exp!(socket cgroupv2 level 1),
+//   nft_exp!(cmp == "mullvad-exclusions"),
+
 #[macro_export(local_inner_macros)]
 macro_rules! nft_expr {
     (bitwise mask $mask:expr,xor $xor:expr) => {
         nft_expr_bitwise!(mask $mask, xor $xor)
+    };
+    (socket cgroupv2 level $level:expr) => {
+        nft_expr!(socket (::nftnl::expr::SocketKey::CgroupV2) level $level)
+    };
+    (socket ($key:expr) level $level:expr) => {
+        // TODO: why do we need to specify register??
+        ::nftnl::expr::Socket::new($key, ::nftnl::expr::Register::Reg1, $level)
     };
     (cmp $op:tt $data:expr) => {
         nft_expr_cmp!($op $data)
