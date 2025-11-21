@@ -179,6 +179,13 @@ impl ToSlice for u32 {
     }
 }
 
+impl ToSlice for u64 {
+    fn to_slice(&self) -> Cow<'_, [u8]> {
+        // TODO: le or ne???
+        Cow::Owned(self.to_le_bytes().to_vec())
+    }
+}
+
 impl ToSlice for i32 {
     fn to_slice(&self) -> Cow<'_, [u8]> {
         let b0 = *self as u8;

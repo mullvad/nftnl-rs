@@ -76,7 +76,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let cgroup_path = "/sys/fs/cgroup/my_cgroup";
     let cgroup_meta = fs::metadata(cgroup_path).expect("cgroup does not exist");
-    let cgroup_ino = u32::try_from(cgroup_meta.ino()).unwrap(); //  TODO: do inodes fit in a u32? should we impl toslice for u64?
+    let cgroup_ino = cgroup_meta.ino();
 
     cgroup_rule.add_expr(&nft_expr!(socket cgroupv2 level 1));
     cgroup_rule.add_expr(&nft_expr!(cmp == cgroup_ino)); // inode of cgroup dir
