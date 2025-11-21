@@ -1,8 +1,6 @@
 //! Socket expressions.
-//!
-//! Socket expressions are available since nftnl 1.2.0.
 
-#[cfg(feature = "nftnl-1-2-0")]
+#[cfg(socketexpr)]
 pub mod imp {
     use crate::Rule;
     use crate::expr::{Expression, Register};
@@ -87,8 +85,8 @@ pub mod imp {
 }
 }
 
-#[cfg(not(feature = "nftnl-1-2-0"))]
-mod imp {
+#[cfg(not(socketexpr))]
+pub mod imp {
     #[macro_export(local_inner_macros)]
     macro_rules! nft_expr_socket {
         ($($_:tt)+) => {
