@@ -36,13 +36,11 @@
 //! # nft delete table inet example-table
 //! ```
 
-use ipnetwork::{IpNetwork, Ipv4Network};
 use nftnl::{Batch, Chain, FinalizedBatch, ProtoFamily, Rule, Table, nft_expr, nftnl_sys::libc};
-use std::{ffi::CStr, io, net::Ipv4Addr};
+use std::{ffi::CStr, fs, io, os::unix::fs::MetadataExt as _};
 
 const TABLE_NAME: &CStr = c"example-table";
-const OUT_CHAIN_NAME: &CStr = c"chain-for-outgoing-packets";
-const IN_CHAIN_NAME: &CStr = c"chain-for-incoming-packets";
+const OUT_CHAIN_NAME: &CStr = c"block-outgoing-from-my-cgroup";
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Create a batch. This is used to store all the netlink messages we will later send.
@@ -56,33 +54,32 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // this table under its `ProtoFamily::Inet` ruleset.
     batch.add(&table, nftnl::MsgType::Add);
 
-    // Create input and output chains under the table we created above.
+    // Create output chains under the table we created above.
     let mut out_chain = Chain::new(OUT_CHAIN_NAME, &table);
-    let mut in_chain = Chain::new(IN_CHAIN_NAME, &table);
 
-    // Hook the chains to the input and output event hooks, with highest priority (priority zero).
+    // Hook the chain to the output event hook, with highest priority (priority zero).
     // See the `Chain::set_hook` documentation for details.
     out_chain.set_hook(nftnl::Hook::Out, 0);
-    in_chain.set_hook(nftnl::Hook::In, 0);
 
     // Set the default policies on the chains. If no rule matches a packet processed by the
-    // `out_chain` or the `in_chain` it will accept the packet.
+    // chain, it will accept the packet.
     out_chain.set_policy(nftnl::Policy::Accept);
-    in_chain.set_policy(nftnl::Policy::Accept);
 
     // Add the two chains to the batch with the `MsgType` to tell netfilter to create the chains
     // under the table.
     batch.add(&out_chain, nftnl::MsgType::Add);
-    batch.add(&in_chain, nftnl::MsgType::Add);
 
     // === ADD CGROUPV2 RULE  ===
 
     // Create a new rule object under the input chain.
-    let mut cgroup_rule = Rule::new(&in_chain);
+    let mut cgroup_rule = Rule::new(&out_chain);
 
-    cgroup_rule
-        .add_expr(&nftnl::nft_expr_nftnl_1_2_0!(socket(::nftnl::expr::SocketKey::CgroupV2)level 1));
-    cgroup_rule.add_expr(&nft_expr!(cmp == c"my_cgroup"));
+    let cgroup_path = "/sys/fs/cgroup/my_cgroup";
+    let cgroup_meta = fs::metadata(cgroup_path).expect("cgroup does not exist");
+    let cgroup_ino = u32::try_from(cgroup_meta.ino()).unwrap(); //  TODO: do inodes fit in a u32? should we impl toslice for u64?
+
+    cgroup_rule.add_expr(&nft_expr!(socket cgroupv2 level 1));
+    cgroup_rule.add_expr(&nft_expr!(cmp == cgroup_ino)); // inode of cgroup dir
     cgroup_rule.add_expr(&nft_expr!(verdict drop));
 
     // Add the rule to the batch.
