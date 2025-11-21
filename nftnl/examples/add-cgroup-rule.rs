@@ -35,6 +35,7 @@
 //! ```bash
 //! # nft delete table inet example-table
 //! ```
+#![cfg(socketexpr)]
 
 use nftnl::{Batch, Chain, FinalizedBatch, ProtoFamily, Rule, Table, nft_expr, nftnl_sys::libc};
 use std::{ffi::CStr, fs, io, os::unix::fs::MetadataExt as _};
