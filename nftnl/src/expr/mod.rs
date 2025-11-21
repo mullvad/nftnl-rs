@@ -65,9 +65,9 @@ pub use self::payload::*;
 mod verdict;
 pub use self::verdict::*;
 
-#[cfg(feature = "nftnl-1-1-1")]
+#[cfg(feature = "nftnl-1-2-0")]
 mod socket;
-#[cfg(feature = "nftnl-1-1-1")]
+#[cfg(feature = "nftnl-1-2-0")]
 pub use self::socket::*;
 
 // CURRENT OBJECTIVE
@@ -96,8 +96,8 @@ macro_rules! nft_expr {
     (bitwise mask $mask:expr,xor $xor:expr) => {
         nft_expr_bitwise!(mask $mask, xor $xor)
     };
-    (socket $thingy:tt level $level:expr) => {
-        nft_expr_nftnl_1_2_0!(socket $thingy level $level)
+    (socket $key:tt level $level:expr) => {
+        ::nftnl::nft_expr_nftnl_1_2_0!(socket $key level $level)
     };
     (cmp $op:tt $data:expr) => {
         nft_expr_cmp!($op $data)
@@ -141,7 +141,7 @@ macro_rules! nft_expr {
 }
 
 #[cfg(not(feature = "nftnl-1-2-0"))]
-#[macro_export]
+#[macro_export(local_inner_macros)]
 macro_rules! nft_expr_nftnl_1_2_0 {
     ($($_:tt)+) => {
         ::std::compile_error!("This feature requires feature 'nftnl-1-2-0'");
@@ -149,7 +149,7 @@ macro_rules! nft_expr_nftnl_1_2_0 {
 }
 
 #[cfg(feature = "nftnl-1-2-0")]
-#[macro_export]
+#[macro_export(local_inner_macros)]
 macro_rules! nft_expr_nftnl_1_2_0 {
     (socket cgroupv2 level $level:expr) => {
         nft_expr_nftnl_1_2_0!(socket (::nftnl::expr::SocketKey::CgroupV2) level $level)

@@ -80,7 +80,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Create a new rule object under the input chain.
     let mut cgroup_rule = Rule::new(&in_chain);
 
-    cgroup_rule.add_expr(&nft_expr!(socket cgroupv2 level 1));
+    cgroup_rule
+        .add_expr(&nftnl::nft_expr_nftnl_1_2_0!(socket(::nftnl::expr::SocketKey::CgroupV2)level 1));
     cgroup_rule.add_expr(&nft_expr!(cmp == c"my_cgroup"));
     cgroup_rule.add_expr(&nft_expr!(verdict drop));
 
@@ -128,7 +129,8 @@ fn send_and_process(batch: &FinalizedBatch) -> io::Result<()> {
             let message = message?;
             let expected_seq = expected_seqs.next().expect("Unexpected ACK");
             // Validate sequence number and check for error messages
-            mnl::cb_run(message, expected_seq, portid)?;
+            mnl::cb_run(message, expected_seq, portid)
+                .inspect_err(|e| println!("message {expected_seq} errored"))?;
         }
     }
     Ok(())

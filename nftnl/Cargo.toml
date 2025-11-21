@@ -12,6 +12,7 @@ edition = "2024"
 rust-version = "1.85.0"
 
 [features]
+# TODO: make each feature depend on the earlier feature like in nftnl-sys??
 nftnl-1-3-0 = ["nftnl-sys/nftnl-1-3-0"]
 nftnl-1-2-9 = ["nftnl-sys/nftnl-1-2-9"]
 nftnl-1-2-8 = ["nftnl-sys/nftnl-1-2-8"]
@@ -36,6 +37,9 @@ nftnl-1-1-0 = ["nftnl-sys/nftnl-1-1-0"]
 nftnl-1-0-9 = ["nftnl-sys/nftnl-1-0-9"]
 nftnl-1-0-8 = ["nftnl-sys/nftnl-1-0-8"]
 nftnl-1-0-7 = ["nftnl-sys/nftnl-1-0-7"]
+
+# TODO: remove me
+default = ["nftnl-1-2-0"]
 
 [dependencies]
 bitflags = "2.6.0"

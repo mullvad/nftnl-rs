@@ -7,7 +7,7 @@ use std::ptr;
 pub struct Socket {
     key: SocketKey,
     /// https://git.netfilter.org/libnftnl/tree/include/linux/netfilter/nf_tables.h
-    register: Register,
+    register: Register, // TODO: Always immediate?
     level: u32,
 }
 
@@ -44,25 +44,23 @@ impl Expression for Socket {
     fn to_expr(&self, _rule: &Rule) -> ptr::NonNull<sys::nftnl_expr> {
         unsafe {
             let expr = try_alloc!(sys::nftnl_expr_alloc(c"socket".as_ptr()));
-
-            // Should dreg come first?
+            // In the source code for socket expr, the member values are validated to be of type 'MNL_TYPE_U32'
+            // https://git.netfilter.org/libnftnl/tree/src/expr/socket.c
             sys::nftnl_expr_set_u32(
                 expr.as_ptr(),
-                sys::NFTNL_EXPR_IMM_DREG as u16,
-                self.register.to_raw(),
-            );
-
-            sys::nftnl_expr_set_u8(
-                expr.as_ptr(),
                 sys::NFTNL_EXPR_SOCKET_KEY as u16,
-                self.key as u8,
+                self.key as u32,
+            );
+            sys::nftnl_expr_set_u32(
+                expr.as_ptr(),
+                sys::NFTNL_EXPR_SOCKET_DREG as u16,
+                self.register.to_raw(),
             );
             sys::nftnl_expr_set_u32(
                 expr.as_ptr(),
                 sys::NFTNL_EXPR_SOCKET_LEVEL as u16,
                 self.level,
             );
-
             expr
         }
     }
