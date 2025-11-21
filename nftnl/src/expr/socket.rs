@@ -9,8 +9,11 @@ pub mod imp {
     use std::ptr;
 
     pub struct Socket {
+        /// Socket key to match.
         key: SocketKey,
+        /// Destination register.
         register: Register,
+        /// CGroups V2 ancestor level.
         level: u32,
     }
 
