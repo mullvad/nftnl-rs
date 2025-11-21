@@ -97,7 +97,7 @@ macro_rules! nft_expr {
         nft_expr_bitwise!(mask $mask, xor $xor)
     };
     (socket $thingy:tt level $level:expr) => {
-        nft_expr_nftnl_1_1_1!(socket $thingy level $level)
+        nft_expr_nftnl_1_2_0!(socket $thingy level $level)
     };
     (cmp $op:tt $data:expr) => {
         nft_expr_cmp!($op $data)
@@ -140,19 +140,19 @@ macro_rules! nft_expr {
     };
 }
 
-#[cfg(not(feature = "nftnl-1-1-1"))]
+#[cfg(not(feature = "nftnl-1-2-0"))]
 #[macro_export]
-macro_rules! nft_expr_nftnl_1_1_1 {
+macro_rules! nft_expr_nftnl_1_2_0 {
     ($($_:tt)+) => {
-        ::std::compile_error!("This feature requires feature 'nftnl-1-1-1'");
+        ::std::compile_error!("This feature requires feature 'nftnl-1-2-0'");
     };
 }
 
-#[cfg(feature = "nftnl-1-1-1")]
+#[cfg(feature = "nftnl-1-2-0")]
 #[macro_export]
-macro_rules! nft_expr_nftnl_1_1_1 {
+macro_rules! nft_expr_nftnl_1_2_0 {
     (socket cgroupv2 level $level:expr) => {
-        nft_expr_nftnl_1_1_1_1!(socket (::nftnl::expr::SocketKey::CgroupV2) level $level)
+        nft_expr_nftnl_1_2_0!(socket (::nftnl::expr::SocketKey::CgroupV2) level $level)
     };
     (socket ($key:expr) level $level:expr) => {
         // TODO: why do we need to specify register??
