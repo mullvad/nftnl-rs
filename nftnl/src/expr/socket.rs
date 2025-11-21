@@ -28,27 +28,31 @@ pub mod imp {
 
     impl Expression for Socket {
         fn to_expr(&self, _rule: &Rule) -> ptr::NonNull<sys::nftnl_expr> {
+            let expr = try_alloc!(unsafe { sys::nftnl_expr_alloc(c"socket".as_ptr()) });
+            // In the source code for socket expr, the member values are validated to be of type 'MNL_TYPE_U32'
+            // https://git.netfilter.org/libnftnl/tree/src/expr/socket.c
             unsafe {
-                let expr = try_alloc!(sys::nftnl_expr_alloc(c"socket".as_ptr()));
-                // In the source code for socket expr, the member values are validated to be of type 'MNL_TYPE_U32'
-                // https://git.netfilter.org/libnftnl/tree/src/expr/socket.c
                 sys::nftnl_expr_set_u32(
                     expr.as_ptr(),
                     sys::NFTNL_EXPR_SOCKET_KEY as u16,
                     self.key.to_raw(),
-                );
+                )
+            };
+            unsafe {
                 sys::nftnl_expr_set_u32(
                     expr.as_ptr(),
                     sys::NFTNL_EXPR_SOCKET_DREG as u16,
                     self.register.to_raw(),
-                );
+                )
+            };
+            unsafe {
                 sys::nftnl_expr_set_u32(
                     expr.as_ptr(),
                     sys::NFTNL_EXPR_SOCKET_LEVEL as u16,
                     self.level,
-                );
-                expr
-            }
+                )
+            };
+            expr
         }
     }
 
