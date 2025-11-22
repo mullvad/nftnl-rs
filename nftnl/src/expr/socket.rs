@@ -21,7 +21,8 @@ mod imp {
     }
 
     impl Socket {
-        pub fn new(key: SocketKey, register: Register, level: u32) -> Self {
+        pub fn new(key: SocketKey, level: u32) -> Self {
+            let register = Register::Reg1;
             Socket {
                 level,
                 register,
@@ -85,8 +86,7 @@ mod imp {
         nft_expr_socket!(socket (::nftnl::expr::SocketKey::CgroupV2) level $level)
     };
     (socket ($key:expr) level $level:expr) => {
-        // TODO: why do we need to specify register??
-        ::nftnl::expr::Socket::new($key, ::nftnl::expr::Register::Reg1, $level)
+        ::nftnl::expr::Socket::new($key, $level)
     };
 }
 }
