@@ -1,7 +1,10 @@
 //! Socket expressions.
 
+#[cfg_attr(not(socketexpr), allow(unused_imports))]
+pub use imp::*;
+
 #[cfg(socketexpr)]
-pub mod imp {
+mod imp {
     use crate::Rule;
     use crate::expr::{Expression, Register};
 
@@ -89,7 +92,7 @@ pub mod imp {
 }
 
 #[cfg(not(socketexpr))]
-pub mod imp {
+mod imp {
     #[macro_export(local_inner_macros)]
     macro_rules! nft_expr_socket {
         ($($_:tt)+) => {

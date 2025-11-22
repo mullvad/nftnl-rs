@@ -65,8 +65,9 @@ pub use self::payload::*;
 mod verdict;
 pub use self::verdict::*;
 
-mod socket;
-pub use self::socket::imp::*;
+pub mod socket;
+#[cfg_attr(not(socketexpr), allow(unused_imports))]
+pub use self::socket::*;
 
 #[macro_export(local_inner_macros)]
 macro_rules! nft_expr {
