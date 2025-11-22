@@ -17,6 +17,8 @@ mod imp {
         /// Socket key to match.
         key: SocketKey,
         /// Destination register.
+        ///
+        /// The result of matching on this expression will be stored in this [Register].
         register: Register,
         /// CGroups V2 ancestor level.
         level: u32,
@@ -24,6 +26,9 @@ mod imp {
 
     impl Socket {
         pub fn new(key: SocketKey, level: u32) -> Self {
+            // Use NFT_REG_1 to store the result of this match expression.
+            // This is fine since the data may be contained in a single register (4 bytes).
+            // https://anatomic.rip/netfilter_nf_tables/#dataregs
             let register = Register::Reg1;
             Socket {
                 level,
