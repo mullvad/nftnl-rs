@@ -1,4 +1,6 @@
 //! Socket expressions.
+//!
+//! Match on existing UDP/TCP sockets and their attributes.
 
 #[cfg_attr(not(socketexpr), allow(unused_imports))]
 pub use imp::*;
