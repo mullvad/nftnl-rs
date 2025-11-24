@@ -50,3 +50,7 @@ nftnl-sys = { path = "../nftnl-sys", version = "0.6.2" }
 [dev-dependencies]
 ipnetwork = "0.20.0"
 mnl = "0.3.0"
+
+[[example]]
+name = "add-cgroup-rule"
+required-features = ["nftnl-1-2-0"]
