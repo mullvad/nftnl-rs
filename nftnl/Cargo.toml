@@ -40,6 +40,11 @@ nftnl-1-0-7 = ["nftnl-sys/nftnl-1-0-7"]
 [dependencies]
 bitflags = "2.6.0"
 log = "0.4"
+
+# NOTE: keep version in lock-step with build-dependency
+nftnl-sys = { path = "../nftnl-sys", version = "0.6.2" }
+
+[build-dependencies]
 nftnl-sys = { path = "../nftnl-sys", version = "0.6.2" }
 
 [dev-dependencies]
