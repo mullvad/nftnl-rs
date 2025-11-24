@@ -145,47 +145,46 @@ impl ToSlice for IpAddr {
 
 impl ToSlice for Ipv4Addr {
     fn to_slice(&self) -> Cow<'_, [u8]> {
+        // TODO: replace with self.as_octets() when stabilized
         Cow::Owned(self.octets().to_vec())
     }
 }
 
 impl ToSlice for Ipv6Addr {
     fn to_slice(&self) -> Cow<'_, [u8]> {
+        // TODO: replace with self.as_octets() when stabilized
         Cow::Owned(self.octets().to_vec())
     }
 }
 
 impl ToSlice for u8 {
     fn to_slice(&self) -> Cow<'_, [u8]> {
-        Cow::Owned(vec![*self])
+        Cow::Borrowed(slice::from_ref(self))
     }
 }
 
+// TODO use zerocopy for integer ToSlice impls to avoid allocations
 impl ToSlice for u16 {
     fn to_slice(&self) -> Cow<'_, [u8]> {
-        let b0 = (*self & 0x00ff) as u8;
-        let b1 = (*self >> 8) as u8;
-        Cow::Owned(vec![b0, b1])
+        Cow::Owned(self.to_ne_bytes().to_vec())
     }
 }
 
 impl ToSlice for u32 {
     fn to_slice(&self) -> Cow<'_, [u8]> {
-        let b0 = *self as u8;
-        let b1 = (*self >> 8) as u8;
-        let b2 = (*self >> 16) as u8;
-        let b3 = (*self >> 24) as u8;
-        Cow::Owned(vec![b0, b1, b2, b3])
+        Cow::Owned(self.to_ne_bytes().to_vec())
+    }
+}
+
+impl ToSlice for u64 {
+    fn to_slice(&self) -> Cow<'_, [u8]> {
+        Cow::Owned(self.to_ne_bytes().to_vec())
     }
 }
 
 impl ToSlice for i32 {
     fn to_slice(&self) -> Cow<'_, [u8]> {
-        let b0 = *self as u8;
-        let b1 = (*self >> 8) as u8;
-        let b2 = (*self >> 16) as u8;
-        let b3 = (*self >> 24) as u8;
-        Cow::Owned(vec![b0, b1, b2, b3])
+        Cow::Owned(self.to_ne_bytes().to_vec())
     }
 }
 

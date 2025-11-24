@@ -65,10 +65,17 @@ pub use self::payload::*;
 mod verdict;
 pub use self::verdict::*;
 
+pub mod socket;
+#[cfg_attr(not(socketexpr), allow(unused_imports))]
+pub use self::socket::*;
+
 #[macro_export(local_inner_macros)]
 macro_rules! nft_expr {
     (bitwise mask $mask:expr,xor $xor:expr) => {
         nft_expr_bitwise!(mask $mask, xor $xor)
+    };
+    (socket $key:tt level $level:expr) => {
+        nft_expr_socket!(socket $key level $level)
     };
     (cmp $op:tt $data:expr) => {
         nft_expr_cmp!($op $data)
