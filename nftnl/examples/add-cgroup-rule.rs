@@ -120,8 +120,7 @@ fn send_and_process(batch: &FinalizedBatch) -> io::Result<()> {
             let message = message?;
             let expected_seq = expected_seqs.next().expect("Unexpected ACK");
             // Validate sequence number and check for error messages
-            mnl::cb_run(message, expected_seq, portid)
-                .inspect_err(|e| println!("message {expected_seq} errored: {e}"))?;
+            mnl::cb_run(message, expected_seq, portid)?;
         }
     }
     Ok(())
