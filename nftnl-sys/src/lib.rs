@@ -44,6 +44,8 @@
 
 pub use libc;
 
+pub mod version;
+
 cfg_if::cfg_if! {
     if #[cfg(feature = "nftnl-1-3-0")] {
         mod nftnl_1_3_0;
