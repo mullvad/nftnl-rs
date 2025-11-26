@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - Generate bindings for libnftnl 1.0.3 through 1.3.0
 - Add support for Socket expressions.
+- Implement `ToSlice` for `u64`.
 
 ### Changed
 - Upgrade to rust edition 2024
