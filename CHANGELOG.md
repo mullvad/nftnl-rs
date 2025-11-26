@@ -22,6 +22,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
 - Upgrade to rust edition 2024
 
+### Fixed
+- Fix buffer-overflow in `Batch::with_page_size` due to insufficient allocation for malformed
+  page sizes. Panic in these cases instead.
+
+
 ## [0.8.0] - 2025-10-30
 ### Added
 - Add support for ingress hooks. Corresponds to `NF_INET_INGRESS`.
