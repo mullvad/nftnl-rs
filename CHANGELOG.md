@@ -28,6 +28,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 - Fix buffer-overflow in `Batch::with_page_size` due to insufficient allocation for malformed
   page sizes. Panic in these cases instead.
+- Fix endianess in `ToSlice` implementations for integer types by using native endianess instead
+  of assuming little endian.
 
 ### Removed
 - Remove `ToSlice` implementation for `&str` in favor of `&CStr`.
