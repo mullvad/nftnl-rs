@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Changed
 - Upgrade to rust edition 2024
+- Expose message sequence numbers from batch.
 
 ### Fixed
 - Fix buffer-overflow in `Batch::with_page_size` due to insufficient allocation for malformed
