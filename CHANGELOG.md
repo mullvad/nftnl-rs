@@ -28,6 +28,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Fix buffer-overflow in `Batch::with_page_size` due to insufficient allocation for malformed
   page sizes. Panic in these cases instead.
 
+### Removed
+- Remove `ToSlice` implementation for `&str` in favor of `&CStr`.
+
 
 ## [0.8.0] - 2025-10-30
 ### Added
