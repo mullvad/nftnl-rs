@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 
 ## [Unreleased]
+
+
+## [0.9.0] - 2025-11-26
 ### Added
 - Generate bindings for libnftnl 1.0.3 through 1.3.0.
 - Add support for Socket expressions.
