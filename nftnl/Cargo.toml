@@ -1,6 +1,6 @@
 [package]
 name = "nftnl"
-version = "0.8.0"
+version = "0.9.0"
 authors = ["Mullvad VPN"]
 license = "MIT OR Apache-2.0"
 description = "Safe abstraction for libnftnl. Provides low-level userspace access to the in-kernel nf_tables subsystem"

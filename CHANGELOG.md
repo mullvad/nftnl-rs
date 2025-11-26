@@ -16,11 +16,24 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 ### Added
-- Generate bindings for libnftnl 1.0.3 through 1.3.0
+- Generate bindings for libnftnl 1.0.3 through 1.3.0.
 - Add support for Socket expressions.
+- Implement `ToSlice` for `u64`.
+- Implement `ToSlice` for `&CStr`.
 
 ### Changed
-- Upgrade to rust edition 2024
+- Upgrade to rust edition 2024.
+- Expose message sequence numbers from batch.
+
+### Fixed
+- Fix buffer-overflow in `Batch::with_page_size` due to insufficient allocation for malformed
+  page sizes. Panic in these cases instead.
+- Fix endianess in `ToSlice` implementations for integer types by using native endianess instead
+  of assuming little endian.
+
+### Removed
+- Remove `ToSlice` implementation for `&str` in favor of `&CStr`.
+
 
 ## [0.8.0] - 2025-10-30
 ### Added

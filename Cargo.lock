@@ -58,7 +58,7 @@ dependencies = [
 
 [[package]]
 name = "nftnl"
-version = "0.8.0"
+version = "0.9.0"
 dependencies = [
  "bitflags",
  "ipnetwork",
@@ -69,7 +69,7 @@ dependencies = [
 
 [[package]]
 name = "nftnl-sys"
-version = "0.6.3"
+version = "0.6.4"
 dependencies = [
  "cfg-if",
  "libc",
