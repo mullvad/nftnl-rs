@@ -11,7 +11,7 @@ mod imp {
     use crate::expr::{Expression, Register};
 
     use nftnl_sys::{self as sys};
-    use std::ptr;
+    use std::ptr::{self, NonNull};
 
     pub struct Socket {
         /// Socket key to match.
@@ -40,7 +40,9 @@ mod imp {
 
     impl Expression for Socket {
         fn to_expr(&self, _rule: &Rule) -> ptr::NonNull<sys::nftnl_expr> {
-            let expr = try_alloc!(unsafe { sys::nftnl_expr_alloc(c"socket".as_ptr()) });
+            let expr = unsafe { sys::nftnl_expr_alloc(c"socket".as_ptr()) };
+            let expr = NonNull::new(expr).expect("Failed to allocate socket expression. Are you linking againts the wrong version of nftnl?");
+
             // In the source code for socket expr, the member values are validated to be of type 'MNL_TYPE_U32'
             // https://git.netfilter.org/libnftnl/tree/src/expr/socket.c
             unsafe {
