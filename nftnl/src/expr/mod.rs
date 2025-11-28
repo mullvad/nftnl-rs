@@ -47,6 +47,9 @@ pub use self::ct::*;
 mod immediate;
 pub use self::immediate::*;
 
+mod log;
+pub use self::log::*;
+
 mod lookup;
 pub use self::lookup::*;
 
