@@ -1,6 +1,5 @@
 use crate::{MsgType, NlMsg};
 use core::fmt;
-use nftnl_sys::libc::NLM_F_ACK;
 use nftnl_sys::{self as sys, libc};
 use std::ffi::c_void;
 use std::ops::Range;
@@ -115,18 +114,12 @@ impl Batch {
     }
 
     fn write_begin_msg(&mut self) {
-        let buf_ptr = self.current().cast::<c_char>();
-        let nlmsghdr = unsafe { sys::nftnl_batch_begin(buf_ptr, self.seqs.end) };
-        let mut nlmsghdr = ptr::NonNull::new(nlmsghdr).expect("nlmsg_build_hdr never returns null");
-        unsafe { nlmsghdr.as_mut() }.nlmsg_flags |= NLM_F_ACK as u16; // all messages should set F_ACK
+        unsafe { sys::nftnl_batch_begin(self.current().cast::<c_char>(), self.seqs.end) };
         self.next();
     }
 
     fn write_end_msg(&mut self) {
-        let buf_ptr = self.current().cast::<c_char>();
-        let nlmsghdr = unsafe { sys::nftnl_batch_end(buf_ptr, self.seqs.end) };
-        let mut nlmsghdr = ptr::NonNull::new(nlmsghdr).expect("nlmsg_build_hdr never returns null");
-        unsafe { nlmsghdr.as_mut() }.nlmsg_flags |= NLM_F_ACK as u16; // all messages should set F_ACK
+        unsafe { sys::nftnl_batch_end(self.current().cast::<c_char>(), self.seqs.end) };
         self.next();
     }
 
@@ -174,9 +167,10 @@ impl FinalizedBatch {
         }
     }
 
-    /// The range of sequence numbers assigned to the messages in this batch.
+    /// Returns the range of sequence numbers for the messages in this batch that expect an ACK.
     pub fn sequence_numbers(&self) -> Range<u32> {
-        self.batch.seqs.clone()
+        // The first (BATCH_BEGIN) and last (BATCH_END) messages do not expect an ACK.
+        (self.batch.seqs.start + 1)..(self.batch.seqs.end - 1)
     }
 }
 
