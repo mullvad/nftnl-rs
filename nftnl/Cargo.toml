@@ -43,6 +43,7 @@ log = "0.4"
 
 # NOTE: keep version in lock-step with build-dependency
 nftnl-sys = { path = "../nftnl-sys", version = "0.6.2" }
+nix = { version = "0.30.1", features = ["feature"] }
 
 [build-dependencies]
 nftnl-sys = { path = "../nftnl-sys", version = "0.6.2" }

@@ -1,10 +1,13 @@
+use crate::util::KERNEL_VERSION;
 use crate::{MsgType, NlMsg};
 use core::fmt;
 use nftnl_sys::{self as sys, libc};
+use nix::libc::{NLM_F_ACK, nlmsghdr};
 use std::ffi::c_void;
 use std::ops::Range;
 use std::os::raw::c_char;
 use std::ptr;
+use std::sync::LazyLock;
 
 /// Error while communicating with netlink
 #[derive(Debug)]
@@ -15,6 +18,20 @@ impl fmt::Display for NetlinkError {
         "Error while communicating with netlink".fmt(f)
     }
 }
+
+/// Whether we should set `F_ACK` for batch start/end messages.
+pub static ACK_BATCH_END_MESSAGES: LazyLock<bool> = LazyLock::new(|| {
+    let Some(kernel_version) = *KERNEL_VERSION else {
+        if cfg!(debug_assertions) {
+            panic!("Failed to parse kernel version");
+        } else {
+            return true;
+        }
+    };
+
+    // The kernel didn't respect the F_ACK flag for netlink nft batch messages until 6.10
+    kernel_version >= (6, 10)
+});
 
 impl std::error::Error for NetlinkError {}
 
@@ -114,19 +131,48 @@ impl Batch {
     }
 
     fn write_begin_msg(&mut self) {
-        unsafe { sys::nftnl_batch_begin(self.current().cast::<c_char>(), self.seqs.end) };
-        self.next();
+        unsafe { self.write_begin_or_end_msg(sys::nftnl_batch_begin) }
     }
 
     fn write_end_msg(&mut self) {
-        unsafe { sys::nftnl_batch_end(self.current().cast::<c_char>(), self.seqs.end) };
-        self.next();
+        unsafe { self.write_begin_or_end_msg(sys::nftnl_batch_end) }
+    }
+
+    unsafe fn write_begin_or_end_msg(
+        &mut self,
+        f: unsafe extern "C" fn(*mut c_char, u32) -> *mut nlmsghdr,
+    ) {
+        let buf_ptr = self.current().cast::<c_char>();
+
+        // We only set F_ACK (and a sequence number) if the kernel supports it.
+        let kernel_supports_ack = *ACK_BATCH_END_MESSAGES;
+        let seq = kernel_supports_ack.then_some(self.seqs.end).unwrap_or(0);
+
+        // Construct the header
+        let header = unsafe { f(buf_ptr, seq) };
+
+        // Raise F_ACK
+        if kernel_supports_ack {
+            unsafe { set_f_ack(header) };
+            self.seqs.end += 1;
+        }
+
+        if unsafe { sys::nftnl_batch_update(self.batch.as_ptr()) } < 0 {
+            // See try_alloc definition.
+            std::process::abort();
+        }
     }
 
     /// Returns the underlying `nftnl_batch` instance.
     pub fn as_raw_batch(&self) -> ptr::NonNull<sys::nftnl_batch> {
         self.batch
     }
+}
+
+/// Set the [`NLM_F_ACK`] flag on the netlink message.
+unsafe fn set_f_ack(header: *mut libc::nlmsghdr) {
+    let mut header = ptr::NonNull::new(header).expect("nlmsg_build_hdr never returns null");
+    unsafe { header.as_mut() }.nlmsg_flags |= NLM_F_ACK as u16;
 }
 
 impl Drop for Batch {
@@ -169,8 +215,7 @@ impl FinalizedBatch {
 
     /// Returns the range of sequence numbers for the messages in this batch that expect an ACK.
     pub fn sequence_numbers(&self) -> Range<u32> {
-        // The first (BATCH_BEGIN) and last (BATCH_END) messages do not expect an ACK.
-        (self.batch.seqs.start + 1)..(self.batch.seqs.end - 1)
+        self.batch.seqs.clone()
     }
 }
 
