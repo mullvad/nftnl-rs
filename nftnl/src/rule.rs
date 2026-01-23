@@ -1,12 +1,17 @@
-use crate::{MsgType, chain::Chain, expr::Expression};
+<<<<<<< HEAD
+use crate::{chain::Chain, expr::Expression, MsgType};
 use nftnl_sys::{self as sys, libc, nftnl_udata_buf_alloc};
-use std::ffi::{CStr, c_void};
+use std::ffi::{c_void, CStr};
+=======
+use crate::{MsgType, chain::Chain, expr::Expression};
+use nftnl_sys::{self as sys, libc};
+use std::ffi::c_void;
+>>>>>>> 51090d5 (Update to rust 2024)
 use std::os::raw::c_char;
-use std::ptr;
 
 /// A nftables firewall rule.
 pub struct Rule<'a> {
-    rule: ptr::NonNull<sys::nftnl_rule>,
+    rule: *mut sys::nftnl_rule,
     chain: &'a Chain<'a>,
 }
 
@@ -23,17 +28,17 @@ impl<'a> Rule<'a> {
         unsafe {
             let rule = try_alloc!(sys::nftnl_rule_alloc());
             sys::nftnl_rule_set_u32(
-                rule.as_ptr(),
+                rule,
                 sys::NFTNL_RULE_FAMILY as u16,
                 chain.get_table().get_family() as u32,
             );
             sys::nftnl_rule_set_str(
-                rule.as_ptr(),
+                rule,
                 sys::NFTNL_RULE_TABLE as u16,
                 chain.get_table().get_name().as_ptr(),
             );
             sys::nftnl_rule_set_str(
-                rule.as_ptr(),
+                rule,
                 sys::NFTNL_RULE_CHAIN as u16,
                 chain.get_name().as_ptr(),
             );
@@ -46,17 +51,13 @@ impl<'a> Rule<'a> {
     /// to the end of the chain.
     pub fn set_position(&mut self, position: u64) {
         unsafe {
-            sys::nftnl_rule_set_u64(
-                self.rule.as_ptr(),
-                sys::NFTNL_RULE_POSITION as u16,
-                position,
-            );
+            sys::nftnl_rule_set_u64(self.rule, sys::NFTNL_RULE_POSITION as u16, position);
         }
     }
 
     pub fn set_handle(&mut self, handle: u64) {
         unsafe {
-            sys::nftnl_rule_set_u64(self.rule.as_ptr(), sys::NFTNL_RULE_HANDLE as u16, handle);
+            sys::nftnl_rule_set_u64(self.rule, sys::NFTNL_RULE_HANDLE as u16, handle);
         }
     }
 
@@ -64,24 +65,19 @@ impl<'a> Rule<'a> {
     /// As soon as an expression does not match the packet it's being evaluated for, evaluation
     /// stops and the packet is evaluated against the next rule in the chain.
     pub fn add_expr(&mut self, expr: &impl Expression) {
-        unsafe { sys::nftnl_rule_add_expr(self.rule.as_ptr(), expr.to_expr(self).as_ptr()) }
+        unsafe { sys::nftnl_rule_add_expr(self.rule, expr.to_expr(self)) }
     }
 
     pub fn set_comment<T: AsRef<CStr>>(&mut self, comment: T) {
+        let udata_buf = try_alloc!(unsafe { nftnl_udata_buf_alloc(256) });
         unsafe {
-            let udata_buf = nftnl_udata_buf_alloc(256);
             // NFTNL_UDATA_RULE_COMMENT = 0
             if !sys::nftnl_udata_put_strz(udata_buf, 0, comment.as_ref().as_ptr()) {
                 std::process::abort();
             }
             let data = sys::nftnl_udata_buf_data(udata_buf);
             let len = sys::nftnl_udata_buf_len(udata_buf);
-            sys::nftnl_rule_set_data(
-                self.rule.as_ptr(),
-                sys::NFTNL_RULE_USERDATA as u16,
-                data,
-                len,
-            );
+            sys::nftnl_rule_set_data(self.rule, sys::NFTNL_RULE_USERDATA as u16, data, len);
             sys::nftnl_udata_buf_free(udata_buf);
         }
     }
@@ -101,11 +97,8 @@ unsafe impl crate::NlMsg for Rule<'_> {
             MsgType::Del => libc::NFT_MSG_DELRULE,
         };
         let flags: u16 = match msg_type {
-            MsgType::Add => {
-                (libc::NLM_F_CREATE | libc::NLM_F_APPEND | libc::NLM_F_EXCL | libc::NLM_F_ACK)
-                    as u16
-            }
-            MsgType::Del => libc::NLM_F_ACK as u16,
+            MsgType::Add => (libc::NLM_F_CREATE | libc::NLM_F_APPEND | libc::NLM_F_EXCL) as u16,
+            MsgType::Del => 0u16,
         };
         let header = unsafe {
             sys::nftnl_nlmsg_build_hdr(
@@ -116,12 +109,12 @@ unsafe impl crate::NlMsg for Rule<'_> {
                 seq,
             )
         };
-        unsafe { sys::nftnl_rule_nlmsg_build_payload(header, self.rule.as_ptr()) };
+        unsafe { sys::nftnl_rule_nlmsg_build_payload(header, self.rule) };
     }
 }
 
 impl Drop for Rule<'_> {
     fn drop(&mut self) {
-        unsafe { sys::nftnl_rule_free(self.rule.as_ptr()) };
+        unsafe { sys::nftnl_rule_free(self.rule) };
     }
 }
