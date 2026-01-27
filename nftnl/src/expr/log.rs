@@ -16,14 +16,19 @@ impl Log {
 }
 
 impl Expression for Log {
-    fn to_expr(&self, _rule: &Rule) -> *mut sys::nftnl_expr {
-        unsafe {
-            let expr = try_alloc!(sys::nftnl_expr_alloc(b"log\0" as *const _ as *const c_char));
-            if let Some(group) = self.group {
-                sys::nftnl_expr_set_u16(expr, sys::NFTNL_EXPR_LOG_GROUP as u16, group as u16);
-            };
-            expr
-        }
+    fn to_expr(&self, _rule: &Rule) -> std::ptr::NonNull<nftnl_sys::nftnl_expr> {
+        let expr = unsafe { sys::nftnl_expr_alloc(c"log".as_ptr()) };
+        let expr = NonNull::new(expr).expect("Failed to allocate log expression.");
+        if let Some(group) = self.group {
+            unsafe {
+                sys::nftnl_expr_set_u16(
+                    expr.as_ptr(),
+                    sys::NFTNL_EXPR_LOG_GROUP.try_into().unwrap(),
+                    group,
+                );
+            }
+        };
+        expr
     }
 }
 
