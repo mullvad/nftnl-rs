@@ -1,5 +1,6 @@
 use super::{Expression, Rule};
-use nftnl_sys::{self as sys, libc::c_char};
+use nftnl_sys::{self as sys};
+use std::ptr::NonNull;
 
 /// A log expression.
 pub struct Log {
