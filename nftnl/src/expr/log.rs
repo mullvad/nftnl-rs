@@ -3,6 +3,7 @@ use nftnl_sys::{self as sys};
 use std::ptr::NonNull;
 
 /// A log expression.
+#[derive(Debug, Default)]
 pub struct Log {
     group: Option<u16>,
 }
