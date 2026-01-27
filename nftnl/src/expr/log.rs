@@ -9,10 +9,7 @@ pub struct Log {
 }
 
 impl Log {
-    pub fn new() -> Self {
-        Log { group: None }
-    }
-
+    /// Create a new log expression belonging to `group`.
     pub fn new_with_group(group: u16) -> Self {
         Log { group: Some(group) }
     }
