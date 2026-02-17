@@ -32,7 +32,7 @@ const VERSION: (u32, u32, u32) = {
 };
 
 fn get_env(var: &'static str) -> Option<PathBuf> {
-    println!("cargo:rerun-if-env-changed={}", var);
+    println!("cargo:rerun-if-env-changed={var}");
     env::var_os(var).map(PathBuf::from)
 }
 

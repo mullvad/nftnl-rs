@@ -186,7 +186,7 @@ impl fmt::Debug for Chain<'_> {
             );
         }
         let s = unsafe { CStr::from_ptr(buffer.as_ptr() as *const c_char) };
-        write!(fmt, "{:?}", s)
+        write!(fmt, "{s:?}")
     }
 }
 

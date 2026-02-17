@@ -98,7 +98,7 @@ pub fn get_tables_cb(header: &libc::nlmsghdr, tables: &mut HashSet<CString>) -> 
         let nf_table = sys::nftnl_table_alloc();
         let err = sys::nftnl_table_nlmsg_parse(header, nf_table);
         if err < 0 {
-            error!("Failed to parse nelink table message - {}", err);
+            error!("Failed to parse nelink table message - {err}");
             sys::nftnl_table_free(nf_table);
             return err;
         }

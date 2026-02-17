@@ -73,7 +73,7 @@ impl<'a, K> Set<'a, K> {
 
             let data = key.data();
             let data_len = data.len() as u32;
-            trace!("Adding key {:?} with len {}", data, data_len);
+            trace!("Adding key {data:?} with len {data_len}");
             sys::nftnl_set_elem_set(
                 elem.as_ptr(),
                 sys::NFTNL_SET_ELEM_KEY as u16,

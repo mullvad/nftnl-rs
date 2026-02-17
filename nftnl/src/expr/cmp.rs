@@ -58,7 +58,7 @@ impl<T: ToSlice> Expression for Cmp<T> {
         let expr = try_alloc!(unsafe { sys::nftnl_expr_alloc(c"cmp".as_ptr()) });
 
         let data = self.data.to_slice();
-        trace!("Creating a cmp expr comparing with data {:?}", data);
+        trace!("Creating a cmp expr comparing with data {data:?}");
 
         unsafe {
             sys::nftnl_expr_set_u32(
