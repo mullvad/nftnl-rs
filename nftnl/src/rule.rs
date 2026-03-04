@@ -68,21 +68,29 @@ impl<'a> Rule<'a> {
     }
 
     pub fn set_comment<T: AsRef<CStr>>(&mut self, comment: T) {
+        let udata_buf =
+            try_alloc!(unsafe { sys::nftnl_udata_buf_alloc(sys::NFTNL_UDATA_COMMENT_MAXLEN) });
+        if !unsafe {
+            sys::nftnl_udata_put_strz(
+                udata_buf.as_ptr(),
+                sys::NFTNL_UDATA_RULE_COMMENT as u8,
+                comment.as_ref().as_ptr(),
+            )
+        } {
+            std::process::abort();
+        }
+        let data = unsafe { sys::nftnl_udata_buf_data(udata_buf.as_ptr()) };
+        let len = unsafe { sys::nftnl_udata_buf_len(udata_buf.as_ptr()) };
         unsafe {
-            let udata_buf = sys::nftnl_udata_buf_alloc(256);
-            // NFTNL_UDATA_RULE_COMMENT = 0
-            if !sys::nftnl_udata_put_strz(udata_buf, 0, comment.as_ref().as_ptr()) {
-                std::process::abort();
-            }
-            let data = sys::nftnl_udata_buf_data(udata_buf);
-            let len = sys::nftnl_udata_buf_len(udata_buf);
             sys::nftnl_rule_set_data(
                 self.rule.as_ptr(),
                 sys::NFTNL_RULE_USERDATA as u16,
                 data,
                 len,
             );
-            sys::nftnl_udata_buf_free(udata_buf);
+        }
+        unsafe {
+            sys::nftnl_udata_buf_free(udata_buf.as_ptr());
         }
     }
 
