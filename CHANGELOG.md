@@ -17,6 +17,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 
 
+## [0.9.2] - 2026-04-24
+### Changed
+- Update `nix` dependency to 0.31
+
+
 ## [0.9.1] - 2025-12-08
 ### Fixed
 - Avoid raising `NLM_F_ACK` for batch start/end messages on kernel version prior to 6.10.
