@@ -34,7 +34,37 @@ pub struct Set<'a, K> {
 }
 
 impl<'a, K> Set<'a, K> {
+    /// Creates an anonymous, constant set.
+    ///
+    /// Anonymous sets are intended to be referenced by a rule in the same transaction.
     pub fn new(name: &CStr, id: u32, table: &'a Table, family: ProtoFamily) -> Self
+    where
+        K: SetKey,
+    {
+        Self::new_with_flags(
+            name,
+            id,
+            table,
+            family,
+            Some((libc::NFT_SET_ANONYMOUS | libc::NFT_SET_CONSTANT) as u32),
+        )
+    }
+
+    /// Creates a named set that remains in the table independently of any rule.
+    pub fn new_named(name: &CStr, id: u32, table: &'a Table, family: ProtoFamily) -> Self
+    where
+        K: SetKey,
+    {
+        Self::new_with_flags(name, id, table, family, None)
+    }
+
+    fn new_with_flags(
+        name: &CStr,
+        id: u32,
+        table: &'a Table,
+        family: ProtoFamily,
+        flags: Option<u32>,
+    ) -> Self
     where
         K: SetKey,
     {
@@ -47,11 +77,9 @@ impl<'a, K> Set<'a, K> {
             sys::nftnl_set_set_str(set, sys::NFTNL_SET_NAME as u16, name.as_ptr());
             sys::nftnl_set_set_u32(set, sys::NFTNL_SET_ID as u16, id);
 
-            sys::nftnl_set_set_u32(
-                set,
-                sys::NFTNL_SET_FLAGS as u16,
-                (libc::NFT_SET_ANONYMOUS | libc::NFT_SET_CONSTANT) as u32,
-            );
+            if let Some(flags) = flags {
+                sys::nftnl_set_set_u32(set, sys::NFTNL_SET_FLAGS as u16, flags);
+            }
             sys::nftnl_set_set_u32(set, sys::NFTNL_SET_KEY_TYPE as u16, K::TYPE);
             sys::nftnl_set_set_u32(set, sys::NFTNL_SET_KEY_LEN as u16, K::LEN);
         }
@@ -64,6 +92,9 @@ impl<'a, K> Set<'a, K> {
         }
     }
 
+    /// Adds a key to the set's in-memory element list.
+    ///
+    /// Use [`Set::elems_iter`] to add the resulting element messages to a batch.
     pub fn add(&mut self, key: &K)
     where
         K: SetKey,
@@ -84,6 +115,7 @@ impl<'a, K> Set<'a, K> {
         }
     }
 
+    /// Returns the netlink messages for the elements previously added to this set.
     pub fn elems_iter(&'a self) -> SetElemsIter<'a, K> {
         SetElemsIter::new(self)
     }
@@ -228,5 +260,36 @@ impl SetKey for Ipv6Addr {
 
     fn data(&self) -> Box<[u8]> {
         self.octets().to_vec().into_boxed_slice()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn new_creates_anonymous_constant_set() {
+        let table = Table::new(c"filter", ProtoFamily::Ipv4);
+        let set = Set::<Ipv4Addr>::new(c"test", 1, &table, ProtoFamily::Ipv4);
+
+        assert_eq!(
+            flags(&set),
+            Some((libc::NFT_SET_ANONYMOUS | libc::NFT_SET_CONSTANT) as u32)
+        );
+    }
+
+    #[test]
+    fn new_named_omits_anonymous_flags() {
+        let table = Table::new(c"filter", ProtoFamily::Ipv4);
+        let set = Set::<Ipv4Addr>::new_named(c"test", 1, &table, ProtoFamily::Ipv4);
+
+        assert_eq!(flags(&set), None);
+    }
+
+    fn flags<K>(set: &Set<'_, K>) -> Option<u32> {
+        unsafe {
+            sys::nftnl_set_is_set(set.as_ptr().as_ptr(), sys::NFTNL_SET_FLAGS as u16)
+                .then(|| sys::nftnl_set_get_u32(set.as_ptr().as_ptr(), sys::NFTNL_SET_FLAGS as u16))
+        }
     }
 }
