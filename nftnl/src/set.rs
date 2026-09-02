@@ -138,6 +138,11 @@ impl<'a, K> Set<'a, K> {
     pub fn get_id(&self) -> u32 {
         unsafe { sys::nftnl_set_get_u32(self.set.as_ptr(), sys::NFTNL_SET_ID as u16) }
     }
+
+    /// Returns a message that flushes all elements from this set.
+    pub fn flush(&self) -> FlushSet<'_, K> {
+        FlushSet { set: self }
+    }
 }
 
 unsafe impl<K> crate::NlMsg for Set<'_, K> {
@@ -238,6 +243,29 @@ unsafe impl<K> crate::NlMsg for SetElemsMsg<'_, K> {
     }
 }
 
+/// A netlink message that flushes all elements from a set.
+pub struct FlushSet<'a, K> {
+    set: &'a Set<'a, K>,
+}
+
+unsafe impl<K> crate::NlMsg for FlushSet<'_, K> {
+    unsafe fn write(&self, buf: *mut c_void, seq: u32, _msg_type: MsgType) {
+        trace!("Writing FlushSet to NlMsg");
+        let header = unsafe {
+            sys::nftnl_nlmsg_build_hdr(
+                buf.cast::<c_char>(),
+                libc::NFT_MSG_DELSETELEM as u16,
+                self.set.get_family() as u16,
+                libc::NLM_F_ACK as u16,
+                seq,
+            )
+        };
+        unsafe {
+            sys::nftnl_set_elems_nlmsg_build_payload(header, self.set.set.as_ptr());
+        }
+    }
+}
+
 pub trait SetKey {
     const TYPE: u32;
     const LEN: u32;
@@ -263,6 +291,15 @@ impl SetKey for Ipv6Addr {
     }
 }
 
+impl SetKey for u16 {
+    const TYPE: u32 = 13;
+    const LEN: u32 = 2;
+
+    fn data(&self) -> Box<[u8]> {
+        self.to_be_bytes().to_vec().into_boxed_slice()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -284,6 +321,26 @@ mod tests {
         let set = Set::<Ipv4Addr>::new_named(c"test", 1, &table, ProtoFamily::Ipv4);
 
         assert_eq!(flags(&set), None);
+    }
+
+    #[test]
+    fn flush_writes_delsetelem_message() {
+        use crate::NlMsg;
+
+        let table = Table::new(c"filter", ProtoFamily::Ipv4);
+        let set = Set::<Ipv4Addr>::new_named(c"test_set", 1, &table, ProtoFamily::Ipv4);
+        let flush = set.flush();
+
+        let mut buf = vec![0u8; crate::nft_nlmsg_maxsize() as usize];
+        unsafe {
+            flush.write(buf.as_mut_ptr().cast(), 1, MsgType::Del);
+        }
+
+        let header = buf.as_ptr().cast::<libc::nlmsghdr>();
+        let nlmsg_type = unsafe { (*header).nlmsg_type };
+        let expected_type =
+            ((libc::NFNL_SUBSYS_NFTABLES as u16) << 8) | (libc::NFT_MSG_DELSETELEM as u16);
+        assert_eq!(nlmsg_type, expected_type);
     }
 
     fn flags<K>(set: &Set<'_, K>) -> Option<u32> {
