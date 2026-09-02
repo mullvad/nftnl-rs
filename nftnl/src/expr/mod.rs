@@ -62,6 +62,9 @@ pub use self::nat::*;
 mod payload;
 pub use self::payload::*;
 
+mod tproxy;
+pub use self::tproxy::*;
+
 mod verdict;
 pub use self::verdict::*;
 
@@ -112,6 +115,48 @@ macro_rules! nft_expr {
     };
     (payload_raw $base:ident $offset:expr, $length:expr) => {
         nft_expr_payload!($base $offset, $length)
+    };
+    (tproxy port $port_register:expr) => {
+        $crate::expr::TProxy {
+            family: None,
+            addr_register: None,
+            port_register: Some($port_register),
+        }
+    };
+    (tproxy addr $addr_register:expr) => {
+        $crate::expr::TProxy {
+            family: None,
+            addr_register: Some($addr_register),
+            port_register: None,
+        }
+    };
+    (tproxy addr $addr_register:expr, port $port_register:expr) => {
+        $crate::expr::TProxy {
+            family: None,
+            addr_register: Some($addr_register),
+            port_register: Some($port_register),
+        }
+    };
+    (tproxy $family:expr, addr $addr_register:expr) => {
+        $crate::expr::TProxy {
+            family: Some($family),
+            addr_register: Some($addr_register),
+            port_register: None,
+        }
+    };
+    (tproxy $family:expr, port $port_register:expr) => {
+        $crate::expr::TProxy {
+            family: Some($family),
+            addr_register: None,
+            port_register: Some($port_register),
+        }
+    };
+    (tproxy $family:expr, addr $addr_register:expr, port $port_register:expr) => {
+        $crate::expr::TProxy {
+            family: Some($family),
+            addr_register: Some($addr_register),
+            port_register: Some($port_register),
+        }
     };
     (immediate $expr:ident $value:expr) => {
         nft_expr_immediate!($expr $value)
