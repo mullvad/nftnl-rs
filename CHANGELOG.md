@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Add support for TPROXY rules
 - `Set::flush`
 - Implement `SetKey` for `u16`
+- Add `Table::new_with_flags`
 
 
 ## [0.9.4] - 2026-08-11
