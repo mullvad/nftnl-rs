@@ -9,10 +9,14 @@ use std::{
 
 bitflags::bitflags! {
     #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+    /// nf_tables table flags.
     pub struct TableFlags: u32 {
-        const DORMANT = 1;
-        const OWNER = 2;
-        const PERSIST = 4;
+        /// This table is not active.
+        const DORMANT = 0x1;
+        /// This table is owned by a process.
+        const OWNER = 0x2;
+        /// This table shall outlive its owner.
+        const PERSIST = 0x4;
     }
 }
 
