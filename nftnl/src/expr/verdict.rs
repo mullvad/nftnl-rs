@@ -163,10 +163,10 @@ macro_rules! nft_expr_verdict {
         $crate::expr::Verdict::Accept
     };
     (reject icmp $code:expr) => {
-        $crate::expr::Verdict::Reject(RejectionType::Icmp($code))
+        $crate::expr::Verdict::Reject($crate::expr::RejectionType::Icmp($code))
     };
     (reject tcp-rst) => {
-        $crate::expr::Verdict::Reject(RejectionType::TcpRst)
+        $crate::expr::Verdict::Reject($crate::expr::RejectionType::TcpRst)
     };
     (queue) => {
         $crate::expr::Verdict::Queue

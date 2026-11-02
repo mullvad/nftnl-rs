@@ -89,20 +89,20 @@ mod imp {
         }
     }
 
-    #[macro_export(local_inner_macros)]
+    #[macro_export]
     macro_rules! nft_expr_socket {
-    (socket cgroupv2 level $level:expr) => {
-        nft_expr_socket!(socket (::nftnl::expr::SocketKey::CgroupV2) level $level)
-    };
-    (socket ($key:expr) level $level:expr) => {
-        ::nftnl::expr::Socket::new($key, $level)
-    };
-}
+        (socket cgroupv2 level $level:expr) => {
+            $crate::nft_expr_socket!(socket ($crate::expr::SocketKey::CgroupV2) level $level)
+        };
+        (socket ($key:expr) level $level:expr) => {
+            $crate::expr::Socket::new($key, $level)
+        };
+    }
 }
 
 #[cfg(not(socketexpr))]
 mod imp {
-    #[macro_export(local_inner_macros)]
+    #[macro_export]
     macro_rules! nft_expr_socket {
         ($($_:tt)+) => {
             ::std::compile_error!("This feature requires feature 'nftnl-1-2-0'");

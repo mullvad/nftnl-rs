@@ -84,6 +84,52 @@ impl Expression for TProxy {
     }
 }
 
+#[macro_export]
+macro_rules! nft_expr_tproxy {
+    (port $port_register:expr) => {
+        $crate::expr::TProxy {
+            family: None,
+            addr_register: None,
+            port_register: Some($port_register),
+        }
+    };
+    (addr $addr_register:expr) => {
+        $crate::expr::TProxy {
+            family: None,
+            addr_register: Some($addr_register),
+            port_register: None,
+        }
+    };
+    (addr $addr_register:expr, port $port_register:expr) => {
+        $crate::expr::TProxy {
+            family: None,
+            addr_register: Some($addr_register),
+            port_register: Some($port_register),
+        }
+    };
+    ($family:expr, port $port_register:expr) => {
+        $crate::expr::TProxy {
+            family: Some($family),
+            addr_register: None,
+            port_register: Some($port_register),
+        }
+    };
+    ($family:expr, addr $addr_register:expr) => {
+        $crate::expr::TProxy {
+            family: Some($family),
+            addr_register: Some($addr_register),
+            port_register: None,
+        }
+    };
+    ($family:expr, addr $addr_register:expr, port $port_register:expr) => {
+        $crate::expr::TProxy {
+            family: Some($family),
+            addr_register: Some($addr_register),
+            port_register: Some($port_register),
+        }
+    };
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

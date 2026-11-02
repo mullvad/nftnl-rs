@@ -83,7 +83,7 @@ impl<T: ToSlice> Expression for Cmp<T> {
     }
 }
 
-#[macro_export(local_inner_macros)]
+#[macro_export]
 macro_rules! nft_expr_cmp {
     (@cmp_op ==) => {
         $crate::expr::CmpOp::Eq
@@ -104,7 +104,7 @@ macro_rules! nft_expr_cmp {
         $crate::expr::CmpOp::Gte
     };
     ($op:tt $data:expr) => {
-        $crate::expr::Cmp::new(nft_expr_cmp!(@cmp_op $op), $data)
+        $crate::expr::Cmp::new($crate::nft_expr_cmp!(@cmp_op $op), $data)
     };
 }
 

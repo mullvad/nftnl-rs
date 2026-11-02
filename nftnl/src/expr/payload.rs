@@ -297,7 +297,7 @@ impl HeaderField for Icmpv6HeaderField {
     }
 }
 
-#[macro_export(local_inner_macros)]
+#[macro_export]
 macro_rules! nft_expr_payload {
     (@ipv4_field ttl) => {
         $crate::expr::Ipv4HeaderField::Ttl
@@ -362,12 +362,12 @@ macro_rules! nft_expr_payload {
 
     (ipv4 $field:ident) => {
         $crate::expr::Payload::Network($crate::expr::NetworkHeaderField::Ipv4(
-            nft_expr_payload!(@ipv4_field $field),
+            $crate::nft_expr_payload!(@ipv4_field $field),
         ))
     };
     (ipv6 $field:ident) => {
         $crate::expr::Payload::Network($crate::expr::NetworkHeaderField::Ipv6(
-            nft_expr_payload!(@ipv6_field $field),
+            $crate::nft_expr_payload!(@ipv6_field $field),
         ))
     };
 
@@ -377,12 +377,12 @@ macro_rules! nft_expr_payload {
 
     (tcp $field:ident) => {
         $crate::expr::Payload::Transport($crate::expr::TransportHeaderField::Tcp(
-            nft_expr_payload!(@tcp_field $field),
+            $crate::nft_expr_payload!(@tcp_field $field),
         ))
     };
     (udp $field:ident) => {
         $crate::expr::Payload::Transport($crate::expr::TransportHeaderField::Udp(
-            nft_expr_payload!(@udp_field $field),
+            $crate::nft_expr_payload!(@udp_field $field),
         ))
     };
 }
